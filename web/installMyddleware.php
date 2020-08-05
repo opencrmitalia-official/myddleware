@@ -95,9 +95,11 @@ $symfonyRequirements->addRecommendation(
 	'config/public/parameters_smtp.yml file should be writable',
 	'Change the permissions "<strong>config/public/parameters_smtp.yml</strong>" file so that the web server can write into it.'
 );
+// Check php version
+$symfonyRequirements->addRequirement( version_compare(phpversion(), '7.2', '>='), 'Wrong php version', 'Your php version is '.phpversion().' and Myddleware is compatible php version >= 7.2.');
+// $symfonyRequirements->addRequirement( version_compare(phpversion(), '7.3', '<'), 'Wrong php version', 'Your php version is '.phpversion().'. Myddleware is compatible only with php version 7.1 and 7.2.');
 
 $iniPath = $symfonyRequirements->getPhpIniConfigPath();
-
 
 echo_title('Myddleware Requirements Checker');
 
@@ -169,7 +171,7 @@ echo_style('green', 'php bin/symfony_requirements');
 echo '<BR>';
 echo '<BR>';
 
-function get_error_message(Requirement $requirement, $lineSize)
+function get_error_message($requirement, $lineSize)
 {
     if ($requirement->isFulfilled()) {
         return;

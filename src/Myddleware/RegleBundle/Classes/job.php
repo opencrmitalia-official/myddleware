@@ -49,6 +49,7 @@ class jobcore  {
 	protected $start;
 	protected $paramJob;
 	protected $manual;
+	protected $api = 0; 	// Specify if the class is called by the API
 	protected $env;
 	protected $nbDayClearJob = 7;
 
@@ -98,6 +99,7 @@ class jobcore  {
 			$param['ruleId'] = $this->ruleId;
 			$param['jobId'] = $this->id;
 			$param['manual'] = $this->manual;		
+			$param['api'] = $this->api;
 			$this->rule = new rule($this->logger, $this->container, $this->connection, $param);
 			if ($this->rule->isChild()) {
 				throw new \Exception ('Rule '.$filter.' is a child rule. Child rules can only be run by the parent rule.');
@@ -170,6 +172,7 @@ class jobcore  {
 									ON Document.rule_id = RuleOrder.rule_id
 							WHERE 
 									global_status = 'Error'
+								AND deleted = 0 
 								AND attempt <= :attempt 
 							ORDER BY RuleOrder.order ASC, source_date_modified ASC	
 							LIMIT $limit";
@@ -182,6 +185,7 @@ class jobcore  {
 				foreach ($documentsError as $documentError) {
 					$param['ruleId'] = $documentError['rule_id'];
 					$param['jobId'] = $this->id;					
+					$param['api'] = $this->api;
 					$rule = new rule($this->logger, $this->container, $this->connection, $param);
 					$errorActionDocument = $rule->actionDocument($documentError['id'],'rerun');
 					if (!empty($errorActionDocument)) {
@@ -233,10 +237,12 @@ class jobcore  {
 	
 	
 	// Permet d'exécuter des jobs manuellement depuis Myddleware
-	public function actionMassTransfer($event,$param) {
+	public function actionMassTransfer($event, $datatype, $param) {
 		if (in_array($event, array('rerun','cancel'))) { 
-			// Pour ces 2 actions, l'event est le premier paramètre et ce sont les ids des cocuments qui sont envoyés dans le $param
+			// Pour ces 2 actions, l'event est le premier paramètre, le type de donnée est le deuxième
+			// et ce sont les ids des documents ou règles qui sont envoyés dans le $param
 			$paramJob[] = $event;
+			$paramJob[] = $datatype;
 			$paramJob[] = implode(',',$param);
 			return $this->runBackgroundJob('massaction',$paramJob);
 		}
@@ -304,16 +310,11 @@ class jobcore  {
 		}
 	}
 
-	// Fonction permettant d'annuler massivement des documents
-	public function massAction($action,$idsDoc) {
-		if (empty($idsDoc)) {
-			$this->message .=  'No Ids in parameters of the job massAction.';		
-			return false;
-		}
-		
+	// Function to modify a group of documents
+	public function massAction($action, $dataType, $ids, $forceAll, $fromStatus, $toStatus) {	
 		try {
-			// Formatage du tableau d'idoc
-			$idsDocArray = explode(',',$idsDoc);	
+			// Build IN parameter
+			$idsDocArray = explode(',',$ids);	
 			$queryIn = '(';
 			foreach ($idsDocArray as $idDoc) {
 				$queryIn .= "'".$idDoc."',";
@@ -321,17 +322,42 @@ class jobcore  {
 			$queryIn = rtrim($queryIn,',');
 			$queryIn .= ')';
 			
-			// Création de la requête
+			// Buid WHERE section
+			// Filter on rule or docuement depending on the data type
+			$where = ' WHERE ';
+			if ($dataType == 'rule') {
+				$where .= " Rule.id IN $queryIn ";
+			} elseif ($dataType == 'document') {
+				$where .= " Document.id IN $queryIn ";
+			}
+			// No filter on status if the action is restore/changeStatus or if forceAll = 'Y'
+			if (
+					$forceAll != 'Y'
+				AND $action	!= 'restore'
+				AND $action	!= 'changeStatus'
+			) {
+				$where .= " AND Document.global_status IN ('Open','Error') ";
+			}
+			// Filter on relevant delete flag (select deleted = 1 only for restore action)
+			if ($action	== 'restore') {
+				$where .= " AND Document.deleted = 1 ";
+			} else {
+				$where .= " AND Document.deleted = 0 ";
+			}
+			// Filter on status for the changeStatus action
+			if ($action	== 'changeStatus') {
+				$where .= " AND Document.status = '$fromStatus' ";
+			}
+			
+			// Build the query
 			$sqlParams = "	SELECT 
 								Document.id,
 								Document.rule_id
 							FROM Document	
 								INNER JOIN Rule
-									ON Document.rule_id = Rule.id
-							WHERE
-									Document.global_status IN ('Open','Error')
-								AND Document.id IN $queryIn
-							ORDER BY Rule.id";
+									ON Document.rule_id = Rule.id"
+							.$where."
+							ORDER BY Rule.id";						
 			$stmt = $this->connection->prepare($sqlParams);
 		    $stmt->execute();	   				
 			$documents = $stmt->fetchAll();
@@ -343,17 +369,18 @@ class jobcore  {
 					// Chargement d'une nouvelle règle que si nécessaire
 					if ($param['ruleId'] != $document['rule_id']) {
 						$param['ruleId'] = $document['rule_id'];
-						$param['jobId'] = $this->id;						
+						$param['jobId'] = $this->id;	
+						$param['api'] = $this->api;
 						$rule = new rule($this->logger, $this->container, $this->connection, $param);
 					}
-					$errorActionDocument = $rule->actionDocument($document['id'],$action);
+					$errorActionDocument = $rule->actionDocument($document['id'],$action, $toStatus);
 					if (!empty($errorActionDocument)) {
 						$this->message .= print_r($errorActionDocument,true);
 					}
 				}			
 			}	
 			else {
-				$this->message .=  'No Document Open or in Error in parameters of the job massAction.';		
+				$this->message .=  'No document found corresponding to the input parameters. No action done in the job massAction. ';		
 				return false;
 			}
 		} catch (\Exception $e) {
@@ -382,7 +409,8 @@ class jobcore  {
 			}
 			// Instantiate the rule
 			$ruleParam['ruleId'] = $ruleId;
-			$ruleParam['jobId']  = $this->id;				
+			$ruleParam['jobId']  = $this->id;		
+			$ruleParam['api'] = $this->api;
 			$rule = new rule($this->logger, $this->container, $this->connection, $ruleParam);			
 			
 			// Try to read data for each values
@@ -409,6 +437,15 @@ class jobcore  {
 			$this->logger->error( 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )' );
 			return false;
 		}
+	}
+	
+	// Remove all data flagged deleted in the database
+	public function pruneDatabase() {
+		// Documents		
+		
+		// Rules
+		
+		// Connectors
 	}
 	
 	public function getRules() {
@@ -447,8 +484,7 @@ class jobcore  {
 			// Si la règle n'a pas de relation on initialise l'ordre à 1 sinon on met 99
 			$sql = "SELECT
 						Rule.id,
-						GROUP_CONCAT(RuleRelationShip.field_id SEPARATOR ';') field_id,
-						IF(RuleRelationShip.field_id IS NULL, '1', '99') rule_order
+						GROUP_CONCAT(RuleRelationShip.field_id SEPARATOR ';') field_id
 					FROM Rule
 						LEFT OUTER JOIN RuleRelationShip
 							ON Rule.id = RuleRelationShip.rule_id
@@ -458,24 +494,34 @@ class jobcore  {
 			$stmt = $this->connection->prepare($sql);
 			$stmt->execute();	    
 			$rules = $stmt->fetchAll(); 	
+
 			if (!empty($rules)) {
 				// Création d'un tableau en clé valeur et sauvegarde d'un tableau de référence
 				$ruleKeyVakue = array();
-				foreach ($rules as $rule) {
-					$ruleKeyVakue[$rule['id']] = $rule['rule_order'];
+				foreach ($rules as $key => $rule) {
+					// Init order depending on the field_id value
+					if (empty($rule['field_id'])) {
+						$rules[$key]['rule_order'] = 1;
+					} else {
+						$rules[$key]['rule_order'] = 99;
+					}
+					$ruleKeyVakue[$rule['id']] = $rules[$key]['rule_order'];
 					$rulesRef[$rule['id']] = $rule;
-				}	
-				
+				}	                               
+	
 				// On calcule les priorité tant que l'on a encore des priorité 99
 				// On fait une condition sur le $i pour éviter une boucle infinie
 				$i = 0;
 				while ($i < 20 && array_search('99', $ruleKeyVakue)!==false) {
-					$i++;
+					$i++;					
 					// Boucles sur les régles
 					foreach ($rules as $rule) {
 						$order = 0;
 						// Si on est une règle sans ordre
-						if($rule['rule_order'] == '99') {
+						if (
+								!empty($rule['rule_order']) 
+							AND $rule['rule_order'] == '99'
+						) {
 							// Récupération des règles liées et recherche dans le tableau keyValue
 							$rulesLink = explode(";", $rule['field_id']);
 							foreach ($rulesLink as $ruleLink) {
@@ -558,6 +604,12 @@ class jobcore  {
 		}
 	}
 	
+	// Set webserice flag
+	public function setApi($value) {
+		// default value = 0
+		$this->api = (!empty($value) ? $value : 0);
+	}
+	
 	// Permet d'indiquer que le job est lancé manuellement
 	public function setConfigValue($name,$value) {
 		$this->connection->beginTransaction(); // -- BEGIN TRANSACTION suspend auto-commit
@@ -636,6 +688,7 @@ class jobcore  {
 						WHERE 
 								Document.rule_id = :ruleId
 							AND Document.global_status IN ('Close','Cancel')
+							AND Document.deleted = 0 
 							AND Document.date_modified < :limitDate	";							
 					$stmt = $this->connection->prepare($deleteSource);
 					$stmt->bindValue("ruleId", $rule['id']);
@@ -663,6 +716,7 @@ class jobcore  {
 								Log.rule_id = :ruleId
 							AND Log.msg IN ('Status : Filter_OK','Status : Predecessor_OK','Status : Relate_OK','Status : Transformed','Status : Ready_to_send')	
 							AND Document.global_status IN ('Close','Cancel')
+							AND Document.deleted = 0 
 							AND Document.date_modified < :limitDate	";						
 					$stmt = $this->connection->prepare($deleteLog);
 					$stmt->bindValue("ruleId", $rule['id']);
@@ -713,7 +767,7 @@ class jobcore  {
 	
 	
  	// Récupération des données du job
-	protected function getLogData() {
+	public function getLogData($documentDetail = false) {
 		try {
 			// Récupération du nombre de document envoyé et en erreur pour ce job
 			$this->logData['Close'] = 0;
@@ -778,6 +832,20 @@ class jobcore  {
 				$this->logData['solutions'] = $concatSolutions;
 			}
 			
+			// Get the document detail if requested
+			if ($documentDetail == true) {
+				$sqlParamsDoc = "	SELECT DISTINCT Document.*
+								FROM Log
+									INNER JOIN Document
+										ON Log.doc_id = Document.id
+								WHERE
+									Log.job_id = :id";
+				$stmt = $this->connection->prepare($sqlParamsDoc);
+				$stmt->bindValue("id", $this->id);
+				$stmt->execute();	   				
+				$this->logData['documents'] = $stmt->fetchAll();
+			}
+			
 			// Récupération de la durée du job
 			$time_end = microtime(true);
 			$this->logData['duration'] = round($time_end - $this->start,2);
@@ -787,6 +855,7 @@ class jobcore  {
 					
 			// Indique si le job est lancé manuellement ou non
 			$this->logData['Manual'] = $this->manual;
+			$this->logData['Api'] = $this->api;
 			
 			// Récupération des erreurs
 			$this->logData['jobError'] = $this->message;
@@ -843,7 +912,7 @@ class jobcore  {
 		$this->connection->beginTransaction(); // -- BEGIN TRANSACTION
 		try {
 			$now = gmdate('Y-m-d H:i:s');
-			$query_header = "INSERT INTO Job (id, begin, status, param, manual) VALUES ('$this->id', '$now', 'Start', '$this->paramJob', '$this->manual')";
+			$query_header = "INSERT INTO Job (id, begin, status, param, manual, api) VALUES ('$this->id', '$now', 'Start', '$this->paramJob', '$this->manual', '$this->api')";
 			$stmt = $this->connection->prepare($query_header);
 			$stmt->execute();
 			$this->connection->commit(); // -- COMMIT TRANSACTION

@@ -30,9 +30,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface as Container; // Se
 use Doctrine\DBAL\Connection; // Connection database
 
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Filesystem\Filesystem;
+use Myddleware\RegleBundle\Entity\RuleParamAudit as RuleParamAudit;
+
 
 use Myddleware\RegleBundle\Classes\tools as MyddlewareTools; // Tools
 use Myddleware\RegleBundle\Entity\RuleParam;
@@ -59,6 +62,7 @@ class rulecore {
 	protected $limit = 100;
 	protected $limitReadCommit = 1000;
 	protected $tools;
+	protected $api; 	// Specify if the class is called by the API
 	
     public function __construct(Logger $logger, Container $container, Connection $dbalConnection, $param) {
     	$this->logger = $logger;
@@ -75,6 +79,9 @@ class rulecore {
 		}	
 		if (!empty($param['manual'])) {
 			$this->manual = $param['manual'];
+		}	
+		if (!empty($param['api'])) {
+			$this->api = $param['api'];
 		}	
 
 		$this->setRuleParam();
@@ -155,6 +162,7 @@ class rulecore {
 					$doc['ruleRelationships'] = $this->ruleRelationships;
 					$doc['data'] = $docData;
 					$doc['jobId'] = $this->jobId;		
+					$doc['api'] = $this->api;		
 					// If the document is a child, we save the parent in the table Document
 					if (!empty($param['parent_id'])) {
 						$doc['parentId'] = $param['parent_id'];		
@@ -219,12 +227,14 @@ class rulecore {
 			
 			// Connect to the application
 			if ($type == 'source') {	
-				$this->solutionSource = $this->container->get('myddleware_rule.'.$r['name']);				
+				$this->solutionSource = $this->container->get('myddleware_rule.'.$r['name']);	
+				$this->solutionSource->setApi($this->api);				
 				$loginResult = $this->solutionSource->login($params);			
 				$c = (($this->solutionSource->connexion_valide) ? true : false );				
 			}
 			else {
-				$this->solutionTarget = $this->container->get('myddleware_rule.'.$r['name']);		
+				$this->solutionTarget = $this->container->get('myddleware_rule.'.$r['name']);	
+				$this->solutionTarget->setApi($this->api);
 				$loginResult = $this->solutionTarget->login($params);			
 				$c = (($this->solutionTarget->connexion_valide) ? true : false );			
 			}
@@ -309,6 +319,7 @@ class rulecore {
 							$i++;
 							$param['data'] = $row;
 							$param['jobId'] = $this->jobId;
+							$param['api'] = $this->api;
 							$document = new document($this->logger, $this->container, $this->connection, $param);
 							$createDocument = $document->createDocument();
 							if (!$createDocument) {
@@ -354,12 +365,31 @@ class rulecore {
 	
 	// Permet de mettre à jour la date de référence pour ne pas récupérer une nouvelle fois les données qui viennent d'être écrites dans la cible
 	protected function updateReferenceDate() {			
-		$date_ref = $this->dataSource['date_ref'];
-		$sqlDateReference = "UPDATE RuleParam SET value = :date_ref WHERE name = 'datereference' AND rule_id = :ruleId";
-		$stmt = $this->connection->prepare($sqlDateReference);
-		$stmt->bindValue(":ruleId", $this->ruleId);
-		$stmt->bindValue(":date_ref", $date_ref);
-		$stmt->execute();			
+		$param = $this->em->getRepository('RegleBundle:RuleParam')
+			->findOneBy(array(
+					'rule' => $this->ruleId,
+					'name' => 'datereference'
+				)
+			);
+		// Every rules should have the param datereference
+		if (empty($param)) {
+			throw new \Exception ('No reference date for the rule '.$this->ruleId.'.');	
+		} else {
+			// Save param modification in the audit table		
+			if ($param->getValue() != $this->dataSource['date_ref']) {
+				$paramAudit = new RuleParamAudit();
+				$paramAudit->setRuleParamId($param->getId());
+				$paramAudit->setDateModified(new \DateTime);
+				$paramAudit->setBefore($param->getValue());
+				$paramAudit->setAfter($this->dataSource['date_ref']);
+				$paramAudit->setJob($this->jobId);
+				$this->em->persist($paramAudit);					
+			}
+			// Update reference 
+			$param->setValue($this->dataSource['date_ref']);
+			$this->em->persist($param);					
+			$this->em->flush();
+		}				
 	}
 	
 	// Update/create rule parameter
@@ -474,7 +504,7 @@ class rulecore {
 				break;
 			}
 			if (empty($this->dataSource['values'])) {
-				return array('error' => 'All records read have the same reference date. Myddleware cannot garanty all data will be read. Job interrupted. Please increase the number of data read by changing the limit attribut in job and rule class.');
+				return array('error' => 'All records read have the same reference date in rule '.$this->rule['name'].'. Myddleware cannot garanty all data will be read. Job interrupted. Please increase the number of data read by changing the limit attribut in job and rule class.');
 			}
 			return true;
 		}
@@ -496,6 +526,7 @@ class rulecore {
 			foreach ($documents as $document) { 
 				$param['id_doc_myddleware'] = $document['id'];
 				$param['jobId'] = $this->jobId;
+				$param['api'] = $this->api;
 				$doc = new document($this->logger, $this->container, $this->connection, $param);
 				$response[$document['id']] = $doc->filterDocument($this->ruleFilters);
 			}			
@@ -518,6 +549,7 @@ class rulecore {
 			foreach ($documents as $document) { 
 				$param['id_doc_myddleware'] = $document['id'];
 				$param['jobId'] = $this->jobId;
+				$param['api'] = $this->api;
 				$param['ruleRelationships'] = $this->ruleRelationships;
 				$doc = new document($this->logger, $this->container, $this->connection, $param);
 				$response[$document['id']] = $doc->ckeckPredecessorDocument();
@@ -557,6 +589,7 @@ class rulecore {
 			foreach ($documents as $document) { 
 				$param['id_doc_myddleware'] = $document['id'];
 				$param['jobId'] = $this->jobId;
+				$param['api'] = $this->api;
 				$param['ruleRelationships'] = $this->ruleRelationships;
 				$doc = new document($this->logger, $this->container, $this->connection, $param);
 				$response[$document['id']] = $doc->ckeckParentDocument();
@@ -581,6 +614,7 @@ class rulecore {
 			$param['ruleFields'] = $this->ruleFields;
 			$param['ruleRelationships'] = $this->ruleRelationships;
 			$param['jobId'] = $this->jobId;
+			$param['api'] = $this->api;
 			$param['key'] = $this->key;
 			// If migration mode, we select all documents to improve performance. For example, we won't execute queries is method document->getTargetId
 			$migrationParameters = $this->container->getParameter('migration');
@@ -632,6 +666,7 @@ class rulecore {
 				$param['ruleFields'] = $this->ruleFields;
 				$param['ruleRelationships'] = $this->ruleRelationships;
 				$param['jobId'] = $this->jobId;
+				$param['api'] = $this->api;
 				$param['key'] = $this->key;
 				$doc = new document($this->logger, $this->container, $this->connection, $param);
 				$response[$document['id']] = $doc->getTargetDataDocument();
@@ -642,11 +677,15 @@ class rulecore {
 	}
 	
 	public function sendDocuments() {	
-		// Création des données dans la cible
+		// creation into the target application
 		$sendTarget = $this->sendTarget('C');
-		// Modification des données dans la cible
+		// Update into the target application
 		if (empty($sendTarget['error'])) {
 			$sendTarget = $this->sendTarget('U');
+		}
+		// Deletion from the target application
+		if (empty($sendTarget['error'])) {
+			$sendTarget = $this->sendTarget('D');
 		}
 		// Logout target solution
 		if (!empty($this->solutionTarget)) {
@@ -658,13 +697,22 @@ class rulecore {
 		return $sendTarget;
 	}
 	
-	public function actionDocument($id_document,$event) {
+	public function actionDocument($id_document,$event, $param1 = null) {
 		switch ($event) { 
 			case 'rerun':
 				return $this->rerun($id_document);
 				break;
 			case 'cancel':
 				return $this->cancel($id_document);
+				break;
+			case 'remove':
+				return $this->changeDeleteFlag($id_document,true);
+				break;
+			case 'restore':
+				return $this->changeDeleteFlag($id_document,false);
+				break;
+			case 'changeStatus':
+				return $this->changeStatus($id_document,$param1);
 				break;
 			default:
 				return 'Action '.$event.' unknown. Failed to run this action. ';
@@ -820,6 +868,7 @@ class rulecore {
 	protected function cancel($id_document) {	
 		$param['id_doc_myddleware'] = $id_document;
 		$param['jobId'] = $this->jobId;
+		$param['api'] = $this->api;
 		$doc = new document($this->logger, $this->container, $this->connection, $param);
 		$doc->documentCancel(); 
 		$session = new Session();
@@ -829,12 +878,43 @@ class rulecore {
 		// On affiche alors le message directement dans Myddleware
 		if (empty($this->jobId)) {
 			if (empty($message)) {
-				$session->set( 'success', array('Annulation du transfert effectuée avec succès.'));
+				$session->set( 'success', array('Data transfer has been successfully cancelled.'));
 			}
 			else {
 				$session->set( 'error', array($doc->getMessage()));
 			}
 		}
+	}
+	
+	// Remove a document 
+	protected function changeDeleteFlag($id_document,$deleteFlag) {	
+		$param['id_doc_myddleware'] = $id_document;
+		$param['jobId'] = $this->jobId;
+		$param['api'] = $this->api;
+		$doc = new document($this->logger, $this->container, $this->connection, $param);
+		$doc->changeDeleteFlag($deleteFlag); 
+		$session = new Session();
+		$message = $doc->getMessage();
+		
+		// Si on a pas de jobId cela signifie que l'opération n'est pas massive mais sur un seul document
+		// On affiche alors le message directement dans Myddleware
+		if (empty($this->jobId)) {
+			if (empty($message)) {
+				$session->set( 'success', array('Data transfer has been successfully removed.'));
+			}
+			else {
+				$session->set( 'error', array($doc->getMessage()));
+			}
+		}
+	}
+	
+	// Remove a document 
+	protected function changeStatus($id_document,$toStatus) {	
+		$param['id_doc_myddleware'] = $id_document;
+		$param['jobId'] = $this->jobId;
+		$param['api'] = $this->api;
+		$doc = new document($this->logger, $this->container, $this->connection, $param);
+		$doc->updateStatus($toStatus);
 	}
 	
 	protected function runMyddlewareJob($ruleSlugName) {
@@ -910,6 +990,7 @@ class rulecore {
 		// Récupération du statut du document
 		$param['id_doc_myddleware'] = $id_document;
 		$param['jobId'] = $this->jobId;
+		$param['api'] = $this->api;	
 		$doc = new document($this->logger, $this->container, $this->connection, $param);
 		$status = $doc->getStatus();
 		// Si la règle n'est pas chargée alors on l'initialise.
@@ -1033,6 +1114,10 @@ class rulecore {
 		}
 	}
 	
+	protected function beforeDelete($sendData) {
+		return $sendData;
+	}
+	
 	// Check if the rule is a child rule
 	public function isChild() {
 		try {					
@@ -1110,9 +1195,14 @@ class rulecore {
 						$send['dataHistory'] = $this->clearSendData($send['dataHistory']);
 						$response = $this->solutionTarget->update($send);
 					}
+					// Delete data from target application
+					elseif ($type == 'D') {			
+						$send['data'] = $this->beforeDelete($send['data']);;
+						$response = $this->solutionTarget->delete($send);
+					}
 					else {
 						$response[$documentId] = false;
-						$doc->setMessage('Type transfer '.$type.' unknown. ');
+						$response['error']= 'Type transfer '.$type.' unknown. ';
 					}
 				}
 				else {
@@ -1122,7 +1212,9 @@ class rulecore {
 			}
 		} catch (\Exception $e) {
 			$response['error'] = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
-			echo $response['error'];
+			if (!$this->api) {
+				echo $response['error'];
+			}
 			$this->logger->error( $response['error'] );
 		}	
 		return $response;
@@ -1174,6 +1266,7 @@ class rulecore {
 				if ($value['concatKey'] == $previous) {	
 					$param['id_doc_myddleware'] = $key;
 					$param['jobId'] = $this->jobId;
+					$param['api'] = $this->api;
 					$doc = new document($this->logger, $this->container, $this->connection, $param);
 					$doc->setMessage('Failed to send document because this record is already send in another document. To prevent create duplicate data in the target system, this document will be send in the next job.');
 					$doc->setTypeError('W');
@@ -1197,6 +1290,7 @@ class rulecore {
 									WHERE 
 											rule_id = :ruleId
 										AND status = :status
+										AND Document.deleted = 0 
 									ORDER BY Document.source_date_modified ASC	
 									LIMIT $this->limit
 								";							
@@ -1212,7 +1306,8 @@ class rulecore {
 	
 	// Permet de récupérer les données d'un document
 	protected function getDocumentHeader($documentId) {
-		try {			
+		try {
+			// We allow to get date from a document flagged deleted
 			$query_document = "SELECT * FROM Document WHERE id = :documentId";
 			$stmt = $this->connection->prepare($query_document);
 			$stmt->bindValue(":documentId", $documentId);
@@ -1230,17 +1325,22 @@ class rulecore {
 	}
 	
 	protected function getSendDocuments($type,$documentId,$table = 'target',$parentDocId = '',$parentRuleId = '') {	
+		// Init $limit parameter
+		$limit = " LIMIT ".$this->limit;
 		// Si un document est en paramètre alors on filtre la requête sur le document 
 		if (!empty($documentId)) {
 			$documentFilter = " Document.id = '$documentId'";
 		}
 		elseif (!empty($parentDocId)) {
-			$documentFilter = " Document.parent_id = '$parentDocId' AND Document.rule_id = '$parentRuleId' ";
+			$documentFilter = " Document.parent_id = '$parentDocId' AND Document.rule_id = '$parentRuleId' "; 
+			// No limit when it comes to child rule. A document could have more than $limit child documents
+			$limit = "";
 		}
 		// Sinon on récupère tous les documents élligible pour l'envoi
 		else {
 			$documentFilter = 	"	Document.rule_id = '$this->ruleId'
 								AND Document.status = 'Ready_to_send'
+								AND Document.deleted = 0 
 								AND Document.type = '$type' ";
 		}
 		// Sélection de tous les documents au statut transformed en attente de création pour la règle en cours
@@ -1248,7 +1348,7 @@ class rulecore {
 				FROM Document
 				WHERE $documentFilter 
 				ORDER BY Document.source_date_modified ASC
-				LIMIT $this->limit";
+				$limit";
 		$stmt = $this->connection->prepare($sql);
 		$stmt->execute();	    
 		$documents = $stmt->fetchAll();
@@ -1487,7 +1587,14 @@ class rulecore {
 								'30' => 'solution.params.30_day',
 								'60' => 'solution.params.60_day'
 							),
-			) 		
+			),
+			array(
+				'id' 		=> 'description',
+				'name' 		=> 'description',
+				'required'	=> true,
+				'type'		=> TextareaType::class,
+				'label' 	=> 'solution.params.description'
+			), 		
 		);
 	}
 

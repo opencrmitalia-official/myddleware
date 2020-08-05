@@ -31,7 +31,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 class suitecrmcore  extends solution {
 
 	protected $limitCall = 100;
-	protected $urlSuffix = '/service/v4/rest.php';
+	protected $urlSuffix = '/service/v4_1/rest.php';
+	
+	// Enable to read deletion and to delete data
+	protected $readDeletion = true;	
+	protected $sendDeletion = true;	
 	
     protected $required_fields = array('default' => array('id','date_modified','date_entered'));
 	
@@ -297,7 +301,6 @@ class suitecrmcore  extends solution {
 						}	
 					}
 				}
-				
 				// Ajout des champ type link (custom relationship ou custom module souvent)
 				if (!empty($get_module_fields->link_fields)) {
 					foreach ($get_module_fields->link_fields AS $field) {
@@ -332,6 +335,13 @@ class suitecrmcore  extends solution {
 														'required' => 0,
 														'required_relationship' => 0
 													);
+							// Get the name field for this relationship (already in array moduleFields but we need to flag it as a customrelationship)
+							if (!empty($this->moduleFields[$field->relationship.'_name'])) {
+								// Create the field with prefix
+								$this->moduleFields[$this->customRelationship.$field->relationship.'_name'] = $this->moduleFields[$field->relationship.'_name'];
+								// Remove the old field
+								unset($this->moduleFields[$field->relationship.'_name']);
+							}
 						}
 					}
 				}
@@ -348,7 +358,7 @@ class suitecrmcore  extends solution {
 	}
 	
 	// Permet de récupérer le dernier enregistrement de la solution (utilisé pour tester le flux)
-	public function read_last($param) {
+	public function read_last($param) {		
 		// Si le module est un module "fictif" relation créé pour Myddlewar	alors on ne fait pas de readlast
 		if(array_key_exists($param['module'], $this->module_relationship_many_to_many)) {
 			$result['done'] = true;					
@@ -403,12 +413,21 @@ class suitecrmcore  extends solution {
 		}	
 	}
 	
+
 	// Permet de lire les données
-	public function read($param) {		
+	public function read($param) {
 		try {
 			$result = array();
 			$result['error'] = '';
 			$result['count'] = 0;
+			
+			// Manage delete option to enable 
+			$deleted = false;
+			if (!empty($param['ruleParams']['deletion'])) {
+				$deleted = true;
+				$param['fields'][] = 'deleted';
+			}
+			
 			if (empty($param['offset'])) {
 				$param['offset'] = 0;
 			}
@@ -427,16 +446,33 @@ class suitecrmcore  extends solution {
 				$param['module'] = $this->module_relationship_many_to_many[$paramSave['module']]['module_name'];
 			}
 
-			// Ajout des champs obligatoires
+			// Add requeired fields
 			$param['fields'] = $this->addRequiredField($param['fields']);
 			$param['fields'] = array_unique($param['fields']);			
-			// Construction de la requête pour SugarCRM
+			// Built the query
 			$query = $this->generateQuery($param, 'read');		
 			//Pour tous les champs, si un correspond à une relation custom alors on change le tableau en entrée
 			$link_name_to_fields_array = array();
 			foreach ($param['fields'] as $field) {
 				if (substr($field,0,strlen($this->customRelationship)) == $this->customRelationship) {
-					$link_name_to_fields_array[] = array('name' => substr($field, strlen($this->customRelationship)), 'value' => array('id'));
+					// Get all custom relationships
+					if (empty($customRelationshipList)) {
+						$customRelationshipListFields = $this->getCustomRelationshipListFields($param['module']);
+					}
+					// Get the relationship name for all custom relationship field (coudb be id field or name field)
+					// Search the field in the array
+					if (!empty($customRelationshipListFields)) {
+						foreach ($customRelationshipListFields as $key => $value) {
+							// If a request field (name or id) is a custom relationship then we add the entry in array link_name_to_fields_array
+							if (
+									$value['id'] == $field
+								 OR	$value['name'] == $field
+							) {
+								$link_name_to_fields_array[] = array('name' => $key, 'value' => array('id', 'name'));
+								break;
+							}
+						}
+					}
 				}
 			}
 			// On lit les données dans le CRM
@@ -450,17 +486,17 @@ class suitecrmcore  extends solution {
 												'select_fields' => $param['fields'],
 												'link_name_to_fields_array' => $link_name_to_fields_array,
 												'max_results' => $this->limitCall,
-												'deleted' => 0,
+												'deleted' => $deleted,
 												'Favorites' => '',
-											);		
-										
-				$get_entry_list_result = $this->call("get_entry_list", $get_entry_list_parameters);									
+											);
+				$get_entry_list_result = $this->call("get_entry_list", $get_entry_list_parameters);
 				// Construction des données de sortie
 				if (isset($get_entry_list_result->result_count)) {
 					$currentCount = $get_entry_list_result->result_count;
 					$result['count'] += $currentCount;
 					$record = array();
 					$i = 0;
+					// For each records, we add all fields requested
 					for ($i = 0; $i < $currentCount; $i++) {
 						$entry = $get_entry_list_result->entry_list[$i]; 
 						foreach ($entry->name_value_list as $value){
@@ -478,11 +514,44 @@ class suitecrmcore  extends solution {
 								$result['date_ref'] = $value->value;
 							}
 						}	
+						// Manage deletion by adding the flag Myddleware_deletion to the record							
+						if (
+								$deleted == true
+							AND !empty($entry->name_value_list->deleted->value)
+						) {
+							$record['myddleware_deletion'] = true;
+						}
 						
-						// S'il y a des relation custom, on ajoute la relation custom 
-						if (!empty($get_entry_list_result->relationship_list[$i]->link_list)) {
-							foreach ($get_entry_list_result->relationship_list[$i]->link_list as $Relationship) {
-								$record[$this->customRelationship.$Relationship->name] = $Relationship->records[0]->link_value->id->value;
+						// All custom relationships will be added even the ones no requested (Myddleware will ignore them later)
+						if (!empty($customRelationshipListFields)) {
+							// For each fields requested corresponding to a custom relationship							
+							foreach ($param['fields'] as $field) {
+								// Check if the field is a custom relationship
+								foreach ($customRelationshipListFields as $key => $value) {
+									if (
+											$field == $value['id']
+										 OR	$field == $value['name']
+									){
+										// Init field even if the relationship is empty. Myddleware needs the field to be set
+										$record[$value['id']] = '';
+										$record[$value['name']] = '';
+									
+										// Find the the right relationship into SuiteCRM result call
+										foreach ($get_entry_list_result->relationship_list[$i]->link_list as $relationship) {								
+											if (
+													!empty($relationship->name)
+												AND $relationship->name == $key
+											) {	
+												// Save relationship values
+												if (!empty($relationship->records[0]->link_value->id->value)) {								
+													$record[$value['id']] = $relationship->records[0]->link_value->id->value;
+													$record[$value['name']] = $relationship->records[0]->link_value->name->value;
+												} 
+												break 2; // Go to the next field
+											}
+										}										
+									}
+								}	
 							}
 						}
 						$result['values'][$entry->id] = $record;
@@ -492,7 +561,11 @@ class suitecrmcore  extends solution {
                     $param['offset'] += $this->limitCall;
 				}
 				else {
-					$result['error'] = $get_entry_list_result->number.' : '. $get_entry_list_result->name.'. '. $get_entry_list_result->description;
+					if (!empty($get_entry_list_result->number)) {
+						$result['error'] = $get_entry_list_result->number.' : '. $get_entry_list_result->name.'. '. $get_entry_list_result->description;
+					} else {
+						$result['error'] = 'Failed to read data from SuiteCRM. No error return by SuiteCRM';
+					}
 				}			
 			}
             // On continue si le nombre de résultat du dernier appel est égal à la limite
@@ -513,10 +586,27 @@ class suitecrmcore  extends solution {
 		}
 		catch (\Exception $e) {
 		    $result['error'] = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
-		}	
+		}
 		return $result;	
 	}
 
+	// Build the direct link to the record (used in data transfer view)
+	public function getDirectLink($rule, $document, $type){		
+		// Get url, module and record ID depending on the type
+		if ($type == 'source') {
+			$url = $this->getConnectorParam($rule->getConnectorSource(), 'url');
+			$module = $rule->getModuleSource();
+			$recordId = $document->getSource();
+		} else {
+			$url = $this->getConnectorParam($rule->getConnectorTarget(), 'url');
+			$module = $rule->getModuleTarget();
+			$recordId = $document->gettarget();
+		}	
+		
+		// Build the URL (delete if exists / to be sure to not have 2 / in a row) 
+		return rtrim($url,'/').'/index.php?module='.$module.'&action=DetailView&record='.$recordId;
+	}
+	
 
 	protected function readRelationship($param,$dataParent) {
 		if (empty($param['limit'])) {
@@ -733,6 +823,14 @@ class suitecrmcore  extends solution {
 		return $result;			
 	}
 	
+	// Function to delete a record
+	public function delete($param) {
+		// We set the flag deleted to 1 and we call the update function
+		foreach($param['data'] as $idDoc => $data) {
+			$param['data'][$idDoc]['deleted'] = 1;
+		}	
+		return $this->update($param);		
+	}
 		
 	// Build the query for read data to SuiteCRM
 	protected function generateQuery($param, $method){				
@@ -747,11 +845,13 @@ class suitecrmcore  extends solution {
 					$query .= strtolower($param['module']).".id in (SELECT eabr.bean_id FROM email_addr_bean_rel eabr JOIN email_addresses ea ON (ea.id = eabr.email_address_id) WHERE eabr.deleted=0 and ea.email_address LIKE '".$value."') ";
 				}
 				else {	
+				
 					// Pour ProspectLists le nom de la table et le nom de l'objet sont différents
 					if($param['module'] == 'ProspectLists') {	
 						$query .= "prospect_lists.".$key." = '".$value."' ";
-					}
-					else {
+					} elseif($param['module'] == 'Employees') {	
+						$query .= "users.".$key." = '".$value."' ";
+					} else {
 						$query .= strtolower($param['module']).".".$key." = '".$value."' ";
 					}
 				}
@@ -762,11 +862,13 @@ class suitecrmcore  extends solution {
 			// Pour ProspectLists le nom de la table et le nom de l'objet sont différents
 			if($param['module'] == 'ProspectLists') {	
 				$query = "prospect_lists.". $DateRefField ." > '".$param['date_ref']."'";
-			}
+			} elseif ($param['module'] == 'Employees') {	
+				$query = "users.". $DateRefField ." > '".$param['date_ref']."'";
+			} 
 			else {
 				$query = strtolower($param['module']).".". $DateRefField ." > '".$param['date_ref']."'";
 			}
-		}		
+		}	
 		return $query;
 	}
 	
@@ -797,10 +899,34 @@ class suitecrmcore  extends solution {
 		return null;
 	}
 	
-	// Permet de supprimer un enregistrement
-	public function delete($id) {
-	
+	// Get the list of field (name and id) for each custom relationship
+	protected function getCustomRelationshipListFields($module) {
+		$get_module_fields_parameters  = array( 
+			'session' 		=> $this->session,
+			'module_name' 	=> $module
+		);
+		$get_module_fields = $this->call('get_module_fields',$get_module_fields_parameters);
+		// Get all custom relationship fields
+		if (!empty($get_module_fields->link_fields)) {
+			foreach ($get_module_fields->link_fields AS $field) {
+				if (
+						substr($field->name,-3) == '_id' 
+					|| substr($field->name,-4) == '_ida'
+					|| substr($field->name,-4) == '_idb'
+					|| (
+							$field->type == 'id' 
+						&& $field->name != 'id'
+					)
+				) {
+					// Build the result array to get the relationship name for all field name
+					$result[$field->name]['id'] = $this->customRelationship.$field->name;
+					$result[$field->name]['name'] = $this->customRelationship.$field->relationship.'_name';
+				}
+			}
+		}
+		return $result;
 	}
+	
 		
 	//function to make cURL request	
 	protected function call($method, $parameters){

@@ -4,7 +4,7 @@
  # * @package Myddleware
  # * @copyright Copyright (C) 2013 - 2015  Stéphane Faure - CRMconsult EURL
  # * @copyright Copyright (C) 2015 - 2016  Stéphane Faure - Myddleware ltd - contact@myddleware.com
- # * @link http://www.myddleware.com	
+ # * @link http://www.myddleware.com
  
  # This file is part of Myddleware.
  
@@ -33,9 +33,9 @@ panel:
     list_error:
         nb: Nombre d'erreurs par règle
     list_job:
-        title: Détail des derniers jobs	
-        duration: seconde(s)	
-        nb : Transferts de données en erreur	
+        title: Détail des derniers jobs
+        duration: seconde(s)
+        nb : Transferts de données en erreur
     graph_histo:
         title: Historique des transferts
     graph_job_histo:
@@ -79,6 +79,9 @@ create_rule:
             create_modify: Création et modification de données
             create_only: Création de données seulement
             search_only: Récupération de données existantes seulement  
+        deletion:
+            label: Activer la suppression dans l'application cible
+            yes: Oui
         data_wait: Chargement en cours... Merci de patienter
         title: Champs
         placeholder: Veuillez faire glisser vos champs ici
@@ -125,11 +128,11 @@ filter:
     gt: est supérieur à
     lt: est inférieur à
     equal: est égale à
-    different: est différent de
+    different: n'est pas égal à 
     gteq: est supérieur ou égal à
     lteq: est inférieur ou égal à
-    in: est compris dans le tableau suivant séparé par des ;
-    notin: n’est pas compris dans le tableau suivant séparé par des ;      
+    in: est compris dans le tableau suivant séparé par des points virgules
+    notin: n’est pas compris dans le tableau suivant séparé par des points virgules
             
 view_rule:
     action:
@@ -278,7 +281,7 @@ view_connector:
         help: Aide
         link_help: Cliquez-ici pour avoir plus d'informations sur ce connecteur
     help:
-        link: http://community.myddleware.com/index.php/
+        link: http://community.myddleware.com/index.php/connector-guide/#
         
 list_flux:
     start: Début
@@ -298,7 +301,7 @@ list_flux:
         date_modified: Date de modification
         rule: Règle
         status: Statut
-        global_status: Statut global
+        global_status: Statut global / Type
         id: Identifiant
         source_id: Id source
         target_id: Id cible
@@ -319,7 +322,8 @@ list_flux:
         source_date_modified: Date de référence
         type: Type
         source_field: Champ lié
-        
+        reference: Référence
+
 flux:
     gbl_status:
         open: Ouvert
@@ -346,7 +350,12 @@ flux:
         error_checking: Vérification en erreur
         error_sending: Envoi en erreur
         Not_found: Non trouvée
- 
+    type:
+        update: Update
+        create: Create
+        search: Search
+        delete: Delete
+
 view_flux:
     empty: Pas de données
     empty_log: Aucune log
@@ -359,10 +368,11 @@ view_flux:
     nbParentDocuments: Tranferts parents
     nbHistoryDocuments: Historique des transferts
     nbPostDocuments: Tranferts post
+    direct_link: Lien direct
     btn:
         reload: Relancer le transfert
         cancel: Annuler le transfert 
-        readrecord: Générer un nouveau transfer
+        readrecord: Lancer la même donnée
     header:
         rule: Règle
         statut: Status
@@ -372,6 +382,9 @@ view_flux:
         gblstatut: Global Status
         version: Version
         parent: Parent
+        dateref: Référence
+        date_created: Date de création
+        date_modified: Date de modification
     log:
         id: Id
         ref: Référence
@@ -394,12 +407,13 @@ list_task:
         open: Ouvert
         cancel: Annulé
         manual: Manuelle
+        api: Api
         error: Erreur
         
 view_task:
     empty_log: Aucune log  
     task_stop: ARRET DE LA TACHE
-    refresh: RAFRAICHIR	
+    refresh: RAFRAICHIR
     nblogs: Nombre de logs  
     header:
         id: Identifiant
@@ -440,6 +454,7 @@ function:
             lower: Met tous les caractères en minuscules  
             upper: Met tous les caractères en majuscules 
             changeValue: changeValue($var, $arrayKeyToValue) / Remplace la valeur de $var par la valeur correspondante du tableau $arrayKeyToValue. Exemple changeValue( {FIELD},"('A':'1','B':'2')")
+            getValueFromArray: getValueFromArray($key, $array) / Récupère la valeur correspondant à key dans le tableau array
             substr: substr ( string $string , int $start [, int $length ] ) /  Retourne un segment de chaîne.
             striptags: striptags( string $str [, string $allowable_tags ] ) /  Supprime les balises HTML et PHP d'une chaîne
             htmlEntityDecode: htmlEntityDecode ( string $string [, int $flags = ENT_COMPAT | ENT_HTML401 [, string $encoding = ini_get("default_charset") ]] )/ Convertit toutes les entités HTML en caractères normaux
@@ -462,11 +477,12 @@ function:
 solution:
     fields:
         login: Utilisateur
-        username: Nom d'utilisateur
+        username: Utilisateur
         password: Mot de passe
-        accesskey: Clé d'accès
+        accesskey: Access key
         url: Url
         token: Jeton
+        useraccesstoken: Token utilisateur
         tokensecret: Secret jeton
         consumerkey: Clé consommateur
         consumersecret: Secret consommateur 
@@ -482,6 +498,7 @@ solution:
         user: User ID        
         sandbox: Sandbox (1 si oui, 0 sinon)
         wsdl: Fichier wsdl
+        file: Fichier
         host: Serveur Host
         dbname: Nom de la base de données
         database_name: Nom de la base de données
@@ -492,7 +509,9 @@ solution:
         directory: Répertoire avec les fichiers
         shop: Magasin
         redirect_uri: URL de redirection
-        applicationName: Nom de l'application	
+        applicationName: Nom de l'application
+        hashkey: Clé de hachage
+        authid: Id auth
     params: 
         dateref: Référence (Les données seront lues à partir de ce paramètre)
         limit: Limite (Nombre de données lues maximum par appel)
@@ -500,6 +519,7 @@ solution:
         delete: Suppression de données (délais de suppression des données des documents dans Myddleware) 
         activate: Activé
         desactivate: Désactivé
+        description: Description
         1_minute: 1 minute
         5_minute: 5 minutes
         15_minute: 15 minutes
@@ -530,16 +550,20 @@ error:
         target_module_all: Erreur du module cible
         target_module_load_list: Erreur de chargement des modules cible
         edit_document_error_open: Impossible d'éditer la règle car au moins un transfert est ouvert ou en erreur sur cette règle. Veuillez annuler ou relancer ces transferts pour pouvoir éditer cette règle.
-        edit_rule_deleted: Impossible d'éditer la règle car elle est supprimée.		
-        delete_document_error_open: Impossible de supprimer la règle car au moins un transfert est ouvert ou en erreur sur cette règle. Veuillez annuler ces transferts pour pouvoir éditer cette règle.	
-        delete_document_close: Impossible de supprimer la règle car des données ont été envoyées via cette règle.
+        edit_document_error_open_admin: Au moins un transfert est ouvert ou en erreur sur cette règle. Il est recommandé de traiter ces transferts avant d'éditer la règle.
+        edit_rule_deleted: Impossible d'éditer la règle car elle est supprimée.
+        delete_document: Impossible de supprimer la règle car au moins un transfert de données existe sur cette règle. Veuillez supprimer ces transferts pour pouvoir supprimer cette règle.
         delete_relationship_exists: Impossible de supprimer la règle car elle est liée à une autre règle. Supprimer premièrement la règle liée ou bien la relation avec cette règle. Règle liée: 
         update: Impossible d'éditer la règle. 
     account:
         language_change: Impossible de modifier le langage :
     template:
         creation: Erreur lors de le génération des règles du modèle. N'hésitez pas à demander de l'aide sur notre forum <a href="https://github.com/Myddleware/myddleware/issues" target="_blank">https://github.com/Myddleware/myddleware/issues</a>
-         
+    connector:
+        remove_with_rule: Impossible de supprimer le connecteur car il est utilisé dans une règle. Supprimez premièrement la règle
+    document:
+        deleted_flag: Ce flux de données est indiqué comme supprimé. Il n'est donc pas pris en compte dans tous les calculs de relation fait par Myddleware.
+
 title:
     account:
         view: Mon compte

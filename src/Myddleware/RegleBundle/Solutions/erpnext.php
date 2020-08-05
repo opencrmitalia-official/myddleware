@@ -41,15 +41,20 @@ class erpnextcore extends solution
 
 	protected $required_fields = array('default' => array('name', 'creation', 'modified'));
 
-	protected $FieldsDuplicate = array(	'Contact' => array('Email', 'Name'),
-										'default' => array('Name')
+	protected $FieldsDuplicate = array(	'Contact' => array('last_name'),
+										'Company' => array('company_name')
 									);
 									
 	// Module list that allows to make parent relationships
-	protected $allowParentRelationship = array('Sales Invoice', 'Sales Order', 'Payment Entry', 'Item Attribute', 'Item');
+	protected $allowParentRelationship = array('Sales Invoice', 'Sales Order', 'Payment Entry', 'Item Attribute', 'Item', 'Payment');
 	
-	protected $childModuleKey = array('Sales Invoice Item' => 'items', 'Sales Order Item' => 'items', 'Payment Entry Reference' => 'references', 'Item Attribute Value' => 'item_attribute_values',
-	'Item Variant Attribute' => 'attributes');
+	protected $childModuleKey = array(	'Sales Invoice Item' => 'items', 
+										'Sales Order Item' => 'items', 
+										'Payment Entry Reference' => 'references', 
+										'Item Attribute Value' => 'item_attribute_values',
+										'Item Variant Attribute' => 'attributes', 
+										'Sales Invoice Payment' => 'payments'
+									);
 	
 	// Get isTable parameter for each module
 	protected $isTableModule = array();
@@ -127,21 +132,21 @@ class erpnextcore extends solution
 			$modules = $this->get_modules();			
 
 			// Get the list field for a module
-			$url = $this->paramConnexion['url'] . '/api/method/frappe.client.get_list?doctype=DocField&parent=' . rawurlencode($module) . '&fields=*&filters={%22parent%22:%22' . rawurlencode($module) . '%22}&limit_page_length=500';
+			$url = $this->paramConnexion['url'] . '/api/method/frappe.desk.form.load.getdoctype?doctype='.rawurlencode($module);;
 			$recordList = $this->call($url, 'GET', '');
-			// Format outpput data
-			if (!empty($recordList->message)) {
-				foreach ($recordList->message as $field) {
+			// Format outpput data					
+			if (!empty($recordList->docs[0]->fields)) {
+				foreach ($recordList->docs[0]->fields as $field) {
 					if (empty($field->label)) {
 						continue;
 					}
-					if ($field->fieldtype == 'Link') {
+					if (in_array($field->fieldtype, array('Link','Dynamic Link'))) {
 						$this->fieldsRelate[$field->fieldname] = array(
 							'label' => $field->label,
 							'type' => 'varchar(255)',
 							'type_bdd' => 'varchar(255)',
 							'required' => '',
-							'required_relationship' => '',
+							'required_relationship' => '', 
 						);
 					// Add field to manage dymamic links
 					} elseif (
@@ -219,11 +224,10 @@ class erpnextcore extends solution
 			// Add relate field in the field mapping
 			if (!empty($this->fieldsRelate)) {
 				$this->moduleFields = array_merge($this->moduleFields, $this->fieldsRelate);
-			}
-						
+			}	
 			return $this->moduleFields;
-		} catch (\Exception $e) {
-			$this->logger->error($e->getMessage().' '.$e->getFile().' '.$e->getLine());
+		} catch (\Exception $e) {		
+			$this->logger->error($e->getMessage().' '.$e->getFile().' '.$e->getLine());		
 			return false;
 		}
 	} // get_module_fields($module)
@@ -401,7 +405,10 @@ class erpnextcore extends solution
 					foreach ($data as $key => $value) {
 						// We don't send Myddleware fields
 						if (in_array($key, array('target_id', 'Myddleware_element_id'))) {
-							if ($key == 'target_id') {
+							if (
+									$key == 'target_id'
+								AND !empty($value)	
+							) {
 								$url = $this->paramConnexion['url'] . "/api/resource/" . rawurlencode($param['module'])."/" .$value;
 							}
 							unset($data[$key]);
@@ -437,7 +444,6 @@ class erpnextcore extends solution
 							unset($data[$key]);
 						}
 					}
-					
 					// Send data to ERPNExt
 					$resultQuery = $this->call($url, $method, array('data' => json_encode($data)));
 					if (!empty($resultQuery->data->name)) {
@@ -498,6 +504,24 @@ class erpnextcore extends solution
 		return $date->format('Y-m-d H:i:s.u');
 	}// dateTimeFromMyddleware($dateTime)    
 	
+	// Build the direct link to the record (used in data transfer view)
+	public function getDirectLink($rule, $document, $type){		
+		// Get url, module and record ID depending on the type
+		if ($type == 'source') {
+			$url = $this->getConnectorParam($rule->getConnectorSource(), 'url');
+			$module = $rule->getModuleSource();
+			$recordId = $document->getSource();
+		} else {
+			$url = $this->getConnectorParam($rule->getConnectorTarget(), 'url');
+			$module = $rule->getModuleTarget();
+			$recordId = $document->gettarget();
+		}	
+		
+		// Build the URL (delete if exists / to be sure to not have 2 / in a row) 
+		return rtrim($url,'/').'/desk#Form/'.rawurlencode($module).'/'.rawurlencode($recordId);
+	}
+	
+	
 	/**
 	 * Function call
 	 * @param $url
@@ -540,8 +564,13 @@ class erpnextcore extends solution
 			return substr($response, strpos($response,'Traceback'), strpos(substr($response,strpos($response,'Traceback')),'</pre>'));
 		}
 		curl_close($ch);
-	
-		return json_decode($response);
+		
+		$result = json_decode($response);
+		// If result not a json, we send the result as it has been return (used for 301 error for example)
+		if (empty($result)) {
+			$result = $response;
+		}
+		return $result;
 	}
 
 }

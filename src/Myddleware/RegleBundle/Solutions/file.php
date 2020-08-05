@@ -43,6 +43,7 @@ class filecore extends solution {
 	protected $lineNumber = 0;
 	
 	protected $required_fields =  array('default' => array('id','date_modified'));
+	protected $columnWidth = array();
 
 	private $driver;
 	private $host;
@@ -144,16 +145,15 @@ class filecore extends solution {
 				// Get the file with the way of this file
 				$file = $this->get_last_file($this->paramConnexion['directory'].'/'.$module,'1970-01-01 00:00:00');
 				$fileName = trim($this->paramConnexion['directory'].'/'.$module.$file);	
-			
 				// Open the file		
 				$sftp = ssh2_sftp($this->connection);
-				$stream = fopen("ssh2.sftp://$sftp$fileName", 'r');
+				$stream = fopen("ssh2.sftp://".intval($sftp).$fileName, 'r');
 				$headerString = $this->cleanHeader(trim(fgets($stream)));
 				// Close the file
-				fclose($stream);				
-				$header = str_getcsv($headerString, $this->getDelimiter(array('module'=>$module)), $this->getEnclosure(array('module'=>$module)), $this->getEscape(array('module'=>$module)));
-		
-				// Parcours des champs de la table sélectionnée
+				fclose($stream);
+
+				// Get the column names in the file
+				$header = $this->transformRow($headerString,array('module'=>$module));
 				$i=1;			
 				foreach ($header as $field) {
 					// In case the field name is empty
@@ -197,9 +197,59 @@ class filecore extends solution {
 	} // get_module_fields($module) 
 	
 	
-	// Redéfinition de la méthode pour ne plus renvoyer la relation Myddleware_element_id
-	public function get_module_fields_relate($module) {
-		return parent::get_module_fields_relate($module);	
+	// Get the fieldId from the other rules to add them into the source relationship list field 
+	public function get_module_fields_relate($module, $param) {	
+		// Get the rule list with the same connectors (both directions) to get the relate ones 
+		$ruleListRelation = $this->container->get('doctrine')->getEntityManager()->getRepository('RegleBundle:Rule')->createQueryBuilder('r')
+						->select('r.id')
+						->where('(
+											r.connectorSource= ?1 
+										AND r.connectorTarget= ?2
+										AND r.name != ?3
+										AND r.deleted = 0
+									)
+								OR (
+											r.connectorTarget= ?1
+										AND r.connectorSource= ?2
+										AND r.name != ?3
+										AND r.deleted = 0
+								)')	
+						->setParameter(1, (int)$param['connectorSourceId'])
+						->setParameter(2, (int)$param['connectorTargetId'])
+						->setParameter(3, $param['ruleName'])
+						->getQuery()
+						->getResult();
+		if (!empty($ruleListRelation)) {
+			// Prepare query to get the fieldId from the orther rules with the same connectors			
+			$sql = "SELECT value FROM RuleParam WHERE RuleParam.name = 'fieldId' AND RuleParam.rule_id  in (";
+			foreach($ruleListRelation as $ruleRelation) {
+				$sql .= "'$ruleRelation[id]',";
+			}
+			// Remove the last coma
+			$sql = substr($sql,0,-1);
+			$sql .= ")";	
+			$stmt = $this->conn->prepare($sql);
+			$stmt->execute();
+			$fields = $stmt->fetchAll();
+			if (!empty($fields)){
+				// Add relate fields to display them in the rule edit view (relationship tab, source list fields)
+				foreach ($fields as $field) {
+					if (
+							empty($this->fieldsRelate[$field['value']]) // Only if the field isn't already in the list
+						AND !empty($this->moduleFields[$field['value']]) // The field has to exist in the current module
+					) {
+						$this->fieldsRelate[$field['value']] = array(
+								'label' => $field['value'],
+								'type' => 'varchar(255)',
+								'type_bdd' => 'varchar(255)',
+								'required' => false,
+								'required_relationship' => 0
+						);
+					}
+				}
+			}
+		}	
+		return parent::get_module_fields_relate($module, $param);
 	}
 	
 	
@@ -222,9 +272,8 @@ class filecore extends solution {
 			
 			// Open the file
 			$sftp = ssh2_sftp($this->connection);
-			$stream = fopen("ssh2.sftp://$sftp$fileName", 'r');
+			$stream = fopen("ssh2.sftp://".intval($sftp).$fileName, 'r');
 			$header = $this->getFileHeader($stream,$param);
-		
 			$nbCountHeader = count($header);			
 			$allRuleField = $param['fields'];
 	
@@ -314,7 +363,7 @@ class filecore extends solution {
 			
 			// Open the file
 			$sftp = ssh2_sftp($this->connection);
-			$stream = fopen("ssh2.sftp://$sftp$fileName", 'r');
+			$stream = fopen("ssh2.sftp://".intval($sftp).$fileName, 'r');
 			$header = $this->getFileHeader($stream,$param);
 
 			$nbCountHeader = count($header);
@@ -485,14 +534,14 @@ class filecore extends solution {
 	// Convert the first line of the file to an array with all fields
 	protected function getFileHeader($stream,$param) {
 		$headerString = $this->cleanHeader(trim(fgets($stream)));
-		// Spaces aren't accepted in a field name
-		$fields = str_getcsv(str_replace($this->removeChar, '', $headerString), $this->getDelimiter($param), $this->getEnclosure($param), $this->getEscape($param));
+		$fields = $this->transformRow($headerString,$param);
 		$i = 1;
 		foreach($fields as $field) {
 			if (empty($field)) {
 				$header[] = 'Column_'.$i;
 			} else {
-				$header[] = $field;
+				// Spaces aren't accepted in a field name
+				$header[] = str_replace($this->removeChar, '', $field);
 			}
 			$i++;
 		}	
@@ -546,7 +595,20 @@ class filecore extends solution {
 	
 	// Transformm the buffer to and array of fields
 	protected function transformRow($buffer,$param){
-		return str_getcsv($buffer, $this->getDelimiter($param), $this->getEnclosure($param), $this->getEscape($param));
+		// If the module contains file with a fix column width (if attribute $columnWidth is set up for your module)
+		// Then we manage row using the width of each column
+		if (!empty($this->columnWidth[$param['module']])) {
+			$start = 0;
+			// Cut the row using the width of each column
+			foreach($this->columnWidth[$param['module']] as $columnWidth) {
+				$result[] = substr($buffer,$start,$columnWidth); 
+				$start += $columnWidth;
+			}
+			return $result;
+		// Otherwise we manage row with separator	
+		} else {
+			return str_getcsv($buffer, $this->getDelimiter($param), $this->getEnclosure($param), $this->getEscape($param));
+		}
 	}
 	
 	// Get the delimiter
