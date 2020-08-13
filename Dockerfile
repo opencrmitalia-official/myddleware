@@ -49,23 +49,43 @@ RUN curl "https://download.oracle.com/otn_software/linux/instantclient/195000/or
     export C_INCLUDE_PATH=/usr/include/oracle/19.5/client64 && \
     docker-php-ext-install oci8 pdo_oci
 
-
 RUN curl -sS https://platform.sh/cli/installer | php && \
     ln -s /root/.platformsh/bin/platform /usr/local/bin/platform
 
-COPY crontab /etc/cron.d/crontab
-RUN chmod 0644 /etc/cron.d/crontab
+RUN echo "cron.* /var/log/cron.log" >> /etc/rsyslog.conf && rm -fr /etc/cron.* && mkdir /etc/cron.d
+COPY crontab /etc/
+RUN chmod 600 /etc/crontab
 
-RUN crontab /etc/cron.d/crontab
+RUN echo "display_errors=0" >> /usr/local/etc/php/conf.d/errors.ini
 
-RUN touch /var/log/cron.log
-RUN touch /var/log/myddleware.log
-# RUN : >> /var/log/cron.log
-# RUN chmod +x /app/myddleware-*.sh
+## DBLIB
+RUN apt-get update && apt-get install -y \
+        freetds-bin \
+        freetds-dev \
+        freetds-common \
+        libct4 \
+        libsybdb5 \
+        tdsodbc \
+        libfreetype6-dev \
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        zlib1g-dev \
+        libicu-dev \
+        g++ \
+        libc-client-dev
+RUN docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install pdo_dblib
+RUN docker-php-ext-install intl
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-enable intl mbstring pdo_dblib
+
 
 RUN cp /usr/local/bin/apache2-foreground /usr/local/bin/apache2-foreground-inherit; \
     { \
         echo '#!/bin/bash'; \
+        echo 'printenv | sed "s/^\(.*\)$/export \\1/g" | grep -E "^export MYSQL_" > /run/crond.env'; \
+        echo 'rsyslogd'; \
         echo 'cron'; \
         echo 'apache2-foreground-inherit "$@"'; \
     } > /usr/local/bin/apache2-foreground
