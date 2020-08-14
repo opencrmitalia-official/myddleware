@@ -303,7 +303,7 @@ class vtigercrmcore extends solution
      * @return array
      */
     public function read_last($param)
-    {			
+    {
 		try {
 			if (empty($this->vtigerClient)) {
 				return [
@@ -431,6 +431,45 @@ class vtigercrmcore extends solution
 				$param['limit'] = 100;
 			}
 
+			$deleted = false;
+			if (!empty($param['ruleParams']['deletion'])) {
+				$deleted = true;
+			}
+
+			/** @var array $result */
+			$result = [
+				'count' => 0,
+			];
+
+			$dateRef = !empty($param['date_ref']) ? strtotime($param["date_ref"]) : 0;
+			$sync = $this->vtigerClient->sync($param["module"], $dateRef);
+			if (empty($sync) || !$sync['success']) {
+				return [
+							'error' => 'Error: Request Failed! (' . ($sync["error"]["message"] ?? "Error") . ')',
+							'count' => 0,
+						];
+			}
+
+			$entitys = empty($param['ruleParams']['deletion']) ? $sync["updated"] : $sync["deleted"];
+
+			if (count($entitys) == 0) {
+				return $result;
+			}
+
+			foreach ($entitys as $value) {
+				if (!isset($result['values']) || !array_key_exists($value['id'], $result['values'])) {
+					$result['date_ref'] = $value['modifiedtime'];
+					$result['values'][$value['id']] = $value;
+					if(in_array($param['rule']['mode'], ["0", "S"])) {
+						$result['values'][$value['id']]["date_modified"] = $value['modifiedtime'];
+					} else if ($param['rule']['mode'] == "C") {
+						$result['values'][$value['id']]["date_modified"] = $value['createdtime'];
+					}
+					$result['count']++;
+				}
+			}
+
+			/*
 			$queryParam = implode(',', $param['fields'] ?? "") ?: '*';
 			if ($queryParam != '*') {
 				$requiredField = $this->required_fields[$param['module']] ?? $this->required_fields['default'];
@@ -438,10 +477,10 @@ class vtigercrmcore extends solution
 				$queryParam = str_replace(["my_value,", "my_value"], "", $queryParam);
 			}
 			$queryParam = rtrim($queryParam, ',');
-			
-			$where = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';		
+
+			$where = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';
 			if (!empty($param['query'])) {
-				$where .= empty($where) ? 'WHERE ' : ' AND ';		
+				$where .= empty($where) ? 'WHERE ' : ' AND ';
 				foreach ($param['query'] as $key => $item) {
 					// if id we don't add other filter, we keep only id
 					if ($key == 'id') {
@@ -451,12 +490,13 @@ class vtigercrmcore extends solution
 					if (substr($where, -strlen("'")) === "'") {
 						$where .= ' AND ';
 					}
-					$where .= "$key = '$item'";			
+					$where .= "$key = '$item'";
 				}
-			}		
+			}
+			*/
 
 			/** @var array $result */
-			$result = [
+			/*$result = [
 				'count' => 0,
 			];
 
@@ -508,7 +548,7 @@ class vtigercrmcore extends solution
 
 					$query = ["success" => true, "result" => $entitys];
 				}
-				else {					
+				else {
 					$query = $this->vtigerClient->query("SELECT $queryParam FROM $param[module] $where $orderby LIMIT $param[offset], $nDataCall;");
 				}
 				if (empty($query) || (!empty($query) && !$query['success'])) {
@@ -541,10 +581,10 @@ class vtigercrmcore extends solution
 				$param["offset"] += $nDataCall;
 				$dataLeft -= $nDataCall;
 
-			} while ($dataLeft > 0 && $countResult >= $nDataCall);
+			} while ($dataLeft > 0 && $countResult >= $nDataCall);*/
 		} catch (\Exception $e) {
 			$result['error'] = 'Error : ' . $e->getMessage().' '.$e->getFile().' '.$e->getLine();
-		}	
+		}
         return $result;
     }
 
