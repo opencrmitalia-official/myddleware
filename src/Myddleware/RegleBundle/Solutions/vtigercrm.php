@@ -1,4 +1,5 @@
 <?php
+
 /*********************************************************************************
  * This file is part of Myddleware.
 
@@ -21,7 +22,7 @@
 
  You should have received a copy of the GNU General Public License
  along with Myddleware.  If not, see <http://www.gnu.org/licenses/>.
-*********************************************************************************/
+ *********************************************************************************/
 
 namespace Myddleware\RegleBundle\Solutions;
 
@@ -31,143 +32,143 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class vtigercrmcore extends solution
 {
-    protected $limitPerCall = 100;
+	protected $limitPerCall = 100;
 
-    protected $required_fields = [
-                                    'default'    => [
-                                                        'id',
-                                                        'modifiedtime',
-                                                        'createdtime'
-                                                    ],
-                                ];
-
-
-	protected $FieldsDuplicate = array(	
-										'Contacts' => array('email', 'lastname'),
-										'CompanyDetails' => array('organizationname'),
-										'Leads' => array('email', 'lastname'),
-										'default' => array('')
-									  );
-
-    protected $exclude_module_list = [
-                                        'default'    => ['Users', "Documents"],
-                                        'target'     => [],
-                                        'source'     => [],
-                                    ];
-
-    protected $exclude_field_list = [
-                                        'default'    => [
-                                                            'default'    => [
-                                                                                'id'
-                                                                            ],
-                                                            'source'     => [],
-                                                            'target'     => [
-                                                                                'id',
-                                                                                'modifiedby',
-                                                                                'modifiedtime',
-                                                                                "createdtime"
-                                                                            ],
-                                                        ],
-                                    ];
+	protected $required_fields = [
+		'default'    => [
+			'id',
+			'modifiedtime',
+			'createdtime'
+		],
+	];
 
 
-    protected $inventoryModules = [
-                                    "Invoice",
-                                    "SalesOrder",
-                                    "Quotes",
-                                    "PurchaseOrder",
-                                    "GreenTimeControl",
-                                    "DDT",
-                                ];
+	protected $FieldsDuplicate = array(
+		'Contacts' => array('email', 'lastname'),
+		'CompanyDetails' => array('organizationname'),
+		'Leads' => array('email', 'lastname'),
+		'default' => array('')
+	);
+
+	protected $exclude_module_list = [
+		'default'    => ['Users', "Documents"],
+		'target'     => [],
+		'source'     => [],
+	];
+
+	protected $exclude_field_list = [
+		'default'    => [
+			'default'    => [
+				'id'
+			],
+			'source'     => [],
+			'target'     => [
+				'id',
+				'modifiedby',
+				'modifiedtime',
+				"createdtime"
+			],
+		],
+	];
 
 
-    /** @var array $moduleList */
-    protected $moduleList;
+	protected $inventoryModules = [
+		"Invoice",
+		"SalesOrder",
+		"Quotes",
+		"PurchaseOrder",
+		"GreenTimeControl",
+		"DDT",
+	];
 
-    /** @var VtigerClient $vtigerClient */
-    protected $vtigerClient;
 
-    /**
-     * Make the login
-     *
-     * @param array $paramConnexion
-     * @return void|array
-     */
-    public function login($paramConnexion)
-    {
-        parent::login($paramConnexion);
+	/** @var array $moduleList */
+	protected $moduleList;
 
-        try {
-            $client = new VtigerClient($this->paramConnexion['url']);
-            $result = $client->login(trim($this->paramConnexion['username']), trim($this->paramConnexion['accesskey']));
+	/** @var VtigerClient $vtigerClient */
+	protected $vtigerClient;
 
-            if (!$result['success']) {
-                throw new \Exception($result['error']['message']);
-            }
+	/**
+	 * Make the login
+	 *
+	 * @param array $paramConnexion
+	 * @return void|array
+	 */
+	public function login($paramConnexion)
+	{
+		parent::login($paramConnexion);
 
-            $this->session = $client->getSessionName();
-            $this->connexion_valide = true;
-            $this->vtigerClient = $client;
-        } catch (\Exception $e) {
-            $error = $e->getMessage();
-            $this->logger->error($error);
+		try {
+			$client = new VtigerClient($this->paramConnexion['url']);
+			$result = $client->login(trim($this->paramConnexion['username']), trim($this->paramConnexion['accesskey']));
 
-            return ['error' => $error];
-        }
-    }
+			if (!$result['success']) {
+				throw new \Exception($result['error']['message']);
+			}
 
-    /**
-     * Make the logout
-     *
-     * @return bool
-     */
-    public function logout()
-    {
-        // TODO: Creare ed usare il loguot di vtiger (Non Funziona)
-        /*
+			$this->session = $client->getSessionName();
+			$this->connexion_valide = true;
+			$this->vtigerClient = $client;
+		} catch (\Exception $e) {
+			$error = $e->getMessage();
+			$this->logger->error($error);
+
+			return ['error' => $error];
+		}
+	}
+
+	/**
+	 * Make the logout
+	 *
+	 * @return bool
+	 */
+	public function logout()
+	{
+		// TODO: Creare ed usare il loguot di vtiger (Non Funziona)
+		/*
         if(empty($this->vtigerClient))
             return false;
 
         return $this->vtigerClient->logout();
         */
 
-        return true;
-    }
+		return true;
+	}
 
-    /**
-     * Return the login fields
-     *
-     * @return array
-     */
-    public function getFieldsLogin()
-    {
-        return [
-            [
-                'name'  => 'username',
-                'type'  => TextType::class,
-                'label' => 'solution.fields.username',
-            ],
-            [
-                'name'  => 'accesskey',
-                'type'  => PasswordType::class,
-                'label' => 'solution.fields.accesskey',
-            ],
-            [
-                'name'  => 'url',
-                'type'  => TextType::class,
-                'label' => 'solution.fields.url',
-            ],
-        ];
-    }
+	/**
+	 * Return the login fields
+	 *
+	 * @return array
+	 */
+	public function getFieldsLogin()
+	{
+		return [
+			[
+				'name'  => 'username',
+				'type'  => TextType::class,
+				'label' => 'solution.fields.username',
+			],
+			[
+				'name'  => 'accesskey',
+				'type'  => PasswordType::class,
+				'label' => 'solution.fields.accesskey',
+			],
+			[
+				'name'  => 'url',
+				'type'  => TextType::class,
+				'label' => 'solution.fields.url',
+			],
+		];
+	}
 
-    /**
-     * Return of the modules without the specified ones
-     *
-     * @param string $type
-     * @return array|bool
-     */
-    public function get_modules($type = 'source')
-    {		
+	/**
+	 * Return of the modules without the specified ones
+	 *
+	 * @param string $type
+	 * @return array|bool
+	 */
+	public function get_modules($type = 'source')
+	{
 		try {
 			if (empty($this->vtigerClient)) {
 				return false;
@@ -199,45 +200,43 @@ class vtigercrmcore extends solution
 			$error = $e->getMessage();
 			return $error;
 		}
-    }
+	}
 
-    public function setModulePrefix($moduleName = null)
-    {			
-        if (empty($moduleName)) {
-            $result = $this->vtigerClient->listTypes();
+	public function setModulePrefix($moduleName = null)
+	{
+		if (empty($moduleName)) {
+			$result = $this->vtigerClient->listTypes();
 
-            if (!$result['success'] || ($result['success'] && count($result['result']) == 0)) {
-                return false;
-            }
+			if (!$result['success'] || ($result['success'] && count($result['result']) == 0)) {
+				return false;
+			}
 
-            foreach ($result['result']["types"] as $moduleName) {
-                $describe = $this->vtigerClient->describe($moduleName);
-                if ($describe['success'] && count($describe['result']) != 0) {
-                    $this->moduleList[$describe["result"]["idPrefix"]] = $moduleName;
-                }
-            }
-        }
-        else {
-            $describe = $this->vtigerClient->describe($moduleName);
-            if ($describe['success'] && count($describe['result']) != 0) {
-                $this->moduleList[$describe["result"]["idPrefix"]] = $moduleName;
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-    }
+			foreach ($result['result']["types"] as $moduleName) {
+				$describe = $this->vtigerClient->describe($moduleName);
+				if ($describe['success'] && count($describe['result']) != 0) {
+					$this->moduleList[$describe["result"]["idPrefix"]] = $moduleName;
+				}
+			}
+		} else {
+			$describe = $this->vtigerClient->describe($moduleName);
+			if ($describe['success'] && count($describe['result']) != 0) {
+				$this->moduleList[$describe["result"]["idPrefix"]] = $moduleName;
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
 
-    /**
-     * Return the fields for a specific module without the specified ones
-     *
-     * @param string $module
-     * @param string $type
-     * @return array|bool
-     */
-    public function get_module_fields($module, $type = 'source')
-    {	
+	/**
+	 * Return the fields for a specific module without the specified ones
+	 *
+	 * @param string $module
+	 * @param string $type
+	 * @return array|bool
+	 */
+	public function get_module_fields($module, $type = 'source')
+	{
 		parent::get_module_fields($module, $type);
 		try {
 			if (empty($this->vtigerClient)) {
@@ -258,24 +257,24 @@ class vtigercrmcore extends solution
 
 			$escludeField = $this->exclude_field_list[$module] ?? $this->exclude_field_list['default'];
 			$escludeField = $escludeField[$type] ?? $escludeField['default'];
-			$this->moduleFields = [];			
+			$this->moduleFields = [];
 			foreach ($fields as $field) {
 				if (!in_array($field['name'], $escludeField)) {
 					if ($field['type']["name"] == "reference" || $field['type']["name"] == "owner") {
 						$this->fieldsRelate[$field['name']] = array(
-													'label' => $field['label'],
-													'required' => $field['mandatory'],
-													'type' => 'varchar(127)', // ? Settare il type giusto?
-													'type_bdd' => 'varchar(127)',
-													'required_relationship' => 0
-												);
+							'label' => $field['label'],
+							'required' => $field['mandatory'],
+							'type' => 'varchar(127)', // ? Settare il type giusto?
+							'type_bdd' => 'varchar(127)',
+							'required_relationship' => 0
+						);
 					} else {
 						$this->moduleFields[$field['name']] = [
-													'label'    => $field['label'],
-													'required' => $field['mandatory'],
-													'type' => 'varchar(127)', // ? Settare il type giusto?
-													'type_bdd' => 'varchar(127)'
-												];
+							'label'    => $field['label'],
+							'required' => $field['mandatory'],
+							'type' => 'varchar(127)', // ? Settare il type giusto?
+							'type_bdd' => 'varchar(127)'
+						];
 						if ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist") {
 							foreach ($field['type']["picklistValues"] as $option) {
 								$this->moduleFields[$field['name']]["option"][$option["value"]] = $option["label"];
@@ -290,20 +289,20 @@ class vtigercrmcore extends solution
 			}
 
 			return $this->moduleFields ?: false;
-		} catch (\Exception $e) {		
-			$this->logger->error($e->getMessage().' '.$e->getFile().' '.$e->getLine());		
+		} catch (\Exception $e) {
+			$this->logger->error($e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine());
 			return false;
-		}	
-    }
+		}
+	}
 
-    /**
-     * Read Last
-     *
-     * @param array $param
-     * @return array
-     */
-    public function read_last($param)
-    {
+	/**
+	 * Read Last
+	 *
+	 * @param array $param
+	 * @return array
+	 */
+	public function read_last($param)
+	{
 		try {
 			if (empty($this->vtigerClient)) {
 				return [
@@ -361,23 +360,22 @@ class vtigercrmcore extends solution
 				}
 
 				$query = ["success" => true, "result" => $entity];
-			}
-			else {
+			} else {
 				$query = $this->vtigerClient->query("SELECT $queryParam FROM $param[module] $where ORDER BY modifiedtime DESC LIMIT 0,1;");
 			}
 
 			if (empty($query) || (!empty($query) && !$query['success'])) {
 				return [
-							'error' => 'Error: Request Failed!',
-							'done'  => -1,
-						];
+					'error' => 'Error: Request Failed!',
+					'done'  => -1,
+				];
 			}
 
 			if (count($query['result']) == 0) {
 				return [
-							'error' => 'No Data Retrived',
-							'done'  => false,
-						];
+					'error' => 'No Data Retrived',
+					'done'  => false,
+				];
 			}
 
 			$fields = $query['result'][0];
@@ -395,33 +393,33 @@ class vtigercrmcore extends solution
 			}
 			*/
 		} catch (\Exception $e) {
-			$result['error'] = 'Error : ' . $e->getMessage().' '.$e->getFile().' '.$e->getLine();
+			$result['error'] = 'Error : ' . $e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine();
 			$result['done'] = -1;
 		}
 		return $result;
-    }
+	}
 
-    /**
-     * Read
-     *
-     * @param array $param
-     * @return array
-     */
-    public function read($param)
-    {
+	/**
+	 * Read
+	 *
+	 * @param array $param
+	 * @return array
+	 */
+	public function read($param)
+	{
 		try {
 			if (empty($this->vtigerClient)) {
 				return [
-							'error' => 'Error: no VtigerClient setup',
-							'done'  => false,
-						];
+					'error' => 'Error: no VtigerClient setup',
+					'done'  => false,
+				];
 			}
 
 			if (count($param['fields']) == 0) {
 				return [
-							'error' => 'Error: no Param Given',
-							'done'  => false,
-						];
+					'error' => 'Error: no Param Given',
+					'done'  => false,
+				];
 			}
 
 			if (empty($param['offset'])) {
@@ -431,90 +429,36 @@ class vtigercrmcore extends solution
 				$param['limit'] = 100;
 			}
 
-			$deleted = false;
-			if (!empty($param['ruleParams']['deletion'])) {
-				$deleted = true;
+			$whereStr = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';
+			if (!empty($param['query'])) {
+				$whereStr .= empty($whereStr) ? 'WHERE ' : ' AND ';
+				foreach ($param['query'] as $key => $item) {
+					if (substr($whereStr, -strlen("'")) === "'") {
+						$whereStr .= ' AND ';
+					}
+					$whereStr .= "$key = '$item'";
+
+					if ($key == 'id') {
+						break;
+					}
+				}
 			}
+
 
 			/** @var array $result */
 			$result = [
 				'count' => 0,
 			];
 
-			$dateRef = !empty($param['date_ref']) ? strtotime($param["date_ref"]) : 0;
-			$sync = $this->vtigerClient->sync($param["module"], $dateRef);
-			if (empty($sync) || !$sync['success']) {
-				return [
-							'error' => 'Error: Request Failed! (' . ($sync["error"]["message"] ?? "Error") . ')',
-							'count' => 0,
-						];
-			}
-
-			$entitys = empty($param['ruleParams']['deletion']) ? $sync["updated"] : $sync["deleted"];
-
-			if (count($entitys) == 0) {
-				return $result;
-			}
-
-			foreach ($entitys as $value) {
-				if (!isset($result['values']) || !array_key_exists($value['id'], $result['values'])) {
-					$result['date_ref'] = $value['modifiedtime'];
-					$result['values'][$value['id']] = $value;
-					if(in_array($param['rule']['mode'], ["0", "S"])) {
-						$result['values'][$value['id']]["date_modified"] = $value['modifiedtime'];
-					} else if ($param['rule']['mode'] == "C") {
-						$result['values'][$value['id']]["date_modified"] = $value['createdtime'];
-					}
-					$result['count']++;
-				}
-			}
-
-			/*
-			$queryParam = implode(',', $param['fields'] ?? "") ?: '*';
-			if ($queryParam != '*') {
-				$requiredField = $this->required_fields[$param['module']] ?? $this->required_fields['default'];
-				$queryParam = implode(',', $requiredField).','.$queryParam;
-				$queryParam = str_replace(["my_value,", "my_value"], "", $queryParam);
-			}
-			$queryParam = rtrim($queryParam, ',');
-
-			$where = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';
-			if (!empty($param['query'])) {
-				$where .= empty($where) ? 'WHERE ' : ' AND ';
-				foreach ($param['query'] as $key => $item) {
-					// if id we don't add other filter, we keep only id
-					if ($key == 'id') {
-						$where = " WHERE id = '$item' ";
-						break;
-					}
-					if (substr($where, -strlen("'")) === "'") {
-						$where .= ' AND ';
-					}
-					$where .= "$key = '$item'";
-				}
-			}
-			*/
-
-			/** @var array $result */
-			/*$result = [
-				'count' => 0,
-			];
-
-
-			$orderby = "ORDER BY modifiedtime ASC";;
-			if (in_array($param["module"], $this->inventoryModules, true)) {
-				$orderby = "";
-			}
-
-			$dataLeft = $param["limit"];
 			do {
-				$nDataCall = $dataLeft - $this->limitPerCall <= 0 ? $dataLeft : $this->limitPerCall;
-				// TODO: Considerare di implementare Sync API in VtigerClient
-				if ($param["module"] == "LineItem") {
+				$more = true;
+				$entitys = [];
+
+				if ($param['module'] == 'LineItem' && !$param['ruleParams']['deletion']) {
 					if (empty($this->moduleList)) {
 						$this->setModulePrefix();
 					}
-					
+
 					$query = $this->vtigerClient->query("SELECT parent_id FROM $param[module];");
 
 					$parentModules = [];
@@ -525,9 +469,9 @@ class vtigercrmcore extends solution
 						}
 					}
 
-					$entitys = [];
+					$lineitems = [];
 					foreach ($parentModules as $prefix => $moduleName) {
-						$query = $this->vtigerClient->query("SELECT id, modifiedtime, createdtime FROM $moduleName $where $orderby LIMIT $param[offset], $nDataCall;");
+						$query = $this->vtigerClient->query("SELECT id, modifiedtime, createdtime FROM $moduleName $whereStr LIMIT $param[offset], " . $this->limitPerCall . ";");
 						if (empty($query) || !$query['success']) {
 							continue;
 						}
@@ -541,61 +485,59 @@ class vtigercrmcore extends solution
 								$lineitem["parent_id"] = $parentElement["id"];
 								$lineitem["modifiedtime"] = $parentElement["modifiedtime"];
 								$lineitem["createdtime"] = $parentElement["createdtime"];
-								$entitys[] = $lineitem;
+								$lineitems[] = $lineitem;
 							}
 						}
 					}
 
-					$query = ["success" => true, "result" => $entitys];
-				}
-				else {
-					$query = $this->vtigerClient->query("SELECT $queryParam FROM $param[module] $where $orderby LIMIT $param[offset], $nDataCall;");
-				}
-				if (empty($query) || (!empty($query) && !$query['success'])) {
-					return [
-								'error' => 'Error: Request Failed! (' . ($query["error"]["message"] ?? "Error") . ')',
-								'count' => 0,
-							];
+					$entitys = $lineitems;
+
+					$more = count($entitys) != 0;
+				} else {
+					$dateRef = !empty($param['date_ref']) ? strtotime($param['date_ref']) : 1;
+					$sync = $this->vtigerClient->sync($param['module'], $dateRef);
+					if (empty($sync) || !$sync['success']) {
+						return [
+							'error' => 'Error: Request Failed! (' . ($sync['error']['message'] ?? 'Error') . ')',
+							'count' => 0,
+						];
+					}
+
+					$entitys = empty($param['ruleParams']['deletion']) ? $sync['updated'] : $sync['deleted'];
+
+					$more = $sync['more'];
 				}
 
-				if (count($query['result']) == 0) {
-					break;
-				}
-
-				$countResult = 0;
-				$entitys = $query['result'];
 				foreach ($entitys as $value) {
 					if (!isset($result['values']) || !array_key_exists($value['id'], $result['values'])) {
 						$result['date_ref'] = $value['modifiedtime'];
 						$result['values'][$value['id']] = $value;
-						if(in_array($param['rule']['mode'], ["0", "S"])) {
-							$result['values'][$value['id']]["date_modified"] = $value['modifiedtime'];
-						} else if ($param['rule']['mode'] == "C") {
-							$result['values'][$value['id']]["date_modified"] = $value['createdtime'];
-						}
+						$result['values'][$value['id']]['date_modified'] = $value[$this->getDateRefName($param['module'], $param['rule']['mode'])];
+
 						$result['count']++;
-						$countResult++;
+						$param['offset']++;
+
+						if ($result['count'] >= $param['limit']) {
+							$more = false;
+							break;
+						}
 					}
 				}
-
-				$param["offset"] += $nDataCall;
-				$dataLeft -= $nDataCall;
-
-			} while ($dataLeft > 0 && $countResult >= $nDataCall);*/
+			} while ($more);
 		} catch (\Exception $e) {
-			$result['error'] = 'Error : ' . $e->getMessage().' '.$e->getFile().' '.$e->getLine();
+			$result['error'] = 'Error : ' . $e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine();
 		}
-        return $result;
-    }
+		return $result;
+	}
 
-    /**
-     * Create new record in target
-     *
-     * @param array $param
-     * @return array
-     */
-    public function create($param)
-    {
+	/**
+	 * Create new record in target
+	 *
+	 * @param array $param
+	 * @return array
+	 */
+	public function create($param)
+	{
 		try {
 			if (empty($this->vtigerClient)) {
 				return ['error' => 'Error: no VtigerClient setup'];
@@ -643,9 +585,9 @@ class vtigercrmcore extends solution
 							$r = $this->vtigerClient->update($this->moduleList[explode("x", $parent["id"])[0]], $parent);
 						}
 						$result[$idDoc] = [
-											'id'    => $resultCreate['result']['id'],
-											'error' => false,
-										];
+							'id'    => $resultCreate['result']['id'],
+							'error' => false,
+						];
 					} else {
 						throw new \Exception($resultCreate["error"]["message"] ?? "Error");
 					}
@@ -658,20 +600,20 @@ class vtigercrmcore extends solution
 				$this->updateDocumentStatus($idDoc, $result[$idDoc], $param);
 			}
 		} catch (\Exception $e) {
-			$error = $e->getMessage().' '.$e->getFile().' '.$e->getLine();
+			$error = $e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine();
 			$result['error'] = $error;
-		}	
+		}
 		return $result;
-    }
+	}
 
-    /**
-     * Update exist record in target
-     *
-     * @param array $param
-     * @return array
-     */
-    public function update($param)
-    {
+	/**
+	 * Update existing record in target
+	 *
+	 * @param array $param
+	 * @return array
+	 */
+	public function update($param)
+	{
 		try {
 			if (empty($this->vtigerClient)) {
 				return ['error' => 'Error: no VtigerClient setup'];
@@ -710,7 +652,7 @@ class vtigercrmcore extends solution
 						if ($param['module'] == "LineItem") {
 							if (empty($this->moduleList)) {
 								$this->setModulePrefix();
-							}							
+							}
 							$parent = $this->vtigerClient->retrieve($resultUpdate['result']["parent_id"]);
 							$parent = $parent["result"];
 							if (!isset($parent["invoicestatus"]) || empty($parent["invoicestatus"])) {
@@ -720,9 +662,9 @@ class vtigercrmcore extends solution
 							$r = $this->vtigerClient->update($this->moduleList[explode("x", $parent["id"])[0]], $parent);
 						}
 						$result[$idDoc] = [
-											'id'    => $resultUpdate['result']['id'],
-											'error' => false,
-										];
+							'id'    => $resultUpdate['result']['id'],
+							'error' => false,
+						];
 					} else {
 						throw new \Exception($resultUpdate["error"]["message"] ?? "Error");
 					}
@@ -735,14 +677,38 @@ class vtigercrmcore extends solution
 				$this->updateDocumentStatus($idDoc, $result[$idDoc], $param);
 			}
 		} catch (\Exception $e) {
-			$error = $e->getMessage().' '.$e->getFile().' '.$e->getLine();
+			$error = $e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine();
 			$result['error'] = $error;
-		}	
+		}
 		return $result;
-    }
-	
+	}
+
+	/**
+	 * Delete existing record in target
+	 *
+	 * @param array $param
+	 * @return array
+	 */
+	public function delete($param)
+	{
+		// TODO: DELETE
+	}
+
+
+	public function getDateRefName($moduleSource, $RuleMode)
+	{
+		if (in_array($RuleMode, ['0', 'S'])) {
+			return 'modifiedtime';
+		} else if ($RuleMode == 'C') {
+			return 'createdtime';
+		} else {
+			throw new \Exception("$RuleMode is not a correct Rule mode.");
+		}
+	}
+
 	// Build the direct link to the record (used in data transfer view)
-	public function getDirectLink($rule, $document, $type){		
+	public function getDirectLink($rule, $document, $type)
+	{
 		// Get url, module and record ID depending on the type
 		if ($type == 'source') {
 			$url = $this->getConnectorParam($rule->getConnectorSource(), 'url');
@@ -752,28 +718,27 @@ class vtigercrmcore extends solution
 			$url = $this->getConnectorParam($rule->getConnectorTarget(), 'url');
 			$module = $rule->getModuleTarget();
 			$recordId = $document->gettarget();
-		}	
-		
+		}
+
 		// Get the record id, id format <key>x<recordId>
-		$recordIdArray = explode('x',$recordId);
+		$recordIdArray = explode('x', $recordId);
 		if (!empty($recordIdArray[1])) {
 			// Build the URL (delete if exists / to be sure to not have 2 / in a row) 
-			return rtrim($url,'/').'/index.php?module='.$module.'&view=Detail&record='.$recordIdArray[1];
-		} 
+			return rtrim($url, '/') . '/index.php?module=' . $module . '&view=Detail&record=' . $recordIdArray[1];
+		}
 		return null;
 	}
-	
 }
 
 /* * * * * * * *  * * * * * *  * * * * * *
     si custom file exist alors on fait un include de la custom class
  * * * * * *  * * * * * *  * * * * * * * */
-$file = __DIR__.'/../Custom/Solutions/vtigercrm.php';
+$file = __DIR__ . '/../Custom/Solutions/vtigercrm.php';
 if (file_exists($file)) {
-    require_once $file;
+	require_once $file;
 } else {
-    //Sinon on met la classe suivante
-    class vtigercrm extends vtigercrmcore
-    {
-    }
+	//Sinon on met la classe suivante
+	class vtigercrm extends vtigercrmcore
+	{
+	}
 }
