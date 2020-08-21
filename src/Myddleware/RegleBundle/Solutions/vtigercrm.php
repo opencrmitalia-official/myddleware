@@ -540,7 +540,7 @@ class vtigercrmcore extends solution
 	{
 		try {
 			if (empty($this->vtigerClient)) {
-				return ['error' => 'Error: no VtigerClient setup'];
+				throw new \Exception('Error: no VtigerClient setup');
 			}
 
 			$result = [];
@@ -616,7 +616,7 @@ class vtigercrmcore extends solution
 	{
 		try {
 			if (empty($this->vtigerClient)) {
-				return ['error' => 'Error: no VtigerClient setup'];
+				throw new \Exception('Error: no VtigerClient setup');
 			}
 
 			$result = [];
@@ -691,7 +691,48 @@ class vtigercrmcore extends solution
 	 */
 	public function delete($param)
 	{
-		// TODO: DELETE
+		try {
+			if (empty($this->vtigerClient)) {
+				throw new \Exception('Error: no VtigerClient setup');
+			}
+
+			$result = [];
+
+			if ($param['module'] == 'LineItem') {
+				$result = $this->update($param);
+			} else {
+				foreach ($param['data'] as $idDoc => $data) {
+					try {
+						$id = $data['target_id'];
+
+						$resultDelete = $this->vtigerClient->delete($id);
+
+						if (
+							!empty($resultDelete) &&
+							(!(isset($resultDelete['success']) && !$resultDelete['success']) &&
+								(isset($resultDelete['status']) && $resultDelete['status'] == 'successful'))
+						) {
+							$result[$idDoc] = [
+								'id'    => $id,
+								'error' => false,
+							];
+						} else {
+							throw new \Exception($resultDelete["error"]["message"] ?? "Error");
+						}
+					} catch (\Exception $e) {
+						$result[$idDoc] = array(
+							'id' => '-1',
+							'error' => $e->getMessage()
+						);
+					}
+					$this->updateDocumentStatus($idDoc, $result[$idDoc], $param);
+				}
+			}
+		} catch (\Exception $e) {
+			$error = $e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine();
+			$result['error'] = $error;
+		}
+		return $result;
 	}
 
 
