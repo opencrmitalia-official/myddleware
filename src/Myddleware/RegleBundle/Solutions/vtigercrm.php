@@ -44,10 +44,11 @@ class vtigercrmcore extends solution
 
 
 	protected $FieldsDuplicate = array(
-		'Contacts' => array('email', 'lastname'),
-		'CompanyDetails' => array('organizationname'),
-		'Leads' => array('email', 'lastname'),
-		'default' => array('')
+		'Contacts' => ['email', 'lastname'],
+		'CompanyDetails' => ['organizationname'],
+		'Leads' => ['email', 'lastname'],
+		'Accounts' => ['accountname'],
+		'default' => []
 	);
 
 	protected $exclude_module_list = [
@@ -316,6 +317,7 @@ class vtigercrmcore extends solution
 			}
 
 			$queryParam = implode(',', $param['fields'] ?? "") ?: '*';
+			$queryParam = str_replace(["my_value,", "my_value"], "", $queryParam);
 			$where = '';
 			if (!empty($param['query'])) {
 				$where = 'WHERE ';
@@ -429,17 +431,19 @@ class vtigercrmcore extends solution
 				$param['limit'] = 100;
 			}
 
-			$whereStr = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';
-			if (!empty($param['query'])) {
-				$whereStr .= empty($whereStr) ? 'WHERE ' : ' AND ';
-				foreach ($param['query'] as $key => $item) {
-					if (substr($whereStr, -strlen("'")) === "'") {
-						$whereStr .= ' AND ';
-					}
-					$whereStr .= "$key = '$item'";
-
-					if ($key == 'id') {
-						break;
+			if ($param['module'] == 'LineItem' && !$param['ruleParams']['deletion']) {
+				$whereStr = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';
+				if (!empty($param['query'])) {
+					$whereStr .= empty($whereStr) ? 'WHERE ' : ' AND ';
+					if (!array_key_exists('id', $param['query'])) {
+						foreach ($param['query'] as $key => $item) {
+							if (substr($whereStr, -strlen("'")) === "'") {
+								$whereStr .= ' AND ';
+							}
+							$whereStr .= "$key = '$item'";
+						}
+					} else {
+						$whereStr .= "id = '" . $param['query']['id'] . "'";
 					}
 				}
 			}
@@ -503,23 +507,65 @@ class vtigercrmcore extends solution
 						];
 					}
 
-					$entitys = empty($param['ruleParams']['deletion']) ? $sync['updated'] : $sync['deleted'];
 
+					$entitys = [];
+					if (!empty($param['query']) && !$param['ruleParams']['deletion']) {
+						$iterable = empty($param['ruleParams']['deletion']) ? $sync['result']['updated'] : $sync['result']['deleted'];
+						foreach ($iterable as $item) {
+							if (!array_key_exists('id', $param['query'])) {
+								$all = true;
+								foreach ($param['query'] as $key => $item) {
+									if ($item[$key] != $item) {
+										$all = false;
+										break;
+									}
+								}
+								if ($all) {
+									$entitys[] = $item;
+								}
+							} else {
+								if ($item['id'] == $param['query']['id']) {
+									$entitys[] = $item;
+								}
+							}
+						}
+					} else {
+						$entitys = empty($param['ruleParams']['deletion']) ? $sync['result']['updated'] : $sync['result']['deleted'];
+					}
 					$more = $sync['more'];
 				}
 
-				foreach ($entitys as $value) {
-					if (!isset($result['values']) || !array_key_exists($value['id'], $result['values'])) {
-						$result['date_ref'] = $value['modifiedtime'];
-						$result['values'][$value['id']] = $value;
-						$result['values'][$value['id']]['date_modified'] = $value[$this->getDateRefName($param['module'], $param['rule']['mode'])];
+				if (!$param['ruleParams']['deletion']) {
+					foreach ($entitys as $value) {
+						if (!isset($result['values']) || !array_key_exists($value['id'], $result['values'])) {
+							$result['values'][$value['id']] = $value;
+							$result['date_ref'] = $value['modifiedtime'];
+							$result['values'][$value['id']]['date_modified'] = $value[$this->getDateRefName($param['module'], $param['rule']['mode'])];
 
-						$result['count']++;
-						$param['offset']++;
+							$result['count']++;
+							$param['offset']++;
 
-						if ($result['count'] >= $param['limit']) {
-							$more = false;
-							break;
+							if ($result['count'] >= $param['limit']) {
+								$more = false;
+								break;
+							}
+						}
+					}
+				} else {
+					foreach ($entitys as $value) {
+						if (!isset($result['values']) || !array_key_exists($value, $result['values'])) {
+							$result['values'][$value] = ['id' => $value];
+							$result['date_ref'] = $sync['lastModifiedTime'];
+							$result['values'][$value]['date_modified'] = $sync['lastModifiedTime'];
+
+
+							$result['count']++;
+							$param['offset']++;
+
+							if ($result['count'] >= $param['limit']) {
+								$more = false;
+								break;
+							}
 						}
 					}
 				}
@@ -763,6 +809,9 @@ class vtigercrmcore extends solution
 
 		// Get the record id, id format <key>x<recordId>
 		$recordIdArray = explode('x', $recordId);
+		if (substr($url, 0, strlen("http")) !== "http") {
+			$url = 'http://' . $url;
+		}
 		if (!empty($recordIdArray[1])) {
 			// Build the URL (delete if exists / to be sure to not have 2 / in a row) 
 			return rtrim($url, '/') . '/index.php?module=' . $module . '&view=Detail&record=' . $recordIdArray[1];
