@@ -320,13 +320,11 @@ class vtigercrmcore extends solution
 			$queryParam = str_replace(["my_value,", "my_value"], "", $queryParam);
 			$where = '';
 			if (!empty($param['query'])) {
-				$where = 'WHERE ';
+				$where = [];
 				foreach ($param['query'] as $key => $item) {
-					if (substr($where, -strlen("'")) === "'") {
-						$where .= ' AND ';
-					}
-					$where .= "$key = '$item'";
+					$where[] = "$key = '$item'";
 				}
+				$where = "WHERE " . implode(" AND ", $where);
 			}
 			if ($param["module"] == "LineItem") {
 				$query = $this->vtigerClient->query("SELECT parent_id FROM $param[module] $where;");
@@ -431,19 +429,22 @@ class vtigercrmcore extends solution
 				$param['limit'] = 100;
 			}
 
-			if ($param['module'] == 'LineItem' && !$param['ruleParams']['deletion']) {
+			$deletion = false;
+			if (isset($param['ruleParams']['deletion']) && !empty($param['ruleParams']['deletion'])) {
+				$deletion = true;
+			}
+
+			if ($param['module'] == 'LineItem' && !$deletion) {
 				$whereStr = !empty($param['date_ref']) ? "WHERE modifiedtime > '$param[date_ref]'" : '';
 				if (!empty($param['query'])) {
-					$whereStr .= empty($whereStr) ? 'WHERE ' : ' AND ';
+					$whereStr = [];
 					if (!array_key_exists('id', $param['query'])) {
 						foreach ($param['query'] as $key => $item) {
-							if (substr($whereStr, -strlen("'")) === "'") {
-								$whereStr .= ' AND ';
-							}
-							$whereStr .= "$key = '$item'";
+							$whereStr[] = "$key = '$item'";
 						}
+						$whereStr = (empty($whereStr) ? 'WHERE ' : ' AND ') . implode(" AND ", $whereStr);
 					} else {
-						$whereStr .= "id = '" . $param['query']['id'] . "'";
+						$whereStr = (empty($whereStr) ? 'WHERE ' : ' AND ') . "id = '" . $param['query']['id'] . "'";
 					}
 				}
 			}
@@ -458,7 +459,7 @@ class vtigercrmcore extends solution
 				$more = true;
 				$entitys = [];
 
-				if ($param['module'] == 'LineItem' && !$param['ruleParams']['deletion']) {
+				if ($param['module'] == 'LineItem' && !$deletion) {
 					if (empty($this->moduleList)) {
 						$this->setModulePrefix();
 					}
@@ -509,8 +510,9 @@ class vtigercrmcore extends solution
 
 
 					$entitys = [];
-					if (!empty($param['query']) && !$param['ruleParams']['deletion']) {
-						$iterable = empty($param['ruleParams']['deletion']) ? $sync['result']['updated'] : $sync['result']['deleted'];
+					if (!empty($param['query']) && !$deletion) {
+						// $iterable = !$deletion ? $sync['result']['updated'] : $sync['result']['deleted'];
+						$iterable = $sync['result']['updated'];
 						foreach ($iterable as $item) {
 							if (!array_key_exists('id', $param['query'])) {
 								$all = true;
@@ -530,12 +532,12 @@ class vtigercrmcore extends solution
 							}
 						}
 					} else {
-						$entitys = empty($param['ruleParams']['deletion']) ? $sync['result']['updated'] : $sync['result']['deleted'];
+						$entitys = !$deletion ? $sync['result']['updated'] : $sync['result']['deleted'];
 					}
-					$more = $sync['more'];
+					$more = $sync['result']['more'];
 				}
 
-				if (!$param['ruleParams']['deletion']) {
+				if (!$deletion) {
 					foreach ($entitys as $value) {
 						if (!isset($result['values']) || !array_key_exists($value['id'], $result['values'])) {
 							$result['values'][$value['id']] = $value;
