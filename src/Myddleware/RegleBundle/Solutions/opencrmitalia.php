@@ -6,6 +6,16 @@ use Javanile\VtigerClient\VtigerClient;
 class opencrmitaliacore extends vtigercrm
 {
 
+	/** @var array inventoryModules */
+	protected $inventoryModules = [
+		"Invoice",
+		"SalesOrder",
+		"Quotes",
+		"PurchaseOrder",
+		"GreenTimeControl",
+		"DDT",
+	];
+
 	/** @var array OperationsMap */
 	protected $clientOperationsMap = [
 		'create' => 'advinv_create',
