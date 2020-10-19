@@ -89,8 +89,6 @@ class vtigercrmcore extends solution
 		"SalesOrder",
 		"Quotes",
 		"PurchaseOrder",
-		"GreenTimeControl",
-		"DDT",
 	];
 
 
@@ -106,7 +104,6 @@ class vtigercrmcore extends solution
 	{
 		return $this->vtigerClient;
 	}
-
 
 	/**
 	 * Make the login
