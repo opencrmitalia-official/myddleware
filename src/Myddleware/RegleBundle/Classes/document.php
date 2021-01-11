@@ -31,6 +31,7 @@ use Doctrine\DBAL\Connection; // Connexion BDD
 use Myddleware\RegleBundle\Classes\tools as MyddlewareTools; // SugarCRM Myddleware
 use Myddleware\RegleBundle\Entity\DocumentData as DocumentDataEntity;
 use Myddleware\RegleBundle\Entity\DocumentRelationship as DocumentRelationship;
+use function GuzzleHttp\json_encode;
 
 class documentcore { 
 	

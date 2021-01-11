@@ -93,8 +93,11 @@ class vtigercrmcore extends solution
 
 	protected $allowParentRelationship = array('Quotes');
 
+    // Enable to read deletion and to delete data
+    protected $readDeletion = true;
+    protected $sendDeletion = true;
 
-	/** @var array $moduleList */
+    /** @var array $moduleList */
 	protected $moduleList;
 
 	/** @var VtigerClient $vtigerClient */
@@ -584,7 +587,7 @@ class vtigercrmcore extends solution
 						unset($entity);
 					}
 					$more = $sync['result']['more'];
-					$lastModifiedTime = $sync['result']['lastModifiedTime'];
+					$lastModifiedTime = date('Y-m-d H:i:s', $sync['result']['lastModifiedTime']);
 				}
 
 				if (!$deletion) {
@@ -905,9 +908,9 @@ class vtigercrmcore extends solution
 						$resultDelete = $this->vtigerClient->delete($id);
 
 						if (
-							!empty($resultDelete) &&
-							(!(isset($resultDelete['success']) && !$resultDelete['success']) &&
-								(isset($resultDelete['status']) && $resultDelete['status'] == 'successful'))
+						    !empty($resultDelete['success']) &&
+                            !empty($resultDelete['result']['status']) &&
+                            $resultDelete['result']['status'] == 'successful'
 						) {
 							$result[$idDoc] = [
 								'id'    => $id,

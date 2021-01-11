@@ -52,7 +52,7 @@ logs: debug
 debug: init down
 	@docker-compose up -d --force-recreate
 
-dev: down
+dev: init down
 	@docker-compose run --rm myddleware rm -fr var/logs/vtigercrm.log
 	@docker-compose up -d
 
