@@ -27,6 +27,7 @@
 namespace Myddleware\RegleBundle\Solutions;
 
 use Javanile\VtigerClient\VtigerClient;
+use phpDocumentor\Reflection\DocBlock\Tags\Var_;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
@@ -632,9 +633,10 @@ class vtigercrmcore extends solution
 	}
 
 	/**
-	 * Create new record in target
+	 * Create new record in target.
 	 *
 	 * @param array $param
+     *
 	 * @return array
 	 */
 	public function create($param)
