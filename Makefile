@@ -3,6 +3,7 @@
 init:
 	@[ -f hosts ] || touch hosts
 	@[ -f .env ] || cp .env.example .env
+	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f database.client.php ] || cp  ../../../../../var/solutions/database.client.php database.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f mautic.client.php ] || cp  ../../../../../var/solutions/mautic.client.php mautic.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f microsoftsql.client.php ] || cp  ../../../../../var/solutions/microsoftsql.client.php microsoftsql.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f mysql.client.php ] || cp  ../../../../../var/solutions/mysql.client.php mysql.client.php
@@ -38,6 +39,7 @@ install: init up
 
 update: init up
 	@docker-compose -f docker-compose.yml run --rm myddleware rm -fr var/cache/* vendor
+	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R var/cache/
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar install --ignore-platform-reqs --no-scripts
 	@echo "Update done."
 
@@ -51,11 +53,11 @@ require-woocommerce-client:
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar require automattic/woocommerce:^3.0.0 -vvvv --ignore-platform-reqs --no-scripts
 
 setup-files:
-	@docker-compose run --rm myddleware php composer.phar run-script post-install-cmd
-	@docker-compose run --rm myddleware chmod 777 -R var/cache var/logs || true
+	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar run-script post-install-cmd
+	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R var/cache/ var/logs/ || true
 
 setup-database: up sleep
-	@docker-compose exec myddleware bash prepare-database.sh
+	@docker-compose -f docker-compose.yml exec myddleware bash prepare-database.sh
 
 setup: setup-files setup-database
 	@echo "Setup Myddleware files and database: OK!"
@@ -87,6 +89,9 @@ recreate: init
 
 restart: recreate
 	@echo ">>> Myddleware is ready."
+
+fix:
+	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R var/cache/ var/logs/ || true
 
 bash:
 	@docker-compose -f docker-compose.yml exec myddleware bash
