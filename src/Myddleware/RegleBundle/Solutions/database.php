@@ -558,8 +558,9 @@ class databasecore extends solution {
 					$values .= ")"; // VALUES (value1,value2,value3,...)
 					$sql .= ") VALUES ".$values; // INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...)	
 					// Query validation
-					$sql = $this->queryValidation($param, 'create', $sql);	
-					
+					$sql = $this->queryValidation($param, 'create', $sql);
+
+                    $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING);
 					$q = $this->pdo->prepare($sql);
                     if (!$q) {
                         $errorInfo = $this->pdo->errorInfo();
