@@ -560,7 +560,6 @@ class databasecore extends solution {
 					// Query validation
 					$sql = $this->queryValidation($param, 'create', $sql);
 
-                    $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING);
 					$q = $this->pdo->prepare($sql);
                     if (!$q) {
                         $errorInfo = $this->pdo->errorInfo();
