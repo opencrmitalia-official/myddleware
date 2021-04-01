@@ -8,11 +8,11 @@ set -e
 cd CLONE
 
 ## Cancelliamo la nostra branch hotfix e la sostituiamo con quelle dell'UPSTREAM
-git push origin --delete hotfix || true
-git checkout master
-git checkout -b hotfix
-git pull https://github.com/Myddleware/myddleware.git hotfix -X theirs --no-edit
-git push --set-upstream origin hotfix
+#git push origin --delete hotfix || true
+#git checkout master
+#git checkout -b hotfix
+#git pull https://github.com/Myddleware/myddleware.git hotfix -X theirs --no-edit
+#git push --set-upstream origin hotfix
 
 ## Aggiorna la branch master del nostro progetto con le novità presenti nel master dell'UPSTRAM
 git checkout master
@@ -26,6 +26,3 @@ git push
 
 cd ..
 rm -fr CLONE
-
-
-
