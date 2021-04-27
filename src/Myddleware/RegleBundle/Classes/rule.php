@@ -60,6 +60,7 @@ class rulecore {
 	protected $manual;
 	protected $key;
 	protected $limit = 100;
+	protected $offset = 0;
 	protected $limitReadCommit = 1000;
 	protected $tools;
 	protected $api; 	// Specify if the class is called by the API
@@ -424,7 +425,7 @@ class rulecore {
 		$read['date_ref'] = $this->ruleParams['datereference'];
 		$read['ruleParams'] = $this->ruleParams;
 		$read['fields'] = $this->sourceFields;
-		$read['offset'] = 0;
+		$read['offset'] = $this->offset;
 		$read['limit'] = $this->limit;
 		$read['jobId'] = $this->jobId;
 		$read['manual'] = $this->manual;
@@ -504,7 +505,7 @@ class rulecore {
 				break;
 			}
 			if (empty($this->dataSource['values'])) {
-				return array('error' => 'All records read have the same reference date in rule '.$this->rule['name'].'. Myddleware cannot garanty all data will be read. Job interrupted. Please increase the number of data read by changing the limit attribut in job and rule class.');
+				return array('error' => 'All records read have the same reference date in rule '.$this->rule['name'].' with value of ('.$previousValue['date_modified'].'). Myddleware cannot garanty all data will be read. Job interrupted. Please increase the number of data read by changing the limit attribut in job and rule class.');
 			}
 			return true;
 		}

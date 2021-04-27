@@ -403,11 +403,17 @@ class databasecore extends solution {
 			$requestSQL = $this->queryValidation($param, 'read', $requestSQL);
 
 			// Appel de la requête
-			$q = $this->pdo->prepare($requestSQL);		
+			$q = $this->pdo->prepare($requestSQL);
+            $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            if ($pdoDriverName == 'dblib') {
+                $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            }
 			$exec = $q->execute();
-
-			if(!$exec) {
+			if ($exec === false) {
 				$errorInfo = $this->pdo->errorInfo();
+				if (empty($errorInfo[2])) {
+                    $errorInfo[2] = '['.$pdoDriverName.':'.$exec.'] '.implode(', ', $errorInfo);
+                }
 				throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
 			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
@@ -428,7 +434,7 @@ class databasecore extends solution {
 						if($key === $param['ruleParams']['fieldDateRef']) {
 							// If the reference isn't a valid date (it could be an ID in case there is no date in the table) we set the current date
 							if ((bool)strtotime($value)) {;
-								$row['date_modified'] = $value;
+								$row['date_modified'] = $value; // (string)date('Y-m-d H:i:s');
 							} else {							
 								$row['date_modified'] = date('Y-m-d H:i:s');
 							}
@@ -455,7 +461,7 @@ class databasecore extends solution {
 		}
 		catch (\Exception $e) {
 		    $result['error'] = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
-		}	
+		}		
 		return $result;
 	} // read($param)
 	
@@ -524,7 +530,7 @@ class databasecore extends solution {
 	
 	// Permet de créer des données
 	public function create($param) {	
-		try {			
+		try {		
 			// Get the target reference field
 			if(!isset($param['ruleParams']['targetFieldId'])) {
 				throw new \Exception('targetFieldId has to be specified for the data creation.');
@@ -561,21 +567,25 @@ class databasecore extends solution {
 					$sql = $this->queryValidation($param, 'create', $sql);
 
 					$q = $this->pdo->prepare($sql);
-                    if (!$q) {
+                    if ($q === false) {
                         $errorInfo = $this->pdo->errorInfo();
                         if (empty($errorInfo[2])) {
                             $errorInfo[2] = implode(', ', $errorInfo);
                         }
-                        throw new \Exception('Create: '.$errorInfo[2].' . Query : '.$sql);
+                        throw new \Exception('Create: Prepare '.$errorInfo[2].' . Query : '.$sql);
                     }
 
+                    $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+                    if ($pdoDriverName == 'dblib') {
+                        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                    }
                     $exec = $q->execute();
-					if (!$exec) {
+					if ($exec === false) {
 						$errorInfo = $this->pdo->errorInfo();
                         if (empty($errorInfo[2])) {
                             $errorInfo[2] = implode(', ', $errorInfo);
                         }
-						throw new \Exception('Create: '.$errorInfo[2].' . Query : '.$sql);
+						throw new \Exception('Create: Execute '.$errorInfo[2].' . Query : '.$sql);
 					}
 					
 					// If the target reference field isn't in data sent
@@ -654,7 +664,7 @@ class databasecore extends solution {
 					// Send the target ifd to Myddleware
 					$result[$idDoc] = array(
 											'id' => $idTarget,
-											'error' => ($q->rowCount() ? false : 'There is no error but 0 row has been updated.')
+											'error' => ($q->rowCount() ? false : 'There is no error but 0 rows have been updated')
 									);									
 				}
 				catch (\Exception $e) {
@@ -730,7 +740,7 @@ class databasecore extends solution {
 	
 	// Function to escape characters 
 	protected function escape($value) {
-		return $value;
+		return str_replace("'", "''", $value);
 	}
 	
 	// Get the strings which can identify what field is an id in the table
@@ -811,9 +821,10 @@ class databasecore extends solution {
 		return parent::get_module_fields_relate($module, $param);
 	}
 
-	public function getFieldsParamUpd($type, $module) {	
+	public function getFieldsParamUpd($type, $module) {
 		try {
 			$fieldsSource = $this->get_module_fields($module, $type, false);
+
 			// List only real database field so we remove the Myddleware_element_id field
 			unset($fieldsSource['Myddleware_element_id']);
 			if(!empty($fieldsSource)) {
@@ -858,7 +869,7 @@ class databasecore extends solution {
 					$params[] = $idParam;
 					$params[] = $dateParam;
 					$params[] = $deletionParam;
-				} else {
+                } else {
 					// Add param to store the fieldname corresponding to the record id
 					$idParam = array(
 								'id' => 'targetFieldId',

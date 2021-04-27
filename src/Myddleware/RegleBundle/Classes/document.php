@@ -25,12 +25,13 @@
 
 namespace Myddleware\RegleBundle\Classes;
 
-use Symfony\Bridge\Monolog\Logger; // Gestion des logs
-use Symfony\Component\DependencyInjection\ContainerInterface as Container; // Accède aux services
+use Exception;
 use Doctrine\DBAL\Connection; // Connexion BDD
-use Myddleware\RegleBundle\Classes\tools as MyddlewareTools; // SugarCRM Myddleware
+use Symfony\Bridge\Monolog\Logger; // Gestion des logs
 use Myddleware\RegleBundle\Entity\DocumentData as DocumentDataEntity;
 use Myddleware\RegleBundle\Entity\DocumentRelationship as DocumentRelationship;
+use Myddleware\RegleBundle\Classes\tools as MyddlewareTools; // SugarCRM Myddleware
+use Symfony\Component\DependencyInjection\ContainerInterface as Container; // Accède aux services
 
 class documentcore { 
 	
@@ -272,13 +273,13 @@ class documentcore {
 			if (!$this->jobActive) {
 				$this->message .= 'Job is not active. ';
 				return false;
-			}		
+			}			
 			// Création du header de la requête 
 			$query_header = "INSERT INTO Document (id, rule_id, date_created, date_modified, created_by, modified_by, source_id, source_date_modified, mode, type, parent_id) VALUES";		
 			// Création de la requête d'entête
 			$date_modified = $this->data['date_modified'];
 			// Source_id could contain accent
-			$query_header .= "('$this->id','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode($this->sourceId)."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
+			$query_header .= "('$this->id','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode(addcslashes($this->sourceId,'\\'))."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
 			$stmt = $this->connection->prepare($query_header); 
 			$stmt->execute();
 			$this->updateStatus('New');
@@ -1313,7 +1314,7 @@ class documentcore {
 				}
 			}
 			// Si le champ est envoyé sans transformation
-			elseif (isset($source[$ruleField['source_field_name']])) {			
+			elseif (isset($source[$ruleField['source_field_name']])) {		
 				return $this->checkField($source[$ruleField['source_field_name']]);
 			}
 			// If Myddleware_element_id is requested, we return the id 
@@ -1323,12 +1324,12 @@ class documentcore {
 			) {			
 				return $this->checkField($source['id']);
 			}
-			elseif (is_null($source[$ruleField['source_field_name']])) {			
+			elseif (is_null($source[$ruleField['source_field_name']])) {	
 				return null;
 			}
 			else {
 				throw new \Exception( 'Field '.$ruleField['source_field_name'].' not found in source data.------'.print_r($ruleField,true) );
-			}
+			}			
 		}
 		catch(\Exception $e) {		
 			$this->typeError = 'E';

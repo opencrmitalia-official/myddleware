@@ -32,6 +32,13 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 class vtigercrmcore extends solution
 {
     /**
+     * Apply deletion of record as target.
+     *
+     * @param bool $sendDeletion
+     */
+    protected $sendDeletion = true;
+
+    /**
      * Limit number of element per API call.
      *
      * @var int
@@ -131,7 +138,7 @@ class vtigercrmcore extends solution
      */
     protected $allowParentRelationship = [
         'Invoice',
-        'Quotes',         
+        'Quotes',
         'SalesOrder',
         'PurchaseOrder'
     ];
@@ -156,7 +163,10 @@ class vtigercrmcore extends solution
      */
     protected function createVtigerClient()
     {
-        $client = new VtigerClient($this->paramConnexion['url']);
+        $client = new VtigerClient([
+            'endpoint' => $this->paramConnexion['url'],
+            'verify' => false,
+        ]);
         //file_put_contents('/var/www/html/var/logs/vtigercrm.0.log', __FILE__.':'.__LINE__."\n", FILE_APPEND);
         $result = $client->login(trim($this->paramConnexion['username']), trim($this->paramConnexion['accesskey']));
 
@@ -355,7 +365,12 @@ class vtigercrmcore extends solution
         }
 
         try {
-            return $this->populateModuleFieldsFromVtigerModule($module, $type) ?: false;
+            $describe = $this->getVtigerClient()->describe($module, $type == 'source' ? 1 : 0);
+            if (empty($describe['success']) || empty($describe['result']['fields'])) {
+                return false;
+            }
+
+            return $this->populateModuleFieldsFromVtigerModule($describe['result']['fields'], $module, $type) ?: false;
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine());
             return false;
@@ -365,24 +380,21 @@ class vtigercrmcore extends solution
     /**
      * Fill the local attribute moduleFields
      *
+     * @param $fields
      * @param $module
      * @param string $type
+     *
      * @return array|bool[]
      */
-    protected function populateModuleFieldsFromVtigerModule($module, $type = 'source')
+    protected function populateModuleFieldsFromVtigerModule($fields, $module, $type = 'source')
     {
-        $describe = $this->getVtigerClient()->describe($module, $type == 'source' ? 1 : 0);
-        if (empty($describe['success']) || empty($describe['result']['fields'])) {
-            return false;
-        }
-
         $this->moduleFields = [];
         $this->fieldsRelate = [];
         $excludeFields = $this->exclude_field_list[$module] ?? $this->exclude_field_list['default'];
         $excludeFields = $excludeFields[$type] ?? $excludeFields['default'];
         $requiredFields = $this->force_required_module_fields[$module] ?? [];
 
-        foreach ($describe['result']['fields'] as $field) {
+        foreach ($fields as $field) {
             if (in_array($field['name'], $excludeFields)) {
                 continue;
             }
@@ -1192,8 +1204,8 @@ class vtigercrmcore extends solution
         try {
             $resultDelete = $this->getVtigerClient()->delete($id);
 
-            if (empty($resultDelete['success']) || empty($resultDelete['status']) || $resultDelete['status'] != 'successful') {
-                throw new \Exception($resultDelete["error"]["message"] ?? "Error");
+            if (empty($resultDelete['success']) || empty($resultDelete['result']['status']) || $resultDelete['result']['status'] != 'successful') {
+                throw new \Exception($resultDelete["error"]["message"] ?? json_encode($resultDelete));
             }
 
             $result[$idDoc] = [
