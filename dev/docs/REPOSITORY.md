@@ -19,7 +19,9 @@ This word list used to shortening description of all operations
 - `master` is the branch used to sync updates from master of UPSTREAM
 - `hotfix` is the branch used to sync updates from the hotfix of UPSTREAM (Deprecated)
 - `devops` this branch MUST be used to manage the repository for development operations (eg. clean branches)
-- `contribute` this is the branch used from OCI for submit changes to UPSTREAM via PR
+- `squash` this is the branch used from OCI for prepare a squashed PR to push into contrib branch
+- `contrib` this is the branch used from OCI for submit changes to UPSTREAM via PR
+
 
 ## NDT: Never do this
 

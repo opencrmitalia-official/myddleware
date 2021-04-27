@@ -20,7 +20,12 @@ git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit
 git push
 
 ## Aggiorna la branch contribute con le novità presenti nel master dell'UPSTRAM
-git checkout contribute
+git checkout contrib
+git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit
+git push
+
+## Aggiorna la branch contribute con le novità presenti nel master dell'UPSTRAM
+git checkout squash
 git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit
 git push
 
