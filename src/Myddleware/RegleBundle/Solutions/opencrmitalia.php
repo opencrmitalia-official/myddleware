@@ -195,10 +195,8 @@ class opencrmitaliacore extends vtigercrm
      */
     public function read($param)
     {
-        //file_put_contents('../var/logs/mio.log', json_encode($param)."\n", FILE_APPEND);
-
         if (!in_array($param['module'], $this->dbRecordModules)) {
-            return parent::create($param);
+            return parent::read($param);
         }
 
         if ($this->notVtigerClient()) {
@@ -261,7 +259,7 @@ class opencrmitaliacore extends vtigercrm
         return $result;
     }
 
-        /**
+    /**
      * Create new record in target
      *
      * @param array $param
