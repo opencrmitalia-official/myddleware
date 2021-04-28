@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+
+  myddleware:
+    environment:
+      - VT_CLIENT_LOG_FILE=/var/www/html/var/logs/vtigercrm.log
+    links:
+      - phpmyadmin
+
+  phpmyadmin:
+    environment:
+      - PMA_USER=root
+      - PMA_PASSWORD=secret

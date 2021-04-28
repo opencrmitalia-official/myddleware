@@ -87,7 +87,7 @@ logs-rotate:
 	@chmod 777 -R var/logs || true
 
 debug: init
-	@docker-compose -f docker-compose.yml up -d --remove-orphans
+	@docker-compose -f docker-compose.yml -f docker-compose.debug.yml up -d --remove-orphans
 
 dev: init
 	@docker-compose run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
