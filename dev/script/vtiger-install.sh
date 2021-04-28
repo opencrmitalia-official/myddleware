@@ -7,7 +7,7 @@ trap 'error ${LINENO}' ERR
 
 ## Load environment
 [[ -f .env ]] && source .env
-if [[ -e "${gitlab_private_token}" ]]; then
+if [[ -z "${gitlab_private_token}" ]]; then
   echo "Ignore Opencrmitalia installer."
   exit 0
 fi
