@@ -73,6 +73,8 @@ indicando per ogniuna il nome istanza nel comando `echo` e la directory in cui Ã
 
 - Eseguire il comando `systemctl enable myddleware`
 
+- Eseguire il comando `systemctl start myddleware`
+
 Adesso riavviare il server e controllare al suo riavvio con il comando seguente (dopo qualche minuti) 
 
 ```shell
