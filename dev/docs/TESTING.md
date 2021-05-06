@@ -84,15 +84,20 @@ Connettore verso il database Microsoft
 
 ## Possibili scenari di test
 
-Per assicurarsi che il connettore funziona bisogna fare le seguenti prove
+Per assicurarsi che un connettore funzioni bene bisogna fare le seguenti prove
 
-- Test inserimento righe inventario		
-- Test inserimento righe con campi advanced inventory		
-- Test inserimento picklist su righe inventario		
-- Test inserimento campi relazionati su righe inventario		
-- Test aggiornamento righe inventario		
-- Test aggiornamento con campi advanced inventory		
-- Test aggiornamento picklist su righe inventario		
-- Test aggiornamento campi relazionati su righe inventario		
-- Test inserimento nuovo valore nelle picklist
+| Sorgente | Destinazione |
+| -------- | ------------ |
+| Database con Tabella e data di riferimento | Modulo CRM Semplice(Contatti/Account) | 
+| Database con Tabella senza data di riferimento | Modulo CRM Semplice(Contatti/Account) |
+| Modulo CRM Semplice(Contatti/Account) | Database con Tabella con o senza data di riferimento |
+| Database con Tabella e data di riferimento | Righe inventario di un modulo come (Preventivi/Fatture) | 
+| Database con Tabella senza data di riferimento | Righe inventario di un modulo come (Preventivi/Fatture) |
 
+## Possibili aspetti di un test
+	
+- Provare se funziona i campi personalizzati sui line items		
+- Provare se funziona la sincronizzazione di valori delle picklist		
+- Provare se funziona i campi personalizzati sui line items collegati a UIType 10 (ad altri record CRM)		
+- Provare se funziona non solo la creazione di righe inventario ma l'aggiorna di righe un preventivi esistenti		
+- Provare se funziona non solo la creazione di righe inventario ma l'aggiorna di righe con campi personalizzati		

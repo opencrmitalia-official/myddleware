@@ -17,7 +17,21 @@ CREATE TABLE A_Persone (
     IsDeleted BIT
 );
 
-INSERT INTO A_Persone (PersonID, LastName, FirstName, Email, City) VALUES (1, 'Rossi', 'Mario', 'mario@rossi.it', 'Milano')
+INSERT INTO A_Persone (PersonID, LastName, FirstName, Email, City, IsDeleted) VALUES (1, 'Rossi', 'Mario', 'mario@rossi.it', 'Milano', 0)
+
+--
+-- Anagrafica semplice
+--
+CREATE TABLE A_Aziende (
+       AziendaID INT,
+       RagioneSociale VARCHAR(255),
+       Email VARCHAR(255),
+       City VARCHAR(255),
+       DataUltimaModifica DATETIME,
+       IsDeleted BIT
+);
+
+INSERT INTO A_Aziende (AziendaID, RagioneSociale, Email, City, DataUltimaModifica, IsDeleted) VALUES (1, 'MulinoBianco', 'mario@mulino.it', 'Milano', '2021-01-01 12:00:00', 0)
 
 --
 -- Gestione Prodotti/Listini
