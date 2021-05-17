@@ -499,8 +499,8 @@ class databasecore extends solution {
 				$stmt = $connection->prepare($query);
 				$stmt->bindValue(":id_rule", $param['rule']['id']);
 				$stmt->execute();	   				
-				$documents = $stmt->fetchAll(); 
-				
+				$documents = $stmt->fetchAll();
+
 				// Test all document found in Myddleware
 				foreach ($documents as $document) {
 					// if Myddleware record doesn't exist anymore in the source table

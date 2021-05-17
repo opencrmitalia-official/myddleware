@@ -353,6 +353,51 @@ class opencrmitaliacore extends vtigercrm
     }
 
     /**
+     * Delete existing record in target.
+     *
+     * @param array $param
+     * @return array
+     */
+    public function delete($param)
+    {
+        if (!in_array($param['module'], $this->dbRecordModules)) {
+            return parent::delete($param);
+        }
+
+        if ($this->notVtigerClient()) {
+            return $this->errorMissingVtigerClient();
+        }
+
+        $result = [];
+        $vtigerClient = $this->getVtigerClient();
+        try {
+            foreach ($param['data'] as $idDoc => $data) {
+                $query = $this->explodeIdQueryDbRecordModule($data['target_id'], $param['module']);
+                $delete = $vtigerClient->post([
+                    'form_params' => [
+                        'operation' => 'dbrecord_crud_row',
+                        'sessionName' => $vtigerClient->getSessionName(),
+                        'name' => $param['module'],
+                        'mode' => 'delete',
+                        'element' => json_encode($query),
+                    ],
+                ]);
+                if (empty($delete['success']) || empty($delete['result']['success'])) {
+                    throw new \Exception($delete["error"]["message"] ?? json_encode($delete).' DATA: '.json_encode($data));
+                }
+                if (empty($result[$idDoc]['id'])) {
+                    $result[$idDoc]['id'] = $this->assignIdDbRecordModule($param['module'], $delete['result']['record']);
+                }
+                $this->updateDocumentStatus($idDoc, $result[$idDoc], $param);
+            }
+        } catch (\Exception $e) {
+            $result['error'] = $e->getMessage() . ' ' . $e->getFile() . ' ' . $e->getLine();
+        }
+
+        return $result;
+    }
+
+    /**
      *
      */
     protected function describeDbRecordModule($module)
