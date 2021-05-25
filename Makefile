@@ -77,6 +77,9 @@ setup-database: up sleep
 setup: setup-files setup-database
 	@echo "Setup Myddleware files and database: OK!"
 
+schedule:
+	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:synchro 606ef32a933bb --env=background
+
 logs: debug
 	@docker-compose logs -f myddleware
 

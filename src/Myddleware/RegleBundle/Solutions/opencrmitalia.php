@@ -161,6 +161,7 @@ class opencrmitaliacore extends vtigercrm
                 throw new \Exception("No records found on module '{$param[module]}'");
             }
             $result['values'] = $select['result']['records'][0];
+            $result['values']['id'] = $this->assignIdDbRecordModule($param['module'], $select['result']['records'][0]);
         } elseif (in_array('id', $param['fields'])) {
             throw new \Exception(json_encode($param));
             $query = $this->getVtigerClient()->retrieve($param['query']['id']);
@@ -180,6 +181,7 @@ class opencrmitaliacore extends vtigercrm
                 throw new \Exception($read["error"]["message"] ?? json_encode($read));
             }
             $result['values'] = $read['result']['record'];
+            $result['values']['id'] = $param['query']['id'];
         }
 
         $result['done'] = true;

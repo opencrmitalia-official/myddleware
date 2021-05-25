@@ -77,6 +77,23 @@ class databasebase extends databasecore
 
 		return parent::buildQuery($param, $query);
 	}
+
+    /**
+     * Function to buid the SELECT query.
+     *
+     * @param $param
+     * @param $query
+     * @return string
+     */
+    protected function queryValidation($param, $functionName, $requestSQL)
+    {
+        $date = date('Y-m-d H:i:s');
+        $method = strtoupper($functionName);
+        $paramJson = json_encode($param);
+        $log = "{$date} [${method}] {$paramJson} - SQL: $requestSQL";
+
+        return $requestSQL;
+    }
 }
 
 $file = __DIR__.'/database.client.php';

@@ -1020,7 +1020,7 @@ class documentcore {
 		$read['rule'] = $rule;
 		// In case we search a specific record, we set an default value in date_ref because it is a requiered parameter in the read function
 		$read['date_ref'] = '1970-01-02 00:00:00';	
-		$dataTarget = $this->solutionTarget->read_last($read);		
+		$dataTarget = $this->solutionTarget->read_last($read);
 		if (empty($dataTarget['done'])) {
 			return false;
 		}
