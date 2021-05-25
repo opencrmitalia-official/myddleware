@@ -90,7 +90,14 @@ class databasebase extends databasecore
         $date = date('Y-m-d H:i:s');
         $method = strtoupper($functionName);
         $paramJson = json_encode($param);
-        $log = "{$date} [${method}] {$paramJson} - SQL: $requestSQL";
+        $logLine = "{$date} [${method}] {$paramJson} - SQL: $requestSQL\n";
+        $logFile = __DIR__.'/../../../../../var/logs/last_query.log';
+
+        if (filesize($logFile) > 50000) {
+            unlink($logFile);
+        }
+
+        file_put_contents($logFile, $logLine, FILE_APPEND);
 
         return $requestSQL;
     }
