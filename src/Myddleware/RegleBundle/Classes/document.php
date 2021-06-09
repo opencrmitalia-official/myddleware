@@ -1100,7 +1100,7 @@ class documentcore {
 							if ($sourceField=='Myddleware_element_id') {
 								$sourceField = 'id';
 							}
-							$dataInsert[$sourceField] = $data[$sourceField];
+							$dataInsert[$sourceField] = isset($data[$sourceField]) ? $data[$sourceField] : '';
 						}
 					} else {	
 						// Some field can't be retrived from the target application (history). For example the field password on the module user of Moodle
