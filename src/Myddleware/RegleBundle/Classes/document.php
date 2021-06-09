@@ -307,7 +307,7 @@ class documentcore {
 				// Boucle sur les filtres
 				foreach ($ruleFilters as $ruleFilter) {			
 					if(!$this->checkFilter($this->sourceData[$ruleFilter['target']],$ruleFilter['type'],$ruleFilter['value'])) {
-						$this->message .= 'This document is filtered. This operation is false : '.$ruleFilter['target'].' '.$ruleFilter['type'].' '.$ruleFilter['value'].'.';
+						$this->message .= 'This document is filtered. This operation is false : '.$ruleFilter['target'].' '.$ruleFilter['type'].' '.$ruleFilter['value'].' (sourceData=\''.$this->sourceData[$ruleFilter['target']].'\').';
 						$this->updateStatus('Filter');
 						$filterOK = -1;
 						break;
