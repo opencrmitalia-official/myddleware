@@ -93,7 +93,7 @@ class databasebase extends databasecore
         $logLine = "{$date} [${method}] {$paramJson} - SQL: $requestSQL\n";
         $logFile = __DIR__.'/../../../../../var/logs/last_query.log';
 
-        if (filesize($logFile) > 50000) {
+        if (file_exists($logFile) && filesize($logFile) > 50000) {
             unlink($logFile);
         }
 
