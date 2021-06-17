@@ -54,6 +54,8 @@ services:
       - AWS_DEFAULT_REGION=eu-west-1
       - AWS_ACCESS_KEY_ID=${aws_access_key_id}
       - AWS_SECRET_ACCESS_KEY=${aws_secret_access_key}
+    volumes:
+      - ./.temp/mysql-backup:/tmp
     restart: always
 
   filebrowser:
