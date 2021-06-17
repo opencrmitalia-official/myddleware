@@ -64,7 +64,7 @@ class filecore extends solution {
 			ssh2_auth_password($this->connection, $this->paramConnexion['login'], $this->paramConnexion['password']);
 
 			// Check if the directory exist
-			$stream = ssh2_exec($this->connection, 'cd '.$this->paramConnexion['directory'].';pwd');
+            $stream = ssh2_exec($this->connection, 'cd '.$this->paramConnexion['directory'].';pwd');
 			stream_set_blocking($stream, true);
 			$output = stream_get_contents($stream);
 			if (trim($this->paramConnexion['directory']) != trim($output)) {

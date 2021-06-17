@@ -98,6 +98,18 @@ services:
     ports:
       - ${adminer_port:-30099}:8080
 
+  sftp:
+    image: atmoz/sftp
+    entrypoint: >
+      bash -c "
+        sed -i '/ForceCommand internal-sftp/d' /etc/ssh/sshd_config;
+        sed -i '/ChrootDirectory %h/d' /etc/ssh/sshd_config;
+        /entrypoint admin:admin:::upload"
+    ports:
+      - '30022:22'
+    volumes:
+      - ./dev/fixtures/sftp:/home/admin/upload
+
 volumes:
   mysql1:
   mysql2:
