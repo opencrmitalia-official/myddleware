@@ -418,7 +418,7 @@ class vtigercrmcore extends solution
      */
     protected function addVtigerFieldToModuleFields($field, $mandatory)
     {
-        if ($field['type']["name"] == "reference" || $field['type']["name"] == "owner") {
+        if (isset($field['type']) && ($field['type']["name"] == "reference" || $field['type']["name"] == "owner")) {
             $this->fieldsRelate[$field['name']] = array(
                 'label' => $field['label'],
                 'required' => $mandatory,
@@ -433,7 +433,7 @@ class vtigercrmcore extends solution
                 'type' => 'varchar(127)', // ? Set right type?
                 'type_bdd' => 'varchar(127)'
             ];
-            if ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist") {
+            if (isset($field['type']) && ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist")) {
                 foreach ($field['type']["picklistValues"] as $option) {
                     $this->moduleFields[$field['name']]["option"][$option["value"]] = $option["label"];
                 }

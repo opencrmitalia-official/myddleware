@@ -162,7 +162,7 @@ class opencrmitaliacore extends vtigercrm
             }
             $result['values'] = $select['result']['records'][0];
             $result['values']['id'] = $this->assignIdDbRecordModule($param['module'], $select['result']['records'][0]);
-        } elseif (in_array('id', $param['fields'])) {
+        } elseif (in_array('id', empty($param['fields']) ? [] : $param['fields'])) {
             throw new \Exception(json_encode($param));
             $query = $this->getVtigerClient()->retrieve($param['query']['id']);
             $query['result'][0] = $query['result'];
