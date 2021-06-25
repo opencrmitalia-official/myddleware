@@ -473,6 +473,9 @@ class vtigercrmcore extends solution
                 $query = $this->getVtigerClient()->query("SELECT {$queryParam} FROM {$module} {$where} ORDER BY modifiedtime DESC LIMIT 0,1;");
             } else {
                 $query = $this->getVtigerClient()->retrieve($param['query']['id']);
+                if (empty($query['result'])) {
+                    return $this->errorVtigerNoDataRetrieved(['done' => false]);
+                }
                 $query['result'][0] = $query['result'];
             }
 
