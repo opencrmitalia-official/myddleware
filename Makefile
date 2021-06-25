@@ -86,7 +86,9 @@ logs: debug
 
 logs-rotate:
 	@cd var/logs; if [ -f background.log ]; then cp background.log rotate/background.$(shell date +%s).log; truncate -s 0 background.log; fi
+	@cd var/logs; if [ -f dev.log ]; then cp dev.log rotate/dev.$(shell date +%s).log; truncate -s 0 dev.log; fi
 	@cd var/logs; if [ -f prod.log ]; then cp prod.log rotate/prod.$(shell date +%s).log; truncate -s 0 prod.log; fi
+	@cd var/logs; if [ -f scheduler.log ]; then cp scheduler.log rotate/scheduler.$(shell date +%s).log; truncate -s 0 scheduler.log; fi
 	@cd var/logs; if [ -f vtigercrm.log ]; then cp vtigercrm.log rotate/vtigercrm.$(shell date +%s).log; truncate -s 0 vtigercrm.log; fi
 	@chmod 777 -R var/logs || true
 
