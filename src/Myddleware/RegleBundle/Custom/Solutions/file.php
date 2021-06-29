@@ -9,6 +9,7 @@ class filebase extends filecore
     {
         $file = parent::get_last_file($directory, $date_ref);
 
+        /*
         $fix = '[ -f zzz_fields ] && '
              . '[ "$(head -n1 zzz_fields)" != "$(head -n1 '.$file.')" ] && '
              . 'cat zzz_fields '.$file.' > '.$file.'.tmp && '
@@ -20,6 +21,7 @@ class filebase extends filecore
         $stream = ssh2_exec($this->connection, 'cd '.$directory.'; '.$fix);
         stream_set_blocking($stream, true);
         $fixMessage = stream_get_contents($stream);
+        */
 
         return $file;
     }
