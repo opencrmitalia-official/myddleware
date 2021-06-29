@@ -9,19 +9,19 @@ class filebase extends filecore
     {
         $file = parent::get_last_file($directory, $date_ref);
 
-        /*
-        $fix = '[ -f zzz_fields ] && '
-             . '[ "$(head -n1 zzz_fields)" != "$(head -n1 '.$file.')" ] && '
-             . 'cat zzz_fields '.$file.' > '.$file.'.tmp && '
-             . 'mv '.$file.' '.$file.'.bak && '
-             . 'mv '.$file.'.tmp '.$file.' && '
-             . 'echo updated ||'
-             . 'echo ignored';
+        if ($file) {
+            $fix = '[ -f zzz_fields ] && '
+                . '[ "$(head -n1 zzz_fields)" != "$(head -n1 '.$file.')" ] && '
+                . 'cat zzz_fields '.$file.' > '.$file.'.tmp && '
+                . 'mv '.$file.' '.$file.'.bak && '
+                . 'mv '.$file.'.tmp '.$file.' && '
+                . 'echo updated ||'
+                . 'echo ignored';
 
-        $stream = ssh2_exec($this->connection, 'cd '.$directory.'; '.$fix);
-        stream_set_blocking($stream, true);
-        $fixMessage = stream_get_contents($stream);
-        */
+            $stream = ssh2_exec($this->connection, 'cd '.$directory.'; '.$fix);
+            stream_set_blocking($stream, true);
+            $fixMessage = stream_get_contents($stream);
+        }
 
         return $file;
     }
