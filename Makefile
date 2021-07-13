@@ -63,7 +63,7 @@ dump-autoload: init up
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar dump-autoload --no-scripts
 
 require-vtiger-client:
-	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar require javanile/vtiger-client:0.0.25 -vvvv --ignore-platform-reqs --no-scripts
+	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar require javanile/vtiger-client:0.0.26 -vvvv --ignore-platform-reqs --no-scripts --no-cache
 
 require-woocommerce-client:
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar require automattic/woocommerce:^3.0.0 -vvvv --ignore-platform-reqs --no-scripts
@@ -102,6 +102,8 @@ dev: init
 	@docker-compose exec vtiger2 bash dev/script/vtiger-install.sh
 	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -i /fixtures/mssql.sql
 
+dev-create-random-contacts:
+	@docker-compose exec vtiger1 php -f dev/script/create-random-contacts.php
 
 prod: init
 	@docker-compose -f docker-compose.yml up -d --remove-orphans
