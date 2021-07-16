@@ -51,7 +51,7 @@ clean-cache:
 update: init up
 	@docker-compose -f docker-compose.yml run --rm myddleware rm -fr var/cache/* vendor
 	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R var/cache/
-	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar install --ignore-platform-reqs --no-scripts
+	@docker-compose -f docker-compose.yml run --rm myddleware php composer2.phar install --ignore-platform-reqs --no-scripts
 	@echo "Update done."
 
 refresh: init up
