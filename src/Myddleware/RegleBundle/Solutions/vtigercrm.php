@@ -489,7 +489,7 @@ class vtigercrmcore extends solution
 
             if ($hasVtigerRelatedRecordFields) {
                 //file_put_contents('/var/www/html/var/logs/vtigercrm.0.log', __FILE__.':'.__LINE__.' ID='.$query['result'][0]['id']."\n", FILE_APPEND);
-                $retrieveResponse = $this->getVtigerClient()->retrieve($query['result'][0]['id'], 1);
+                $retrieveResponse = $this->getVtigerClient()->retrieve($query['result'][0]['id'], 1, $module);
                 $query['result'][0] = empty($retrieveResponse['success']) ? $query['result'][0] : $retrieveResponse['result'];
                 //file_put_contents('/var/www/html/var/logs/vtigercrm.0.log', __FILE__.':'.__LINE__.' '.json_encode($retrieveResponse)."\n", FILE_APPEND);
             }
@@ -645,7 +645,7 @@ class vtigercrmcore extends solution
                         $result['date_ref'] = $value['modifiedtime'];
                         $result['values'][$value['id']] = $value;
                         if ($hasVtigerRelatedRecordFields) {
-                            $retrieveResponse = $this->getVtigerClient()->retrieve($value['id'], 1);
+                            $retrieveResponse = $this->getVtigerClient()->retrieve($value['id'], 1, $param['module']);
                             $result['values'][$value['id']] = empty($retrieveResponse['success']) ? $value : $retrieveResponse['result'];
                         }
                         if (in_array($param['rule']['mode'], ['0', 'S'])) {
