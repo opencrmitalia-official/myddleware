@@ -91,6 +91,7 @@ logs-rotate:
 	@cd var/logs; if [ -f scheduler.log ]; then cp scheduler.log rotate/scheduler.$(shell date +%s).log; truncate -s 0 scheduler.log; fi
 	@cd var/logs; if [ -f vtigercrm.log ]; then cp vtigercrm.log rotate/vtigercrm.$(shell date +%s).log; truncate -s 0 vtigercrm.log; fi
 	@cd var/logs; if [ -f vtigercrm.json ]; then cp vtigercrm.json rotate/vtigercrm.$(shell date +%s).json; truncate -s 0 vtigercrm.json; fi
+	@cd var/logs; if [ -f last_query.json ]; then cp last_query.json rotate/last_query.$(shell date +%s).json; truncate -s 0 last_query.json; fi
 	@chmod 777 -R var/logs || true
 
 debug: init
