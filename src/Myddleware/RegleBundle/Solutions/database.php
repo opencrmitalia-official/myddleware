@@ -417,7 +417,7 @@ class databasecore extends solution {
 				throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
 			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
-
+            file_put_contents('/var/www/html/var/logs/fetchall.log', ">>> $requestSQL \n".json_encode($fetchAll)."\n", FILE_APPEND);
 			$row = array();
 			if(!empty($fetchAll)) {
 				$result['count'] = count($fetchAll);
