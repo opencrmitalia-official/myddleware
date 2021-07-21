@@ -5,6 +5,7 @@ init:
 	@[ -f .env ] || cp .env.example .env
 	@[ -f scheduler.sh ] || touch scheduler.sh
 	@[ -f crontab.client ] || touch crontab.client
+	@[ -f app/config/public/parameters_smtp.yml  ] || touch app/config/public/parameters_smtp.yml
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f database.client.php ] || cp  ../../../../../var/solutions/database.client.php database.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f file.client.php ] || cp  ../../../../../var/solutions/file.client.php file.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f mautic.client.php ] || cp  ../../../../../var/solutions/mautic.client.php mautic.client.php
@@ -97,7 +98,7 @@ logs-rotate:
 debug: init
 	@docker-compose -f docker-compose.yml -f docker-compose.debug.yml up -d --remove-orphans
 
-dev: init
+dev: init fix
 	@docker-compose run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
 	@docker-compose up -d
 	@docker-compose exec vtiger1 bash dev/script/vtiger-install.sh
@@ -107,7 +108,7 @@ dev: init
 dev-create-random-contacts:
 	@docker-compose exec vtiger1 php -f dev/script/create-random-contacts.php
 
-prod: init
+prod: init fix
 	@docker-compose -f docker-compose.yml up -d --remove-orphans
 
 start: prod
@@ -120,6 +121,7 @@ restart: recreate
 	@echo ">>> Myddleware is ready."
 
 fix:
+	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 app/config/public/parameters_smtp.yml || true
 	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R var/cache/ var/logs/ || true
 
 bash:
