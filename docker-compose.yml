@@ -70,7 +70,7 @@ services:
     restart: always
 
   vpn:
-    image: javanile/openvpn
+    image: javanile/openvpn:2.4
     tty: true
     stdin_open: true
     environment:
