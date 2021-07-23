@@ -3,7 +3,8 @@
 use Symfony\Component\ClassLoader\ApcClassLoader;
 use Symfony\Component\HttpFoundation\Request;
 
-
+ini_set('log_errors', true);
+ini_set('error_log', __DIR__.'/../var/logs/php.log');
 ini_set('session.save_path', __DIR__.'/../var/sessions' );
 require __DIR__.'/../app/autoload.php';
 include_once __DIR__.'/../var/bootstrap.php.cache';
