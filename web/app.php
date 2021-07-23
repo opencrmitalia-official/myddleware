@@ -5,7 +5,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 
 ini_set('session.save_path', __DIR__.'/../var/sessions' );
-
 require __DIR__.'/../app/autoload.php';
 include_once __DIR__.'/../var/bootstrap.php.cache';
 $kernel = new AppKernel('prod', false);

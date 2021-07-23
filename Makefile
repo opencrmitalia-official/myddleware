@@ -5,7 +5,7 @@ init:
 	@[ -f .env ] || cp .env.example .env
 	@[ -f scheduler.sh ] || touch scheduler.sh
 	@[ -f crontab.client ] || touch crontab.client
-	@[ -f app/config/public/parameters_smtp.yml  ] || touch app/config/public/parameters_smtp.yml
+	@cd app/config/public/ && [ -f parameters_smtp.yml ] || cp parameters_smtp.yml.docker parameters_smtp.yml
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f database.client.php ] || cp  ../../../../../var/solutions/database.client.php database.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f file.client.php ] || cp  ../../../../../var/solutions/file.client.php file.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f mautic.client.php ] || cp  ../../../../../var/solutions/mautic.client.php mautic.client.php
