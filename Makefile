@@ -99,16 +99,6 @@ logs-rotate:
 debug: init
 	@docker-compose -f docker-compose.yml -f docker-compose.debug.yml up -d --remove-orphans
 
-dev: init fix
-	@docker-compose run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
-	@docker-compose up -d
-	@docker-compose exec vtiger1 bash dev/script/vtiger-install.sh
-	@docker-compose exec vtiger2 bash dev/script/vtiger-install.sh
-	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -i /fixtures/mssql.sql
-
-dev-create-random-contacts:
-	@docker-compose exec vtiger1 php -f dev/script/create-random-contacts.php
-
 prod: init fix
 	@docker-compose -f docker-compose.yml up -d --remove-orphans
 
@@ -136,6 +126,35 @@ reset: clean
 		read AGREE && [ "$${AGREE}" = "YES" ] && docker-compose down -v --remove-orphans
 
 ## -------
+## Develop
+## -------
+dev: \
+	init \
+	fix \
+	dev-clean \
+	dev-up \
+	dev-prepare-vtiger \
+	dev-prepare-mssql
+
+dev-up:
+	@docker-compose up -d
+
+dev-clean:
+	@docker-compose run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
+
+dev-prepare-vtiger:
+	@docker-compose exec vtiger1 bash dev/script/vtiger-install.sh
+	@docker-compose exec vtiger2 bash dev/script/vtiger-install.sh
+
+dev-prepare-mssql:
+	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -Q 'DROP DATABASE IF EXISTS MSSQL;'
+	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -Q 'CREATE DATABASE MSSQL COLLATE Latin1_General_CS_AS;'
+	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -i /fixtures/mssql.sql
+
+dev-create-random-contacts:
+	@docker-compose exec vtiger1 php -f dev/script/create-random-contacts.php
+
+## -------
 ## Testing
 ## -------
 test-dev: reset install setup dev
@@ -149,3 +168,12 @@ test-prod: reset install setup prod
 
 test-backup: up
 	@docker-compose -f docker-compose.yml logs -f backup
+
+
+test2:
+	@echo "TEST2"
+
+test1: \
+	test2 \
+	test3
+	@echo "TEST1"
