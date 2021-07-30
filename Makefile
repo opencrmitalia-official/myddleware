@@ -168,12 +168,3 @@ test-prod: reset install setup prod
 
 test-backup: up
 	@docker-compose -f docker-compose.yml logs -f backup
-
-
-test2:
-	@echo "TEST2"
-
-test1: \
-	test2 \
-	test3
-	@echo "TEST1"
