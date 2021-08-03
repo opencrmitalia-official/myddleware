@@ -885,7 +885,13 @@ class documentcore {
 						}
 					}
 					// If search document we close it. 
-					if ($this->documentType == 'S') {
+					if ($this->ruleMode == 'C' && $this->documentType == 'C') {
+                        $this->message .= 'This data already exists on target system. This document was ignored due to create-only rule type. ';
+                        $this->typeError = 'W';
+                        $this->updateStatus('No_send');
+                        $this->connection->commit();
+                        return true;
+                    } elseif ($this->documentType == 'S') {
 						$this->updateStatus('Found');
 					} else {
 						$this->updateStatus('Ready_to_send');
