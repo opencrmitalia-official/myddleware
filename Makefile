@@ -82,6 +82,9 @@ setup: setup-files setup-database
 schedule:
 	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:synchro 606ef32a933bb --env=background
 
+monitoring:
+	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh
+
 logs: debug
 	@docker-compose logs -f myddleware
 
