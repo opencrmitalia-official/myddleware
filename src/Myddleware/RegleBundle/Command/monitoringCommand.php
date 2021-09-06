@@ -45,5 +45,7 @@ class monitoringCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
 		$notification = $this->getContainer()->get('myddleware.notification');
+
+        echo "Hi!\n";
 	}
 }

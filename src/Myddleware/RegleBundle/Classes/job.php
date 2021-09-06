@@ -200,8 +200,8 @@ class jobcore  {
 	}
 	
 	// Fonction permettant d'initialiser le job
-	public function initJob($paramJob) {	
-		$this->paramJob = $paramJob;
+	public function initJob($paramJob) {
+        $this->paramJob = $paramJob;
 		$this->id = uniqid('', true);
 		$this->start = microtime(true);		
 		// Check if a job is already running

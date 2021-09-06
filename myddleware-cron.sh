@@ -5,7 +5,7 @@ source /run/crond.env
 
 ## Prepare log file
 LOG_DIR=/var/www/html/var/logs/scheduler/$(date +"%Y/%m/%d")
-LOG_FILE=${LOG_DIR}/$(date +"%s").log
+LOG_FILE=${LOG_DIR}/$(date +"%H%M").log
 mkdir -p ${LOG_DIR}
 touch ${LOG_FILE}
 chmod 777 -R ${LOG_DIR}
