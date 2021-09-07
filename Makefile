@@ -38,11 +38,6 @@ down:
 build:
 	@docker-compose build myddleware
 
-push:
-	@docker login
-	@docker build -t opencrmitalia/myddleware .
-	@docker push opencrmitalia/myddleware
-
 install: init up
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar install --ignore-platform-reqs --no-scripts
 	@echo "Install done."
@@ -129,6 +124,14 @@ docker-stop-all:
 reset: clean
 	@echo "===> Stai per cancellare tutto (digita: YES)?: " && \
 		read AGREE && [ "$${AGREE}" = "YES" ] && docker-compose down -v --remove-orphans
+
+## ----------
+## Docker Hub
+## ----------
+push:
+	@docker login
+	@docker build -t opencrmitalia/myddleware:v1 .
+	@docker push opencrmitalia/myddleware:v1
 
 ## -------
 ## Develop

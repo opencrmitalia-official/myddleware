@@ -207,11 +207,15 @@ class TaskController extends Controller
 
     protected function killSystemProcess()
     {
+        $killableProcesses = [
+            "php /var/www/html/bin/console myddleware:jobScheduler --env=background",
+            "php -f /var/www/html/bin/console myddleware:jobScheduler --env=background",
+        ];
         $processes = shell_exec('ps -xao pid,args');
         $processes = explode("\n", $processes);
         foreach ($processes as $process) {
             $process = explode(" ", trim($process), 2);
-            if ($process[1] == "php /var/www/html/bin/console myddleware:jobScheduler --env=background") {
+            if (in_array($process[1], $killableProcesses)) {
                 posix_kill($process[0], 9);
             }
         }
