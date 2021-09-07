@@ -44,7 +44,12 @@ class monitoringCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $alertTimeLimit = 20;
+        $customJson = json_decode(file_get_contents(__DIR__.'/../Custom/Custom.json'), true);
+        if (empty($customJson['alert_time_limit']) || $customJson['alert_time_limit'] <= 0) {
+            return;
+        }
+
+        $alertTimeLimit = intval($customJson['alert_time_limit']);
 
         $db = $this->getContainer()->get('database_connection');
         $notification = $this->getContainer()->get('myddleware.notification');
