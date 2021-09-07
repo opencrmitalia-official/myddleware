@@ -44,13 +44,11 @@ class monitoringCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $customJson = json_decode(file_get_contents(__DIR__.'/../Custom/Custom.json'), true);
-        var_dump($customJson);
-        if (empty($customJson['alert_time_limit']) || $customJson['alert_time_limit'] <= 0) {
-            return;
+        $alertTimeLimit = 0;
+        if (file_exists($customJsonFile = __DIR__.'/../Custom/Custom.json')) {
+            $customJson = json_decode(file_get_contents($customJsonFile), true);
+            $alertTimeLimit = isset($customJson['alert_time_limit']) ? intval($customJson['alert_time_limit']) : 0;
         }
-
-        $alertTimeLimit = intval($customJson['alert_time_limit']);
 
         $db = $this->getContainer()->get('database_connection');
         $notification = $this->getContainer()->get('myddleware.notification');
@@ -62,7 +60,7 @@ class monitoringCommand extends ContainerAwareCommand
 
         if (count($jobs) > 0) {
             foreach ($jobs as $job) {
-                if ($job['busy_time'] > $alertTimeLimit) {
+                if ($alertTimeLimit > 0 && $job['busy_time'] > $alertTimeLimit) {
                     echo "Sending alert notification...\n";
                     $notification->sendAlert($alertTimeLimit);
                     echo "Messages OK!\n";
