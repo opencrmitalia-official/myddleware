@@ -44,8 +44,25 @@ class monitoringCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-		$notification = $this->getContainer()->get('myddleware.notification');
+        $alertTimeLimit = 20;
 
-        echo "Hi!\n";
+        $db = $this->getContainer()->get('database_connection');
+        $notification = $this->getContainer()->get('myddleware.notification');
+
+        $sql = "SELECT *, TIMESTAMPDIFF(MINUTE, begin, NOW()) AS busy_time FROM Job WHERE status = 'Start'";
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        $jobs = $stmt->fetchAll();
+
+        if (count($jobs) > 0) {
+            foreach ($jobs as $job) {
+                if ($job['busy_time'] > $alertTimeLimit) {
+                    echo "Sending alert notification...\n";
+                    $notification->sendAlert($alertTimeLimit);
+                    echo "Messages OK!\n";
+                    break;
+                }
+            }
+        }
 	}
 }

@@ -1,4 +1,6 @@
-FROM php:7.2.27-apache
+#FROM php:7.2.27-apache
+FROM php:7.2.34-apache
+
 
 ENV ACCEPT_EULA=Y
 

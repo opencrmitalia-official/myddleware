@@ -14,7 +14,7 @@ chmod 777 -R ${LOG_DIR}
 echo $(date): Start Myddleware Sync >> /var/log/cron.log
 echo $(date): Start Myddleware Sync >> ${LOG_FILE}
 
-php /var/www/html/bin/console myddleware:jobScheduler --env=background >> ${LOG_FILE}
+php /var/www/html/bin/console myddleware:jobScheduler --env=background >> ${LOG_FILE} 2>&1
 
 echo $(date): End Myddleware Sync >> /var/log/cron.log
 echo $(date): End Myddleware Sync >> ${LOG_FILE}

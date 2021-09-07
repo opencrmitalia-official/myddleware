@@ -46,12 +46,18 @@ class notificationcore  {
 	}
 	
 	// Send alert if a job is running too long
-	public function sendAlert() {
+	public function sendAlert($alertTimeLimit = null) {
 		try {
-			$notificationParameter = $this->container->getParameter('notification');
-			if (empty($notificationParameter['alert_time_limit'])) {
-				throw new \Exception ('No alert time set in the parameters file. Please set the parameter alert_limit_minute in the file config/parameters.yml.');
-			}
+            if ($alertTimeLimit === null) {
+                $notificationParameter = $this->container->getParameter('notification');
+                if (empty($notificationParameter['alert_time_limit'])) {
+                    throw new \Exception ('No alert time set in the parameters file. Please set the parameter alert_limit_minute in the file config/parameters.yml.');
+                }
+            } else {
+                $notificationParameter = [
+                    'alert_time_limit' => $alertTimeLimit
+                ];
+            }
 			// Calculate the date corresponding to the beginning still authorised
 			$timeLimit = new \DateTime('now',new \DateTimeZone('GMT'));
 			$timeLimit->modify('-'.$notificationParameter['alert_time_limit'].' minutes');
@@ -81,19 +87,26 @@ class notificationcore  {
 					$textMail .= chr(10).$this->container->getParameter('base_uri').chr(10);
 				}
 				$textMail .= $this->tools->getTranslation(array('email_notification', 'best_regards')).chr(10).$this->tools->getTranslation(array('email_notification', 'signature'));
-				$message = \Swift_Message::newInstance()
+                $mailerUser = $this->container->getParameter('mailer_user');
+                $mailer = $this->container->get('mailer');
+
+                $defaultEmailFrom = filter_var($mailerUser, FILTER_VALIDATE_EMAIL) ? $mailerUser : (!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : ('no-reply@myddleware.com'));
+
+                $message = \Swift_Message::newInstance()
 					->setSubject($this->tools->getTranslation(array('email_alert', 'subject')))
-					->setFrom((!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : 'no-reply@myddleware.com'))
+					->setFrom($defaultEmailFrom)
 					->setBody($textMail)
 				;
 				// Send the message to all admins
 				foreach ($this->emailAddresses as $emailAddress) {
 					$message->setTo($emailAddress);
-					$send = $this->container->get('mailer')->send($message);
-					if (!$send) {
-						$this->logger->error('Failed to send alert email : '.$textMail.' to '.$contactMail);	
-						throw new \Exception ('Failed to send alert email : '.$textMail.' to '.$contactMail);
-					}			
+                    $send = $mailer->send($message);
+                    if ($send) {
+                        $this->logger->info('Alert email was sent to: '.$emailAddress);
+                    } else {
+						$this->logger->error('Failed to send alert email : '.$textMail.' to '.$emailAddress);
+						throw new \Exception ('Failed to send alert email : '.$textMail.' to '.$emailAddress);
+					}
 				}
 			}
 			return true;
