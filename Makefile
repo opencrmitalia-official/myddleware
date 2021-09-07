@@ -15,6 +15,7 @@ init:
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f vtigercrm.client.php ] || cp  ../../../../../var/solutions/vtigercrm.client.php vtigercrm.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f woocommerce.client.php ] || cp  ../../../../../var/solutions/woocommerce.client.php woocommerce.client.php
 	@cd var/databases && [ -d filebrowser.db ] && rm -fr filebrowser.db || true; touch filebrowser.db
+	@chmod 777 -R var/logs || true
 
 clean: init
 	@rm -fr .git/.idea >/dev/null 2>/dev/null || true
@@ -80,7 +81,8 @@ setup: setup-files setup-database
 	@echo "Setup Myddleware files and database: OK!"
 
 schedule:
-	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:synchro 606ef32a933bb --env=background
+	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:resetScheduler --env=background
+	@docker-compose -f docker-compose.yml exec -u www-data myddleware php -f /var/www/html/bin/console myddleware:jobScheduler --env=background
 
 monitoring:
 	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh

@@ -52,6 +52,7 @@ class TaskCommand extends ContainerAwareCommand {
 			// alias de la règle en params
 			$rule = $input->getArgument('rule');
 			$api = $input->getArgument('api');
+            var_dump($api);
 			// Récupération du Job			
 			$job = $this->getContainer()->get('myddleware_job.job');
 			// Clear message in case this task is run by jobscheduler. In this case message has to be refreshed.
@@ -80,7 +81,7 @@ class TaskCommand extends ContainerAwareCommand {
 								// Don't display rule id if the command is called from the api
 								if (empty($api)) {
 									echo $value.chr(10);
-                                    //sleep(10000000);
+                                    sleep(10000000);
 								}
 								$output->writeln('Read data for rule : <question>'.$value.'</question>');
 								// Chargement des données de la règle
