@@ -86,7 +86,7 @@ class TaskCommand extends ContainerAwareCommand {
                                     //sleep(10000000);
 								}
                                 if (getenv('MYDDLEWARE_CRON_RUN')) {
-                                    echo "Processing: $value\n";
+                                    echo "====[ Processing: $value ]====\n";
                                 }
 								$output->writeln('Read data for rule : <question>'.$value.'</question>');
 								// Chargement des données de la règle
@@ -99,7 +99,7 @@ class TaskCommand extends ContainerAwareCommand {
 									$nb = $job->createDocuments();
 									$output->writeln($value.' : Number of documents created : '.$nb);
                                     if (getenv('MYDDLEWARE_CRON_RUN')) {
-                                        echo $value.' => Number of documents created : '.$nb."\n";
+                                        echo $value.' => Number of documents created: '.$nb."\n";
                                     }
 
 									// Permet de filtrer les documents
