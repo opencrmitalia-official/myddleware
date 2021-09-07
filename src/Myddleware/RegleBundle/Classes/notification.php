@@ -92,8 +92,13 @@ class notificationcore  {
 
                 $defaultEmailFrom = filter_var($mailerUser, FILTER_VALIDATE_EMAIL) ? $mailerUser : (!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : ('no-reply@myddleware.com'));
 
+                $instanceName = 'Myddleware';
+                if (file_exists($customJsonFile = __DIR__.'/../Custom/Custom.json')) {
+                    $customJson = json_decode(file_get_contents($customJsonFile), true);
+                    $instanceName = isset($customJson['instance_name']) && $customJson['instance_name'] ? $customJson['instance_name'] : 'Myddleware';
+                }
                 $message = \Swift_Message::newInstance()
-					->setSubject($this->tools->getTranslation(array('email_alert', 'subject')))
+					->setSubject($this->tools->getTranslation(array('email_alert', 'subject')).' ['.$instanceName.']')
 					->setFrom($defaultEmailFrom)
 					->setBody($textMail)
 				;

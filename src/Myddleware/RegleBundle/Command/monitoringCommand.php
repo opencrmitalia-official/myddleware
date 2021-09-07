@@ -45,6 +45,7 @@ class monitoringCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $customJson = json_decode(file_get_contents(__DIR__.'/../Custom/Custom.json'), true);
+        var_dump($customJson);
         if (empty($customJson['alert_time_limit']) || $customJson['alert_time_limit'] <= 0) {
             return;
         }

@@ -83,7 +83,7 @@ class TaskCommand extends ContainerAwareCommand {
 								// Don't display rule id if the command is called from the api
 								if (empty($api)) {
 									echo "Rule: {$value}\n";
-                                    //sleep(10000000);
+                                    sleep(10000000);
 								}
                                 if (getenv('MYDDLEWARE_CRON_RUN')) {
                                     echo "====[ Processing: $value ]====\n";
