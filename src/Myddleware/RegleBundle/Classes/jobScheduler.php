@@ -159,6 +159,9 @@ class jobSchedulercore
     {
         if (!empty($this->jobsToRun)) {
             foreach ($this->jobsToRun as $jobToRun) {
+                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                    echo "Job: {$jobToRun['command']}\n";
+                }
                 $application = new Application($this->container->get('kernel'));
                 $application->setAutoExit(false);
                 $arguments = array(

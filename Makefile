@@ -78,7 +78,7 @@ setup: setup-files setup-database
 
 schedule:
 	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:resetScheduler --env=background
-	@docker-compose -f docker-compose.yml exec -u www-data myddleware php -f /var/www/html/bin/console myddleware:jobScheduler --env=background
+	@docker-compose -f docker-compose.yml exec -e MYDDLEWARE_CRON_RUN=1 -u www-data myddleware php /var/www/html/bin/console myddleware:jobScheduler --env=background
 
 monitoring:
 	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh
