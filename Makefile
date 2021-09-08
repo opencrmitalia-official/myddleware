@@ -14,7 +14,9 @@ init:
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f oracledb.client.php ] || cp  ../../../../../var/solutions/oracledb.client.php oracledb.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f vtigercrm.client.php ] || cp  ../../../../../var/solutions/vtigercrm.client.php vtigercrm.client.php
 	@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f woocommerce.client.php ] || cp  ../../../../../var/solutions/woocommerce.client.php woocommerce.client.php
+	@cd src/Myddleware/RegleBundle/Custom && [ -f Custom.json ] || cp  ../../../../var/custom/Custom.json Custom.json
 	@cd var/databases && [ -d filebrowser.db ] && rm -fr filebrowser.db || true; touch filebrowser.db
+	@chmod 777 -R var/logs || true
 
 clean: init
 	@rm -fr .git/.idea >/dev/null 2>/dev/null || true
@@ -36,11 +38,6 @@ down:
 
 build:
 	@docker-compose build myddleware
-
-push:
-	@docker login
-	@docker build -t opencrmitalia/myddleware .
-	@docker push opencrmitalia/myddleware
 
 install: init up
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar install --ignore-platform-reqs --no-scripts
@@ -80,7 +77,8 @@ setup: setup-files setup-database
 	@echo "Setup Myddleware files and database: OK!"
 
 schedule:
-	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:synchro 606ef32a933bb --env=background
+	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:resetScheduler --env=background
+	@docker-compose -f docker-compose.yml exec -e MYDDLEWARE_CRON_RUN=1 -u www-data myddleware php /var/www/html/bin/console myddleware:jobScheduler --env=background
 
 monitoring:
 	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh
@@ -127,6 +125,14 @@ docker-stop-all:
 reset: clean
 	@echo "===> Stai per cancellare tutto (digita: YES)?: " && \
 		read AGREE && [ "$${AGREE}" = "YES" ] && docker-compose down -v --remove-orphans
+
+## ----------
+## Docker Hub
+## ----------
+push:
+	@docker login
+	@docker build -t opencrmitalia/myddleware:v1 .
+	@docker push opencrmitalia/myddleware:v1
 
 ## -------
 ## Develop

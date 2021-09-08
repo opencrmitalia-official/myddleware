@@ -30,29 +30,29 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class jobSchedulerCommand extends ContainerAwareCommand {
+class resetSchedulerCommand extends ContainerAwareCommand
+{
 
     protected function configure() {
         $this
-            ->setName('myddleware:jobScheduler')
-            ->setDescription('Run every job in the scheduler')
+            ->setName('myddleware:resetScheduler')
+            ->setDescription('Reset scheduler timers')
         ;
     }
 
 	// Run the job scheduler
-    protected function execute(InputInterface $input, OutputInterface $output) {
+    protected function execute(InputInterface $input, OutputInterface $output)
+    {
 		try {
-            if (getenv('MYDDLEWARE_CRON_RUN')) {
-                echo "Starting job scheduler...\n";
-            }
-			$jobScheduler = $this->getContainer()->get('myddleware.jobScheduler');		
-			$jobScheduler->setJobsToRun();
-			$jobScheduler->runJobs();	
-		}
-		catch(\Exception $e) {
+            echo "Reset scheduler timers...\n";
+            $db = $this->getContainer()->get('database_connection');
+            $sql = "UPDATE JobScheduler SET lastRun = NULL WHERE active = 1";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            echo "Scheduler is ready.\n";
+		} catch(\Exception $e) {
 			echo $e->getMessage().chr(10);
 			$this->getContainer()->get('logger')->error($e->getMessage());
 		}
-		
 	}
 }

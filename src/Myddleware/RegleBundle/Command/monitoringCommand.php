@@ -44,8 +44,31 @@ class monitoringCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-		$notification = $this->getContainer()->get('myddleware.notification');
+        $alertTimeLimit = 0;
+        $instanceName = 'Myddleware';
+        if (file_exists($customJsonFile = __DIR__.'/../Custom/Custom.json')) {
+            $customJson = json_decode(file_get_contents($customJsonFile), true);
+            $instanceName = isset($customJson['instance_name']) && $customJson['instance_name'] ? $customJson['instance_name'] : 'Myddleware';
+            $alertTimeLimit = isset($customJson['alert_time_limit']) ? intval($customJson['alert_time_limit']) : 0;
+        }
 
-        echo "Hi!\n";
+        $db = $this->getContainer()->get('database_connection');
+        $notification = $this->getContainer()->get('myddleware.notification');
+
+        $sql = "SELECT *, TIMESTAMPDIFF(MINUTE, begin, NOW()) AS busy_time FROM Job WHERE status = 'Start'";
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        $jobs = $stmt->fetchAll();
+
+        if (count($jobs) > 0) {
+            foreach ($jobs as $job) {
+                if ($alertTimeLimit > 0 && $job['busy_time'] > $alertTimeLimit) {
+                    echo "Sending alert notification for '{$instanceName}'...\n";
+                    $notification->sendAlert($alertTimeLimit);
+                    echo "Messages OK!\n";
+                    break;
+                }
+            }
+        }
 	}
 }
