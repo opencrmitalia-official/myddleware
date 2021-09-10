@@ -577,18 +577,19 @@ class databasecore extends solution {
                     }
 
                     $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-                    if ($pdoDriverName == 'dblib' || $pdoDriverName == 'sqlsrv') {
+                    if ($pdoDriverName == 'dblib') {
                         $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
                     }
                     $exec = $q->execute();
 					if ($exec === false) {
 						$errorInfo = $this->pdo->errorInfo();
-                        if (empty($errorInfo[2])) {
-                            $errorInfo[2] = implode(', ', $errorInfo);
+                        if ($errorInfo[0] != '00000') {
+                            if (empty($errorInfo[2])) {
+                                $errorInfo[2] = implode(', ', $errorInfo);
+                            }
+    						throw new \Exception('Create: Execute '.$errorInfo[2].' . Query : '.$sql);
                         }
-						throw new \Exception('Create: Execute '.$errorInfo[2].' . Query : '.$sql);
-					}
-					
+                    }
 					// If the target reference field isn't in data sent
 					if (!isset($idTarget)) {
 						// If the target reference field is a primary key auto increment, we retrive the value here
