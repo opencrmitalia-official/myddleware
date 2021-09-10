@@ -411,12 +411,10 @@ class databasecore extends solution {
 			$exec = $q->execute();
 			if ($exec === false) {
 				$errorInfo = $this->pdo->errorInfo();
-                if ($errorInfo[0] != '00000') {
-                    if (empty($errorInfo[2])) {
-                        $errorInfo[2] = '['.$pdoDriverName.':'.$exec.'] '.implode(', ', $errorInfo);
-                    }
-                    throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
+                if (empty($errorInfo[2])) {
+                    $errorInfo[2] = '['.$pdoDriverName.':'.$exec.'] '.implode(', ', $errorInfo);
                 }
+                throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
 			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
 			$row = array();
@@ -583,12 +581,10 @@ class databasecore extends solution {
                     $exec = $q->execute();
 					if ($exec === false) {
 						$errorInfo = $this->pdo->errorInfo();
-                        if ($errorInfo[0] != '00000') {
-                            if (empty($errorInfo[2])) {
-                                $errorInfo[2] = implode(', ', $errorInfo);
-                            }
-    						throw new \Exception('Create: Execute '.$errorInfo[2].' . Query : '.$sql);
+                        if (empty($errorInfo[2])) {
+                            $errorInfo[2] = implode(', ', $errorInfo);
                         }
+                        throw new \Exception('Create: Execute '.$errorInfo[2].' . Query : '.$sql);
                     }
 					// If the target reference field isn't in data sent
 					if (!isset($idTarget)) {
