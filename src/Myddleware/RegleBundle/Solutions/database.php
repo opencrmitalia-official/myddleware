@@ -405,7 +405,7 @@ class databasecore extends solution {
 			// Appel de la requête
 			$q = $this->pdo->prepare($requestSQL);
             $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-            if ($pdoDriverName == 'dblib') {
+            if ($pdoDriverName == 'dblib' || $pdoDriverName == 'sqlsrv') {
                 $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             }
 			$exec = $q->execute();
@@ -575,7 +575,7 @@ class databasecore extends solution {
                     }
 
                     $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
-                    if ($pdoDriverName == 'dblib') {
+                    if ($pdoDriverName == 'dblib' || $pdoDriverName == 'sqlsrv') {
                         $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
                     }
                     $exec = $q->execute();
