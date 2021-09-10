@@ -33,7 +33,7 @@ class microsoftsqlbase extends microsoftsqlcore
         return 'SELECT table_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_catalog = \''.$this->paramConnexion['database_name'].'\'';
     }
 
-    // Query to get all the flieds of the table
+    // Query to get all the fields of the table
     protected function get_query_describe_table($table) {
         return 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = \''.$table.'\'';
     }
