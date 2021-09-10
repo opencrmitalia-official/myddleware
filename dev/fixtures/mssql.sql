@@ -23,11 +23,16 @@ CREATE TABLE A_Aziende (
        RagioneSociale VARCHAR(255),
        Email VARCHAR(255),
        City VARCHAR(255),
+       DataInizioAttivita DATE,
+       DataInvioCedolini DATETIME
        DataUltimaModifica DATETIME,
        IsDeleted BIT
 );
 
-INSERT INTO A_Aziende (AziendaID, RagioneSociale, Email, City, DataUltimaModifica, IsDeleted) VALUES (1, 'MulinoBianco', 'mario@mulino.it', 'Milano', '2021-01-01 12:00:00', 0)
+INSERT INTO A_Aziende (AziendaID, RagioneSociale, Email, City, DataInizioAttivita, DataInvioCedolini, DataUltimaModifica, IsDeleted)
+    VALUES
+       (1, 'MulinoBianco', 'mario@mulino.it', 'Milano', '2001-11-11', '2021-05-05 16:10:23', '2021-01-01 12:00:00', 0),
+       (2, 'MulinoVerde', 'colore@verde.it', 'Napoli', '2003-02-02', '2021-07-07 10:11:03',  '2021-01-02 12:00:00', 0),
 
 --
 -- Gestione Prodotti/Listini

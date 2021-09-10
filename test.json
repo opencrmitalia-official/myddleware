@@ -1,0 +1,101 @@
+{
+  "param": {
+    "module": "VW_PriceLists",
+    "rule": {
+      "id": "600159b39dd96",
+      "conn_id_source": "1",
+      "conn_id_target": "2",
+      "date_created": "2021-01-15 09:00:35",
+      "date_modified": "2021-02-10 13:39:15",
+      "created_by": "1",
+      "modified_by": "1",
+      "module_source": "VW_PriceLists",
+      "module_target": "Prices",
+      "active": "0",
+      "deleted": "0",
+      "name": "Special prices from dhw",
+      "name_slug": "special_prices_from_dhw",
+      "mode": "0"
+    },
+    "date_ref": "2021-09-09 08:30:00.000",
+    "ruleParams": {
+      "description": "",
+      "limit": "10",
+      "delete": "60",
+      "datereference": "2021-09-09 08:30:00",
+      "fieldId": "Key",
+      "fieldDateRef": "LastUpdateDate",
+      "mode": "0"
+    },
+    "fields": {
+      "0": "CardCode",
+      "1": "Currency",
+      "2": "ItemCode",
+      "3": "Key",
+      "4": "LineNum",
+      "5": "LineNum1",
+      "6": "Price",
+      "7": "Quantity",
+      "8": "SubsidCode",
+      "9": "Type",
+      "10": "ValidFrom",
+      "11": "ValidTo",
+      "12": "ValidFor",
+      "14": "LastUpdateDate"
+    },
+    "offset": 0,
+    "limit": 11,
+    "jobId": "613b25a8a69c25.14757642",
+    "manual": 1
+  },
+  "result": [
+    {
+      "CardCode": "C00287",
+      "Currency": "EUR",
+      "ItemCode": "1000365",
+      "Key": "000011301C00287100036560",
+      "LineNum": 6,
+      "LineNum1": 0,
+      "Price": 5.77,
+      "Quantity": null,
+      "SubsidCode": "00001130",
+      "Type": 1,
+      "ValidFrom": "Jul  1 2021 12:00:00:AM",
+      "ValidTo": "Dec 31 2021 12:00:00:AM",
+      "ValidFor": "Y",
+      "LastUpdateDate": "2021-09-09 08:30:00"
+    },
+    {
+      "CardCode": "C00448",
+      "Currency": "EUR",
+      "ItemCode": "1002666",
+      "Key": "000011301C00448100266610",
+      "LineNum": 1,
+      "LineNum1": 0,
+      "Price": 22,
+      "Quantity": null,
+      "SubsidCode": "00001130",
+      "Type": 1,
+      "ValidFrom": "Jul  1 2021 12:00:00:AM",
+      "ValidTo": "Dec 31 2021 12:00:00:AM",
+      "ValidFor": "Y",
+      "LastUpdateDate": "2021-09-09 09:10:01"
+    },
+    {
+      "CardCode": "C01771",
+      "Currency": "EUR",
+      "ItemCode": "1003116",
+      "Key": "000011301C01771100311600",
+      "LineNum": 0,
+      "LineNum1": 0,
+      "Price": 11.5,
+      "Quantity": null,
+      "SubsidCode": "00001130",
+      "Type": 1,
+      "ValidFrom": "Sep  9 2021 12:00:00:AM",
+      "ValidTo": "Dec 31 2021 12:00:00:AM",
+      "ValidFor": "Y",
+      "LastUpdateDate": "2021-09-09 16:40:00"
+    }
+  ]
+}
