@@ -7,6 +7,13 @@ class microsoftsqlbase extends microsoftsqlcore
     protected $readDeletion = true;
     protected $sendDeletion = true;
 
+    protected function set_driver()
+    {
+        /* Cambiare il driver solo se necessario (consigliamo 'sqlsrv') */
+        #$this->driver = 'dblib';
+        $this->driver = 'sqlsrv';
+    }
+
     public function read($param)
     {
         // Redefine reference date format (add milliseconds)
