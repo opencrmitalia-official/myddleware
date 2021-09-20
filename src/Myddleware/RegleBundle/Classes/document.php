@@ -1282,7 +1282,7 @@ class documentcore {
 					try {
 					    eval($f.';'); // exec
 					} catch (\ParseError $e) {
-						throw new \Exception( 'FATAL error because of Invalid formula "'.$ruleField['formula'].';" : '.$e->getMessage());	
+						throw new \Exception( 'FATAL error because of Invalid formula "'.$ruleField['formula'].';" converted as "'.$f.';" : '.$e->getMessage());
 					}
 					// Execute eval only if formula is valid
 					eval('$rFormula = '.$f.';'); // exec
