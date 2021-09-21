@@ -76,7 +76,7 @@ CREATE TABLE C_FattureDettagli (
     Subtotale MONEY
 )
 
-INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, Totale) VALUES
+INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, Prezzo, Quantita, Subtotale) VALUES
 (1, 1, 10, 1, 10),
 (1, 2, 12, 1, 12),
 (1, 2, 9, 1, 9),
