@@ -60,29 +60,45 @@ CREATE TABLE B_ListiniProdotti (
 
 INSERT INTO B_ListiniProdotti (ListinoID, ProdottoID, Prezzo) VALUES (1, 1, 10), (2, 1, 9)
 
+CREATE TABLE C_Aliquote (
+    AliquotaID INT,
+    Descrizione VARCHAR(255),
+    Percentuale INT
+);
+
+INSERT INTO C_Aliquote (AliquotaID, Descrizione, Percentuale) VALUES
+(1, 'Aliquota Base', 22),
+(2, 'Aliquita Ridotta', 10),
+(3, 'Non Tassabile', 0)
+
 CREATE TABLE C_Fatture (
     FatturaID INT,
     ClienteID INT,
-    Totale MONEY
+    Totale MONEY,
+    DataAgg DATETIME
 );
 
-INSERT INTO C_Fatture (FatturaID, ClienteID, Totale) VALUES (1, 1, 10), (2, 1, 9), (3, 1, 9)
+INSERT INTO C_Fatture (FatturaID, ClienteID, Totale, DataAgg) VALUES
+(1, 1, 10, '2021-07-07 10:11:03'),
+(2, 1, 9, '2021-05-07 15:19:13'),
+(3, 1, 9, '2021-03-07 18:12:43')
 
 CREATE TABLE C_FattureDettagli (
     FatturaID INT,
     ProdottoID INT,
+    AliquotaID INT,
     Prezzo MONEY,
     Quantita INT,
     Subtotale MONEY
 )
 
-INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, Prezzo, Quantita, Subtotale) VALUES
-(1, 1, 10, 1, 10),
-(1, 2, 12, 1, 12),
-(1, 2, 9, 1, 9),
-(2, 1, 10, 1, 10),
-(2, 1, 9, 1, 9),
-(2, 2, 9, 1, 9),
-(3, 1, 10, 1, 10),
-(3, 2, 9, 1, 9),
-(3, 2, 9, 1, 9)
+INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, AliquotaID, Prezzo, Quantita, Subtotale) VALUES
+(1, 1, 1, 10, 1, 10),
+(1, 2, 2, 12, 1, 12),
+(1, 2, 3, 9, 1, 9),
+(2, 1, 1, 10, 1, 10),
+(2, 1, 2, 9, 1, 9),
+(2, 2, 3, 9, 1, 9),
+(3, 1, 1, 10, 1, 10),
+(3, 2, 2, 9, 1, 9),
+(3, 2, 3, 9, 1, 9)
