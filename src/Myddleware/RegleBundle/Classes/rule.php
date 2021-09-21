@@ -1369,7 +1369,7 @@ class rulecore {
 				
 		foreach ($documents as $document) {		
 			// If the rule is a parent, we have to get the data of all rules child		
-			$childRules = $this->getChildRules();		
+            $childRules = $this->getChildRules();
 			if (!empty($childRules)) {
 				foreach($childRules as $childRule) {
 					$ruleChildParam['ruleId'] = $childRule['field_id'];

@@ -147,7 +147,7 @@ class vtigercrmcore extends solution
      *
      */
     protected $customRelatedFields = [
-        '*Module*' => ['*field1*', '*field2*']
+        //'*Module*' => ['*field1*', '*field2*']
     ];
 
     /**
