@@ -251,9 +251,12 @@ class solutioncore {
 	
 	
 	// Méthode permettant de renvoyer l'attribut fieldsRelate
-	public function get_module_fields_relate($module,$param) {
-		if(isset($module))
-			$this->addRequiredRelationship($module);
+	public function get_module_fields_relate($module,$param)
+    {
+		if (isset($module)) {
+            $this->addRequiredRelationship($module);
+        }
+
 		return $this->fieldsRelate;
 	}
 	

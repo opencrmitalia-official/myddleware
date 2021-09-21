@@ -32,6 +32,13 @@ class opencrmitaliacore extends vtigercrm
     /**
      *
      */
+    protected $customRelatedFields = [
+        'LineItem' => ['suitetaxrate_id'],
+    ];
+
+    /**
+     *
+     */
     protected $cacheDescribedModules = [];
 
 	/**
@@ -114,8 +121,7 @@ class opencrmitaliacore extends vtigercrm
                 }
                 $fields[] = $field;
             }
-            //var_dump($fields);
-            //die();
+
             return $this->populateModuleFieldsFromVtigerModule($fields, $module, $type);
         }
 
