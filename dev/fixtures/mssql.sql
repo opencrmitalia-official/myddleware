@@ -43,7 +43,7 @@ CREATE TABLE B_Prodotti (
     Prezzo MONEY
 )
 
-INSERT INTO B_Prodotti (ProdottoID, Descrizione, Prezzo) VALUES (1, 'Zucchero', 10.5)
+INSERT INTO B_Prodotti (ProdottoID, Descrizione, Prezzo) VALUES (1, 'Zucchero', 10.5), (2, 'Sale', 12.5)
 
 CREATE TABLE B_Listini (
     ListinoID INT,
@@ -59,3 +59,30 @@ CREATE TABLE B_ListiniProdotti (
 )
 
 INSERT INTO B_ListiniProdotti (ListinoID, ProdottoID, Prezzo) VALUES (1, 1, 10), (2, 1, 9)
+
+CREATE TABLE C_Fatture (
+    FatturaID INT,
+    ClienteID INT,
+    Totale MONEY
+);
+
+INSERT INTO C_Fatture (FatturaID, ClienteID, Totale) VALUES (1, 1, 10), (2, 1, 9), (3, 1, 9)
+
+CREATE TABLE C_FattureDettagli (
+    FatturaID INT,
+    ProdottoID INT,
+    Prezzo MONEY,
+    Quantita INT,
+    Subtotale MONEY
+)
+
+INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, Totale) VALUES
+(1, 1, 10, 1, 10),
+(1, 2, 12, 1, 12),
+(1, 2, 9, 1, 9),
+(2, 1, 10, 1, 10),
+(2, 1, 9, 1, 9),
+(2, 2, 9, 1, 9),
+(3, 1, 10, 1, 10),
+(3, 2, 9, 1, 9),
+(3, 2, 9, 1, 9)
