@@ -1309,7 +1309,7 @@ class documentcore {
 				}
 				
 				// If the relationship is a parent type, we don't search the id in the child rule now. Data will be read from the child rule when we will send the parent document. So no target id is required now.
-				if (!empty($ruleField['parent'])) {
+                if (!empty($ruleField['parent'])) {
 					return null;
 				}
 				
