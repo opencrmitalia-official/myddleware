@@ -795,8 +795,10 @@ class documentcore {
 			$this->connection->rollBack(); // -- ROLLBACK TRANSACTION
 			$this->message .= 'Failed to transform document : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
 			$this->typeError = 'E';
-			$this->updateStatus('Error_transformed');
-			$this->logger->error($this->message);
+            $this->updateStatus('Error_transformed');
+			if ($this->message) {
+                $this->logger->error($this->message);
+            }
 			return false;
 		}	
 	}
@@ -1729,7 +1731,6 @@ class documentcore {
 		try {
 			// On ajoute un contôle dans le cas on voudrait changer le statut
 			$new_status = $this->beforeStatusChange($new_status);
-			
 			$now = gmdate('Y-m-d H:i:s');
 			// Récupération du statut global
 			$globalStatus = $this->globalStatus[$new_status];
