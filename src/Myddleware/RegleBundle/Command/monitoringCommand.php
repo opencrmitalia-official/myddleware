@@ -60,7 +60,12 @@ class monitoringCommand extends ContainerAwareCommand
             $alertReminderTime = isset($customJson['alert_reminder_time']) ? intval($customJson['alert_reminder_time']) : 0;
         }
 
-        $this->alertNotification();
+        $this->alertNotification(
+            $instanceName,
+            $notificationStatus,
+            $alertTimeLimit,
+            $alertReminderTime
+        );
 
         file_get_contents($notificationFile, json_encode($notificationStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 	}
@@ -68,7 +73,7 @@ class monitoringCommand extends ContainerAwareCommand
     /**
      *
      */
-    protected function alertNotification()
+    protected function alertNotification($instanceName, &$notificationStatus, $alertTimeLimit, $alertReminderTime)
     {
         $db = $this->getContainer()->get('database_connection');
         $notification = $this->getContainer()->get('myddleware.notification');
