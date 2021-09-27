@@ -158,7 +158,7 @@ class notificationcore  {
 			$stmt = $this->connection->prepare($sqlParams);
 			$stmt->execute();	   				
 			$cptLogs = $stmt->fetchAll();
-			$job_open = 0;
+            $job_open = 0;
 			$job_close = 0;
 			$job_cancel = 0;
 			$job_error = 0;
@@ -203,7 +203,7 @@ class notificationcore  {
 			else {
 				$textMail .= chr(10).$this->tools->getTranslation(array('email_notification', 'no_active_rule')).chr(10);
 			}
-			
+
 			// Get errors since the last notification
 			if ($job_error > 0) {
 				$sqlParams = "	SELECT
@@ -247,19 +247,27 @@ class notificationcore  {
 			}
 			// Create text
 			$textMail .= chr(10).$this->tools->getTranslation(array('email_notification', 'best_regards')).chr(10).$this->tools->getTranslation(array('email_notification', 'signature'));
-					
-			$message = \Swift_Message::newInstance()
-				->setSubject($this->tools->getTranslation(array('email_notification', 'subject')))
- 				->setFrom((!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : 'no-reply@myddleware.com'))
+
+            $mailerUser = $this->container->getParameter('mailer_user');
+            $defaultEmailFrom = filter_var($mailerUser, FILTER_VALIDATE_EMAIL) ? $mailerUser : (!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : ('no-reply@myddleware.com'));
+            $instanceName = 'Myddleware';
+            if (file_exists($customJsonFile = __DIR__.'/../Custom/Custom.json')) {
+                $customJson = json_decode(file_get_contents($customJsonFile), true);
+                $instanceName = isset($customJson['instance_name']) && $customJson['instance_name'] ? $customJson['instance_name'] : 'Myddleware';
+            }
+            $message = \Swift_Message::newInstance()
+				->setSubject($this->tools->getTranslation(array('email_notification', 'subject')).' ['.$instanceName.']')
+ 				->setFrom($defaultEmailFrom)
 				->setBody($textMail)
 			;
+
 			// Send the message to all admins
 			foreach ($this->emailAddresses as $emailAddress) {
-				$message->setTo($emailAddress);
+                $message->setTo($emailAddress);
 				$send = $this->container->get('mailer')->send($message);
 				if (!$send) {
-					$this->logger->error('Failed to send email : '.$textMail.' to '.$contactMail);	
-					throw new \Exception ('Failed to send email : '.$textMail.' to '.$contactMail);
+					$this->logger->error('Failed to send email : '.$textMail.' to '.$emailAddress);
+					throw new \Exception ('Failed to send email : '.$textMail.' to '.$emailAddress);
 				}			
 			}
 			return true;

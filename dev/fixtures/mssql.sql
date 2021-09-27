@@ -81,7 +81,7 @@ CREATE TABLE C_Fatture (
 INSERT INTO C_Fatture (FatturaID, ClienteID, Totale, DataAgg) VALUES
 (1, 1, 10, '2021-07-07 10:11:03'),
 (2, 1, 9, '2021-05-07 15:19:13'),
-(3, 1, 9, '2021-03-07 18:12:43')
+(3, 1, 9, '2021-03-07 18:12:43');
 
 CREATE TABLE C_FattureDettagli (
     FatturaID INT,
@@ -90,7 +90,7 @@ CREATE TABLE C_FattureDettagli (
     Prezzo MONEY,
     Quantita INT,
     Subtotale MONEY
-)
+);
 
 INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, AliquotaID, Prezzo, Quantita, Subtotale) VALUES
 (1, 1, 1, 10, 1, 10),
@@ -101,4 +101,18 @@ INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, AliquotaID, Prezzo, Quanti
 (2, 2, 3, 9, 1, 9),
 (3, 1, 1, 10, 1, 10),
 (3, 2, 2, 9, 1, 9),
-(3, 2, 3, 9, 1, 9)
+(3, 2, 3, 9, 1, 9);
+
+CREATE TABLE D_Sedi (
+   IdSede INT,
+   NomeSede VARCHAR(100),
+   CittaSede VARCHAR(100),
+   Affitto MONEY,
+   DataAgg DATETIME
+);
+
+INSERT INTO D_Sedi (IdSede, NomeSede, CittaSede, Affitto, DataAgg) VALUES
+(1, 'Sede Rossa', 'Palermo', 10, '2021-01-01'),
+(2, 'Sede Verde', 'Milano', 12, '2021-01-01'),
+(3, 'Sede Bianca', 'Bologna', 9, '2021-01-01'),
+(4, 'Sede Blu', 'Torino', 10, '2021-01-01');
