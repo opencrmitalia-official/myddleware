@@ -44,6 +44,7 @@ class monitoringCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $customJson = [];
         $alertTimeLimit = 0;
         $alertReminderTime = 0;
         $instanceName = 'Myddleware';
@@ -66,6 +67,10 @@ class monitoringCommand extends ContainerAwareCommand
             $alertTimeLimit,
             $alertReminderTime
         );
+
+        $this->sendLastUpdatesToCrm($customJson);
+
+        $this->problemNotifications();
 
         file_get_contents($notificationFile, json_encode($notificationStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 	}
