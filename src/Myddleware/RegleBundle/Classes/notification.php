@@ -260,7 +260,7 @@ class notificationcore  {
                 $instanceName = isset($customJson['instance_name']) && $customJson['instance_name'] ? $customJson['instance_name'] : 'Myddleware';
             }
             $message = \Swift_Message::newInstance()
-				->setSubject($this->tools->getTranslation(array('email_notification', 'subject')).' ['.$instanceName.']')
+				->setSubject(($hasProblem?'(PROBLEM) ':'').$this->tools->getTranslation(array('email_notification', 'subject')).' ['.$instanceName.']')
  				->setFrom($defaultEmailFrom)
 				->setBody($textMail)
 			;
