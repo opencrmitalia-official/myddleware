@@ -293,7 +293,23 @@ class notificationcore  {
 			}
 		}
 	}
-	
+
+    /**
+     *
+     */
+    public function takeNoteAboutProblem($problemType, $problem)
+    {
+        $problemStatus = [];
+        $problemFile = $this->getContainer()->get('kernel')->getLogDir().'/problem.json';
+        if (file_exists($problemFile)) {
+            $problemStatus = json_decode(file_get_contents($problemFile), true);
+        }
+
+        $problemStatus[$problemType] = is_array($problem) ? $problem : ['problem' => $problem];
+        $problemStatus[$problemType]['problem_time'] = date('Y-m-d H:i:s');
+
+        file_get_contents($problemFile, json_encode($problemStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
 }
 
 

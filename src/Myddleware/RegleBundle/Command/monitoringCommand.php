@@ -68,11 +68,11 @@ class monitoringCommand extends ContainerAwareCommand
             $alertReminderTime
         );
 
-        $this->sendLastUpdatesToCrm($customJson);
+        $this->sendLastUpdatesToCrm($instanceName, $notificationStatus, $customJson);
 
-        $this->problemNotifications();
+        //$this->problemNotifications();
 
-        file_get_contents($notificationFile, json_encode($notificationStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents($notificationFile, json_encode($notificationStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 	}
 
     /**
@@ -91,18 +91,58 @@ class monitoringCommand extends ContainerAwareCommand
         if (count($jobs) > 0) {
             foreach ($jobs as $job) {
                 if ($alertTimeLimit > 0 && $job['busy_time'] > $alertTimeLimit) {
-                    $waitForNotification = round($alertReminderTime - ((time() - @$notificationStatus['last_alert']) / 60));
-                    if ($waitForNotification < 0) {
+                    $waitForNotification = floor($alertReminderTime - ((time() - @$notificationStatus['last_alert']) / 60)) + 1;
+                    if ($waitForNotification <= 0) {
                         echo "Sending alert notification for '{$instanceName}'...\n";
                         $notificationStatus['last_alert'] = time();
                         $notification->sendAlert($alertTimeLimit);
                         echo "Messages OK!\n";
                         break;
                     } else {
-                        echo "Postpone alert notification for '{$instanceName}' due to reminder until $waitForNotification minutes.\n";
+                        echo "Postpone alert notification due to reminder in less than $waitForNotification minutes.\n";
                     }
                 }
             }
         }
+    }
+
+    /**
+     *
+     */
+    protected function sendLastUpdatesToCrm($instanceName, &$notificationStatus, $customJson)
+    {
+        var_dump($customJson);
+        if (empty($customJson['feedback_crm_url']) || empty($customJson['feedback_crm_username'])) {
+            echo "Empty CRM feedback settings.\n";
+            return;
+        }
+
+        $waitForFeedback = floor($customJson['feedback_time'] - ((time() - @$notificationStatus['last_feedback']) / 60)) + 1;
+        if ($waitForFeedback > 0) {
+            echo "Postpone feedback notification for '{$instanceName}' due to reminder until $waitForFeedback minutes.\n";
+            return;
+        }
+
+        $notificationStatus['last_feedback'] = time();
+
+        $db = $this->getContainer()->get('database_connection');
+        $sql = "SELECT `end` FROM Job WHERE `status` = 'End' ORDER BY `end` DESC LIMIT 1";
+        $stmt = $db->prepare($sql);
+        $stmt->execute();
+        $job = $stmt->fetch();
+        $jobDate = '';
+        $jobTime = '';
+
+        $client = new \Javanile\VtigerClient\VtigerClient([
+            'endpoint' => $customJson['feedback_crm_url'],
+        ]);
+
+        $client->login($customJson['feedback_crm_url'], $customJson['feedback_crm_access_key']);
+
+        $response = $client->revise($customJson['feedback_crm_module'], [
+            'id' => $customJson['feedback_crm_module'],
+            $customJson['feedback_crm_date_field'] => $jobDate,
+            $customJson['feedback_crm_time_field'] => $jobTime,
+        ]);
     }
 }
