@@ -337,7 +337,7 @@ class notificationcore  {
     /**
      *
      */
-    public function getProblemHasString()
+    public function getProblemAsString()
     {
         $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
         if (!file_exists($problemFile)) {
