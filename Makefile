@@ -178,3 +178,8 @@ test-prod: reset install setup prod
 
 test-backup: up
 	@docker-compose -f docker-compose.yml logs -f backup
+
+test-monitoring:
+	@docker-compose -f docker-compose.yml exec myddleware rm -f /var/www/html/var/logs/monitoring.log
+	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh
+	@docker-compose -f docker-compose.yml exec myddleware cat /var/www/html/var/logs/monitoring.log
