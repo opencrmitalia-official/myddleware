@@ -123,7 +123,7 @@ class notificationcore  {
 	}
 	
 	// Send notification to receive statistique about myddleware data transfer
-	public function sendNotification() {
+	public function sendNotification($hasProblem = false) {
 		try {
 			// Check that we have at least one email address
 			if (empty($this->emailAddresses)) {
@@ -132,6 +132,10 @@ class notificationcore  {
 			
 			// Write the introduction
 			$textMail = $this->tools->getTranslation(array('email_notification', 'hello')).chr(10).chr(10).$this->tools->getTranslation(array('email_notification', 'introduction')).chr(10);
+
+            if ($hasProblem) {
+                $textMail .= $this->getProblemAsString();
+            }
 
 			// Récupération du nombre de données transférées depuis la dernière notification. On en compte qu'une fois les erreurs
 			$sqlParams = "	SELECT
@@ -268,8 +272,12 @@ class notificationcore  {
 				if (!$send) {
 					$this->logger->error('Failed to send email : '.$textMail.' to '.$emailAddress);
 					throw new \Exception ('Failed to send email : '.$textMail.' to '.$emailAddress);
-				}			
+				}
 			}
+            if ($hasProblem) {
+                $this->unsetProblem();
+            }
+
 			return true;
 		} catch (\Exception $e) {
 			$error = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
@@ -300,7 +308,7 @@ class notificationcore  {
     public function takeNoteAboutProblem($problemType, $problem)
     {
         $problemStatus = [];
-        $problemFile = $this->getContainer()->get('kernel')->getLogDir().'/problem.json';
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
         if (file_exists($problemFile)) {
             $problemStatus = json_decode(file_get_contents($problemFile), true);
         }
@@ -308,7 +316,44 @@ class notificationcore  {
         $problemStatus[$problemType] = is_array($problem) ? $problem : ['problem' => $problem];
         $problemStatus[$problemType]['problem_time'] = date('Y-m-d H:i:s');
 
-        file_get_contents($problemFile, json_encode($problemStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        file_put_contents($problemFile, json_encode($problemStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     *
+     */
+    public function hasProblem()
+    {
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        if (!file_exists($problemFile)) {
+            return false;
+        }
+
+        $problemStatus = json_decode(file_get_contents($problemFile), true);
+
+        return !empty($problemStatus);
+    }
+
+    /**
+     *
+     */
+    public function getProblemHasString()
+    {
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        if (!file_exists($problemFile)) {
+            return '';
+        }
+
+        return chr(10)."*** INSTANCE WITH PROBLEM ***".chr(10).file_get_contents($problemFile).chr(10).chr(10);
+    }
+
+    /**
+     *
+     */
+    public function unsetProblem()
+    {
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        unlink($problemFile);
     }
 }
 

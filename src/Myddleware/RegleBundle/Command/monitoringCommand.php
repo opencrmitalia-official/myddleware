@@ -70,7 +70,7 @@ class monitoringCommand extends ContainerAwareCommand
 
         $this->sendLastUpdatesToCrmFeedback($instanceName, $notificationStatus, $customJson);
 
-        //$this->problemNotifications();
+        $this->problemNotification($instanceName, $notificationStatus);
 
         file_put_contents($notificationFile, json_encode($notificationStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 	}
@@ -118,7 +118,7 @@ class monitoringCommand extends ContainerAwareCommand
 
         $waitForFeedback = floor($customJson['feedback_time'] - ((time() - @$notificationStatus['last_feedback']) / 60)) + 1;
         if ($waitForFeedback > 0) {
-            echo "Postpone feedback notification due to feedback time settings until $waitForFeedback minutes.\n";
+            echo "Postpone feedback due to time settings in less then $waitForFeedback minutes.\n";
             return;
         }
 
@@ -156,6 +156,19 @@ class monitoringCommand extends ContainerAwareCommand
             return;
         }
 
-        echo "Updated CRM feedback with '{$response['result'][$customJson['feedback_crm_date_field']]}' and '{$response['result'][$customJson['feedback_crm_time_field']]}'.\n";
+        echo "Updated CRM feedback for instance '{$instanceName}' with '{$response['result'][$customJson['feedback_crm_date_field']]}' and '{$response['result'][$customJson['feedback_crm_time_field']]}'.\n";
+    }
+
+    /**
+     *
+     */
+    protected function problemNotification($instanceName, &$notificationStatus)
+    {
+        $notification = $this->getContainer()->get('myddleware.notification');
+        if (!$notification->hasProblem()) {
+            return;
+        }
+
+        $notification->sendNotification(true);
     }
 }
