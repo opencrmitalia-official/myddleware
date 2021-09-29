@@ -68,7 +68,7 @@ class monitoringCommand extends ContainerAwareCommand
             $alertReminderTime
         );
 
-        $this->sendLastUpdatesToCrm($instanceName, $notificationStatus, $customJson);
+        $this->sendLastUpdatesToCrmFeedback($instanceName, $notificationStatus, $customJson);
 
         //$this->problemNotifications();
 
@@ -109,9 +109,8 @@ class monitoringCommand extends ContainerAwareCommand
     /**
      *
      */
-    protected function sendLastUpdatesToCrm($instanceName, &$notificationStatus, $customJson)
+    protected function sendLastUpdatesToCrmFeedback($instanceName, &$notificationStatus, $customJson)
     {
-        var_dump($customJson);
         if (empty($customJson['feedback_crm_url']) || empty($customJson['feedback_crm_username'])) {
             echo "Empty CRM feedback settings.\n";
             return;
@@ -119,7 +118,7 @@ class monitoringCommand extends ContainerAwareCommand
 
         $waitForFeedback = floor($customJson['feedback_time'] - ((time() - @$notificationStatus['last_feedback']) / 60)) + 1;
         if ($waitForFeedback > 0) {
-            echo "Postpone feedback notification for '{$instanceName}' due to reminder until $waitForFeedback minutes.\n";
+            echo "Postpone feedback notification due to feedback time settings until $waitForFeedback minutes.\n";
             return;
         }
 
@@ -130,19 +129,33 @@ class monitoringCommand extends ContainerAwareCommand
         $stmt = $db->prepare($sql);
         $stmt->execute();
         $job = $stmt->fetch();
-        $jobDate = '';
-        $jobTime = '';
+        if (empty($job['end']) || !preg_match('/202[0-9]-[01][0-9]-[0-3][0-9] [012][0-9]:[0-5][0-9]:[0-5][0-9]/', $job['end'])) {
+            echo "Corrupted value on last job '{$job['end']}'.\n";
+            return;
+        }
+        $jobDate = date('Y-m-d', strtotime($job['end']));
+        $jobTime = date('H:i:s', strtotime($job['end']));
 
         $client = new \Javanile\VtigerClient\VtigerClient([
             'endpoint' => $customJson['feedback_crm_url'],
         ]);
 
-        $client->login($customJson['feedback_crm_url'], $customJson['feedback_crm_access_key']);
+        $response = $client->login($customJson['feedback_crm_username'], $customJson['feedback_crm_access_key']);
+        if (empty($response['success'])) {
+            echo "Access problem with CRM for feedback.\n";
+            return;
+        }
 
         $response = $client->revise($customJson['feedback_crm_module'], [
-            'id' => $customJson['feedback_crm_module'],
+            'id' => $customJson['feedback_crm_record'],
             $customJson['feedback_crm_date_field'] => $jobDate,
             $customJson['feedback_crm_time_field'] => $jobTime,
         ]);
+        if (empty($response['success'])) {
+            echo "Communication problem with CRM for feedback.\n";
+            return;
+        }
+
+        echo "Updated CRM feedback with '{$response['result'][$customJson['feedback_crm_date_field']]}' and '{$response['result'][$customJson['feedback_crm_time_field']]}'.\n";
     }
 }
