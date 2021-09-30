@@ -279,7 +279,8 @@ class documentcore {
 			// Création de la requête d'entête
 			$date_modified = $this->data['date_modified'];
 			// Source_id could contain accent
-			$query_header .= "('$this->id','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode(addcslashes($this->sourceId,'\\'))."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
+			$quotedId = $this->connection->quote($this->id);
+            $query_header .= "('$quotedId','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode(addcslashes($this->sourceId,'\\'))."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
 			$stmt = $this->connection->prepare($query_header); 
 			$stmt->execute();
 			$this->updateStatus('New');
