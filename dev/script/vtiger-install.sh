@@ -130,7 +130,7 @@ install_responsive_filemanager () {
             ;;
     esac
 
-    curl -o "${module_tmp_file}" -fSL "${source_url}"
+    curl -o "${module_tmp_file}" -kfSL "${source_url}"
 
     echo -n "TMPFILE: " && ls -lh "${module_tmp_file}"
     cd "${module_tmp_dir}"
