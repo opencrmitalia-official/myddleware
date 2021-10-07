@@ -903,7 +903,10 @@ class jobcore  {
 			$stmt->bindValue("message", $message);
 			$stmt->bindValue("id", $this->id);
 			$stmt->execute();
-			$this->connection->commit(); // -- COMMIT TRANSACTION			
+			$this->connection->commit(); // -- COMMIT TRANSACTION
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Task closed at '.$now."\n";
+            }
 		} catch (\Exception $e) {
 			$this->connection->rollBack(); // -- ROLLBACK TRANSACTION
 			$this->logger->error( 'Failed to update Job : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )' );
