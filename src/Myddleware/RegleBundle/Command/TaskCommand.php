@@ -149,8 +149,15 @@ class TaskCommand extends ContainerAwareCommand {
 		
 		// Close job if it has been created
 		if($job->createdJob === true) {
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Closing the task...'."\n";
+            }
 			$job->closeJob();
-		}
+		} else {
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Closing task problem.'."\n";
+            }
+        }
 		
 		// Retour en console --------------------------------------
 		if (!empty($job->message)) {
