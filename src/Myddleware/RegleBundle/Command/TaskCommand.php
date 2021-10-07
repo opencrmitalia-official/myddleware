@@ -144,7 +144,13 @@ class TaskCommand extends ContainerAwareCommand {
 			}
 		}
 		catch(\Exception $e) {
-			$job->message .= $e->getMessage();
+			$exceptionMessage = $e->getMessage().' at '.$e->getFile().':'.$e->getLine();
+            $job->message .= $exceptionMessage;
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo "==> ERROR: $exceptionMessage\n";
+                echo $e->getTraceAsString()."\n";
+                echo "\n";
+            }
 		}
 		
 		// Close job if it has been created
