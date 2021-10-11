@@ -287,6 +287,9 @@ class rulecore {
 				)
 		) {
 			// lecture des données dans la source
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Reading source...'."\n";
+            }
 			$readSource = $this->readSource();
 			if (empty($readSource['error'])) {
 				$readSource['error'] = '';

@@ -316,7 +316,10 @@ class databasecore extends solution {
 	} // read_last($param)
 	
 	// Permet de récupérer les enregistrements modifiés depuis la date en entrée dans la solution
-	public function read($param) {		
+	public function read($param) {
+        if (getenv('MYDDLEWARE_CRON_RUN')) {
+            echo 'Solution checkpoint: '.__METHOD__.' ('.date('Y-m-d H:i:s').")\n";
+        }
 		$result = array();
 		$result['count'] = 0;
 		$result['date_ref'] = $param['date_ref'];
@@ -403,12 +406,18 @@ class databasecore extends solution {
 			$requestSQL = $this->queryValidation($param, 'read', $requestSQL);
 
 			// Appel de la requête
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/prepare ('.date('Y-m-d H:i:s').")\n";
+            }
 			$q = $this->pdo->prepare($requestSQL);
             $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
             if ($pdoDriverName == 'dblib') {
                 $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             }
-			$exec = $q->execute();
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/execute ('.date('Y-m-d H:i:s').")\n";
+            }
+            $exec = $q->execute();
 			if ($exec === false) {
 				$errorInfo = $this->pdo->errorInfo();
                 if (empty($errorInfo[2])) {
@@ -416,8 +425,13 @@ class databasecore extends solution {
                 }
                 throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
-			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
-            file_put_contents('/var/www/html/var/logs/last_fetch.json', json_encode(['driver' => $pdoDriverName, 'query' => $requestSQL, 'result' => $fetchAll], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/fetchAll ('.date('Y-m-d H:i:s').")\n";
+            }
+            $fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
+            if (!getenv('MYDDLEWARE_CRON_RUN')) {
+                file_put_contents('/var/www/html/var/logs/last_fetch.json', json_encode(['driver' => $pdoDriverName, 'query' => $requestSQL, 'result' => $fetchAll], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+            }
 			$row = array();
 			if(!empty($fetchAll)) {
 				$result['count'] = count($fetchAll);
@@ -455,14 +469,19 @@ class databasecore extends solution {
 					}
 					$result['values'][$row['id']] = $row;
 				}
-			}		
-			// Search for delete data 
+			}
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison ('.date('Y-m-d H:i:s').")\n";
+            }
 			$result = $this->searchDeletionByComparison($param, $result);
 		}
 		catch (\Exception $e) {
 		    $result['error'] = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
-		}		
-		return $result;
+		}
+        if (getenv('MYDDLEWARE_CRON_RUN')) {
+            echo 'Solution checkpoint: '.__METHOD__.'/return ('.date('Y-m-d H:i:s').")\n";
+        }
+        return $result;
 	} // read($param)
 	
 	protected function searchDeletionByComparison($param, $result) {
