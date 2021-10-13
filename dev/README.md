@@ -19,7 +19,7 @@ Di seguito trovi dei manuali dedicati a specifiche sezioni della vita di questo 
   dei problemi di sincronizzazione, segui queste istruzioni: [docs/DEBUG.md](docs/DEBUG.md)
 
 - Vuoi monitorare un istanza Myddleware per ricevere delle segnalazioni di errori, 
-- segui queste istruzioni: [docs/MONITORING.md](docs/MONITORING.md)
+  segui queste istruzioni: [docs/MONITORING.md](docs/MONITORING.md)
 
 - Vuoi aggiornare questa repository Myddleware con gli ultimi rilasci 
   della versione ufficiale, segui queste istruzioni: [docs/UPSTREAM.md](docs/UPSTREAM.md)
