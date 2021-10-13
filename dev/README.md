@@ -18,8 +18,8 @@ Di seguito trovi dei manuali dedicati a specifiche sezioni della vita di questo 
 - Vuoi fare debug di un istanza Myddleware che sta riportando 
   dei problemi di sincronizzazione, segui queste istruzioni: [docs/DEBUG.md](docs/DEBUG.md)
 
-- Vuoi monitorare un istanza Myddleware per ricevere delle segnalazioni di errori
-  o blocchi del sistema, segui queste istruzioni: [docs/MONITORING.md](docs/MONITORING.md)
+- Vuoi monitorare un istanza Myddleware per ricevere delle segnalazioni di errori, 
+- segui queste istruzioni: [docs/MONITORING.md](docs/MONITORING.md)
 
 - Vuoi aggiornare questa repository Myddleware con gli ultimi rilasci 
   della versione ufficiale, segui queste istruzioni: [docs/UPSTREAM.md](docs/UPSTREAM.md)
