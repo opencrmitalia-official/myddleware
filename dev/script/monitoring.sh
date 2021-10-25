@@ -11,7 +11,7 @@ touch ${LOG_FILE}
 chmod 777 ${LOG_FILE}
 
 ## Clean-up log file
-[ "$(wc -l < ${LOG_FILE})" -gt "1000" ] && sed -e '1,20d' -i ${LOG_FILE} || true
+[ "$(wc -l < ${LOG_FILE})" -gt "5000" ] && sed -e '1,20d' -i ${LOG_FILE} || true
 
 ##
 echo "==> ${LOG_TIMESTAMP} [INFO] Start monitoring..." >> ${LOG_FILE}
