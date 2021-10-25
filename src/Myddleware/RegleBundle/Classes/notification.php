@@ -353,7 +353,9 @@ class notificationcore  {
     public function unsetProblem()
     {
         $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
-        unlink($problemFile);
+        if (file_exists($problemFile)) {
+            unlink($problemFile);
+        }
     }
 }
 
