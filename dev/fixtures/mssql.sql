@@ -10,10 +10,17 @@ CREATE TABLE A_Persone (
     FirstName VARCHAR(255),
     Email VARCHAR(255),
     City VARCHAR(255),
+    AziendaInCuiLavora_ID INT,
+    DataUltimaModifica DATETIME2(3),
     IsDeleted BIT
 );
 
-INSERT INTO A_Persone (PersonID, LastName, FirstName, Email, City, IsDeleted) VALUES (1, 'Rossi', 'Mario', 'mario@rossi.it', 'Milano', 0)
+INSERT INTO A_Persone (PersonID, LastName, FirstName, Email, City, AziendaInCuiLavora_ID, DataUltimaModifica, IsDeleted)
+    VALUES
+       (1, 'Rossi', 'Mario', 'mario@rossi.it', 'Milano', 1, '1 apr 2016 15:01:02:129', 0),
+       (2, 'Verdi', 'Matteo', 'matteo@verdi.it', 'Milano', 2, '1 apr 2016 15:01:02:129', 0),
+       (3, 'Gialli', 'Notorio', 'notorio@gialli.it', 'Milano', 6, '1 apr 2016 15:01:02:129', 0),
+       (4, 'Bianchi', 'Diego', 'diego@bianchi.it', 'Milano', 7, '1 apr 2016 15:01:02:129', 0);
 
 --
 -- Anagrafica semplice
@@ -23,17 +30,18 @@ CREATE TABLE A_Aziende (
        RagioneSociale VARCHAR(255),
        Email VARCHAR(255),
        City VARCHAR(255),
+       ContattoPrincipale INT,
        DataInizioAttivita DATE,
        DataInvioCedolini DATETIME,
        DataUltimaModifica DATETIME2(3),
        IsDeleted BIT
 );
 
-INSERT INTO A_Aziende (AziendaID, RagioneSociale, Email, City, DataInizioAttivita, DataInvioCedolini, DataUltimaModifica, IsDeleted)
+INSERT INTO A_Aziende (AziendaID, RagioneSociale, Email, City, ContattoPrincipale, DataInizioAttivita, DataInvioCedolini, DataUltimaModifica, IsDeleted)
     VALUES
-       (1, 'Mulino''Bianco', 'mario@mulino.it', 'Milano2', '2001-11-11', '2021-05-05 16:10:23', '1 apr 2016 15:01:02:129', 0),
-       (2, 'MulinoVerde', 'colore@verde.it', 'Napoli', '2003-02-02', '2021-07-07 10:11:03',  '1 apr 2016 15:01:02:179', 0),
-       (3, 'Cantore''Verde', 'cantore@verde.it', 'Palermo', '2003-02-02', '2021-04-07 10:11:03',  '1 apr 2016 15:01:02:292', 0);
+       (1, 'Mulino''Bianco', 'mario@mulino.it', 'Milano2', 1, '2001-11-11', '2021-05-05 16:10:23', '1 apr 2016 15:01:02:129', 0),
+       (2, 'MulinoVerde', 'colore@verde.it', 'Napoli', 2, '2003-02-02', '2021-07-07 10:11:03',  '1 apr 2016 15:01:02:179', 0),
+       (3, 'Cantore''Verde', 'cantore@verde.it', 'Palermo', 5, '2003-02-02', '2021-04-07 10:11:03',  '1 apr 2016 15:01:02:292', 0);
 
 --
 -- Gestione Prodotti/Listini

@@ -309,7 +309,6 @@ class documentcore {
 				// Boucle sur les filtres
 				foreach ($ruleFilters as $ruleFilter) {			
 					if(!$this->checkFilter($this->sourceData[$ruleFilter['target']],$ruleFilter['type'],$ruleFilter['value'])) {
-						//file_put_contents('/var/www/html/var/logs/filter.log', json_encode(debug_backtrace(), JSON_PRETTY_PRINT)."\n", FILE_APPEND);
 					    $this->message .= 'This document is filtered. This operation is false : '.$ruleFilter['target'].' '.$ruleFilter['type'].' '.$ruleFilter['value'].' (sourceData=\''.json_encode($this->sourceData).'\').';
 						$this->updateStatus('Filter');
 						$filterOK = -1;
@@ -985,11 +984,11 @@ class documentcore {
 		try {
 			// Get target data 
 			$target = $this->getDocumentData('T');
-		
+
 			// Get data in the target solution (if exists) before we update it
 			$history = $this->getDocumentData('H');
-			
-			// For each target fields, we compare the data we want to send and the data already in the target solution
+
+            // For each target fields, we compare the data we want to send and the data already in the target solution
 			// If one is different we stop the function
 			if (!empty($this->ruleFields)) {
 				foreach ($this->ruleFields as $field) {
