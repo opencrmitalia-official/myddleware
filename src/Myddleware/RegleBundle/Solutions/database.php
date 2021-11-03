@@ -493,13 +493,22 @@ class databasecore extends solution {
 		) {
 			// Search all data in the source application (can take long time)
 			$requestSQL = 'SELECT '.$this->stringSeparatorOpen.$param['ruleParams']['fieldId'].$this->stringSeparatorClose.' FROM '.$this->stringSeparatorOpen.$param['module'].$this->stringSeparatorClose;
-			$q = $this->pdo->prepare($requestSQL);		
-			$exec = $q->execute();
-			if(!$exec) {
+            $q = $this->pdo->prepare($requestSQL);
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:prepare ('.date('Y-m-d H:i:s').")\n";
+            }
+            $exec = $q->execute();
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:execute ('.date('Y-m-d H:i:s').")\n";
+            }
+            if(!$exec) {
 				$errorInfo = $this->pdo->errorInfo();
 				throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
-			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:fetchAll ('.date('Y-m-d H:i:s').")\n";
+            }
+            $fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
 			// If result is empty, we stop the process because it would remove all data
 			if(!empty($fetchAll)) {
 				// Format result
@@ -542,8 +551,14 @@ class databasecore extends solution {
 						$result['count']++;
 					}
 				}
+                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                    echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post1 ('.date('Y-m-d H:i:s').")\n";
+                }
 			}
-		}
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post2 ('.date('Y-m-d H:i:s').")\n";
+            }
+        }
 		return $result;
 	}
 	
