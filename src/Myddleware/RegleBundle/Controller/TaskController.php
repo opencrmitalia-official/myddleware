@@ -104,9 +104,9 @@ class TaskController extends Controller
 	
 	// Stop task
 	public function stopTaskAction($id,$page) {
-		try {
+        try {
 			$em = $this->getDoctrine()->getManager();
-			
+
 			// Get job detail 
 			$job = $this->container->get('myddleware_job.job');
 			$job->id = $id;
@@ -133,11 +133,13 @@ class TaskController extends Controller
 			$log->setJob($id);
 			$em->persist($log);
 			$em->flush();
-			
+
+            $this->killSystemProcess();
+
 			return $this->redirect( $this->generateURL('task_view', array( 'id'=>$id )) );	  
 		} catch(Exception $e) {
 			return $this->redirect($this->generateUrl('task_list'));				
-		}		
+		}
 	}
 
 
@@ -203,5 +205,19 @@ class TaskController extends Controller
 		}		
 	}
 
-	
+    protected function killSystemProcess()
+    {
+        $killableProcesses = [
+            "php /var/www/html/bin/console myddleware:jobScheduler --env=background",
+            "php -f /var/www/html/bin/console myddleware:jobScheduler --env=background",
+        ];
+        $processes = shell_exec('ps -xao pid,args');
+        $processes = explode("\n", $processes);
+        foreach ($processes as $process) {
+            $process = explode(" ", trim($process), 2);
+            if (in_array($process[1], $killableProcesses)) {
+                posix_kill($process[0], 9);
+            }
+        }
+    }
 }

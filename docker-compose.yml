@@ -3,7 +3,7 @@ version: '3'
 services:
 
   myddleware:
-    image: opencrmitalia/myddleware
+    image: opencrmitalia/myddleware:v1
     ports:
       - ${myddleware_port:-30080}:80
     environment:
@@ -13,7 +13,6 @@ services:
     volumes:
       - ./:/var/www/html:cached
       - ./app/config/parameters.yml.docker:/var/www/html/app/config/parameters.yml
-      - ./app/config/public/parameters_smtp.yml.docker:/var/www/html/app/config/public/parameters_smtp.yml
       - ./app/config/public/parameters_public.yml.docker:/var/www/html/app/config/public/parameters_public.yml
       - ./.temp/.composer:/root/.composer:cached
     links:
@@ -71,7 +70,7 @@ services:
     restart: always
 
   vpn:
-    image: javanile/openvpn
+    image: javanile/openvpn:2.4
     tty: true
     stdin_open: true
     environment:

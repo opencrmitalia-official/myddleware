@@ -287,6 +287,9 @@ class rulecore {
 				)
 		) {
 			// lecture des données dans la source
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Reading source...'."\n";
+            }
 			$readSource = $this->readSource();
 			if (empty($readSource['error'])) {
 				$readSource['error'] = '';
@@ -505,7 +508,9 @@ class rulecore {
 				break;
 			}
 			if (empty($this->dataSource['values'])) {
-				return array('error' => 'All records read have the same reference date in rule '.$this->rule['name'].' with value of ('.$previousValue['date_modified'].'). Myddleware cannot garanty all data will be read. Job interrupted. Please increase the number of data read by changing the limit attribut in job and rule class.');
+                $problem = array('error' => 'All records read have the same reference date in rule '.$this->rule['name'].' with value of ('.$previousValue['date_modified'].'). Myddleware cannot garanty all data will be read. Job interrupted. Please increase the number of data read by changing the limit attribut in job and rule class.');
+                $this->container->get('myddleware.notification')->takeNoteAboutProblem('same-reference-date', $problem);
+				return $problem;
 			}
 			return true;
 		}
@@ -1369,7 +1374,7 @@ class rulecore {
 				
 		foreach ($documents as $document) {		
 			// If the rule is a parent, we have to get the data of all rules child		
-			$childRules = $this->getChildRules();		
+            $childRules = $this->getChildRules();
 			if (!empty($childRules)) {
 				foreach($childRules as $childRule) {
 					$ruleChildParam['ruleId'] = $childRule['field_id'];

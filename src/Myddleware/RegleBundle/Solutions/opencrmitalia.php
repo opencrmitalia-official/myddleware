@@ -32,6 +32,13 @@ class opencrmitaliacore extends vtigercrm
     /**
      *
      */
+    protected $customRelatedFields = [
+        'LineItem' => ['suitetaxrate_id'],
+    ];
+
+    /**
+     *
+     */
     protected $cacheDescribedModules = [];
 
 	/**
@@ -114,8 +121,7 @@ class opencrmitaliacore extends vtigercrm
                 }
                 $fields[] = $field;
             }
-            //var_dump($fields);
-            //die();
+
             return $this->populateModuleFieldsFromVtigerModule($fields, $module, $type);
         }
 
@@ -162,8 +168,8 @@ class opencrmitaliacore extends vtigercrm
             }
             $result['values'] = $select['result']['records'][0];
             $result['values']['id'] = $this->assignIdDbRecordModule($param['module'], $select['result']['records'][0]);
-        } elseif (in_array('id', $param['fields'])) {
-            throw new \Exception(json_encode($param));
+        } elseif (isset($param['fields']) && is_array($param['fields']) && in_array('id', $param['fields'])) {
+            throw new \Exception('Unimplemented read_last case on opencrmitalia solution: '.json_encode($param));
             $query = $this->getVtigerClient()->retrieve($param['query']['id']);
             $query['result'][0] = $query['result'];
         } else {

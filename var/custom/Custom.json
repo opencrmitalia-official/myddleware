@@ -1,0 +1,14 @@
+{
+  "instance_name": "...",
+  "alert_time_limit": "0",
+  "alert_reminder_time": "0",
+  "feedback_time": "5",
+  "feedback_crm_url": "",
+  "feedback_crm_username": "",
+  "feedback_crm_access_key": "",
+  "feedback_crm_module": "",
+  "feedback_crm_date_field": "",
+  "feedback_crm_time_field": "",
+  "feedback_crm_record": "",
+  "secret_key": "..."
+}

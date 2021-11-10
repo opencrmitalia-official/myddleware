@@ -167,8 +167,9 @@ class ManagementSMTPController extends Controller
             $textMail = $this->tools->getTranslation(array('management_smtp_sendmail', 'textMail')) . chr(10);
             $textMail .= $this->tools->getTranslation(array('email_notification', 'best_regards')) . chr(10) . $this->tools->getTranslation(array('email_notification', 'signature'));
             $message = \Swift_Message::newInstance($subject);
+            $defaultFromEmail = filter_var($user, FILTER_VALIDATE_EMAIL) ? $user : (!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : 'no-reply@myddleware.com');
             $message
-                ->setFrom((!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : 'no-reply@myddleware.com'))
+                ->setFrom($defaultFromEmail)
                 ->setBody($textMail);
             $message->setTo($user_email);
             $send = $mailer->send($message);

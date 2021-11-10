@@ -19,7 +19,7 @@ openvpn_port=...
 Adesso, seguire i seguenti comandi 
 
 ```
-docker pull javanile/openvpn
+docker pull javanile/openvpn:2.4
 docker-compose -f docker-compose.yml up -d --force-recreate vpn
 ```
 
@@ -75,3 +75,11 @@ questa riga permettere a myddleware di accedere al servizio FTP presente sul ser
 usando come HOST la parola `vpn` e come porta la `22`
 
 NOTA: Non usare gli IP virtuali all'interno di Myddleware
+
+## Conclusione
+
+Riportare l'applicazione in modalità produzione con il seguente comando
+
+```shell
+make prod
+```

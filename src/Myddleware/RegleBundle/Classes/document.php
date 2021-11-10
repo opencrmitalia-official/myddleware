@@ -279,7 +279,9 @@ class documentcore {
 			// Création de la requête d'entête
 			$date_modified = $this->data['date_modified'];
 			// Source_id could contain accent
-			$query_header .= "('$this->id','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode(addcslashes($this->sourceId,'\\'))."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
+			//$quotedId = $this->connection->quote($this->id);
+            $quotedId = $this->id;
+            $query_header .= "('$quotedId','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode(addcslashes($this->sourceId,'\\'))."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
 			$stmt = $this->connection->prepare($query_header); 
 			$stmt->execute();
 			$this->updateStatus('New');
@@ -307,7 +309,6 @@ class documentcore {
 				// Boucle sur les filtres
 				foreach ($ruleFilters as $ruleFilter) {			
 					if(!$this->checkFilter($this->sourceData[$ruleFilter['target']],$ruleFilter['type'],$ruleFilter['value'])) {
-						//file_put_contents('/var/www/html/var/logs/filter.log', json_encode(debug_backtrace(), JSON_PRETTY_PRINT)."\n", FILE_APPEND);
 					    $this->message .= 'This document is filtered. This operation is false : '.$ruleFilter['target'].' '.$ruleFilter['type'].' '.$ruleFilter['value'].' (sourceData=\''.json_encode($this->sourceData).'\').';
 						$this->updateStatus('Filter');
 						$filterOK = -1;
@@ -795,8 +796,10 @@ class documentcore {
 			$this->connection->rollBack(); // -- ROLLBACK TRANSACTION
 			$this->message .= 'Failed to transform document : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
 			$this->typeError = 'E';
-			$this->updateStatus('Error_transformed');
-			$this->logger->error($this->message);
+            $this->updateStatus('Error_transformed');
+			if ($this->message) {
+                $this->logger->error($this->message);
+            }
 			return false;
 		}	
 	}
@@ -885,7 +888,13 @@ class documentcore {
 						}
 					}
 					// If search document we close it. 
-					if ($this->documentType == 'S') {
+					if ($this->ruleMode == 'C' && $this->documentType == 'C') {
+                        $this->message .= 'This data already exists on target system. This document was ignored due to create-only rule type. ';
+                        $this->typeError = 'W';
+                        $this->updateStatus('No_send');
+                        $this->connection->commit();
+                        return true;
+                    } elseif ($this->documentType == 'S') {
 						$this->updateStatus('Found');
 					} else {
 						$this->updateStatus('Ready_to_send');
@@ -975,11 +984,11 @@ class documentcore {
 		try {
 			// Get target data 
 			$target = $this->getDocumentData('T');
-		
+
 			// Get data in the target solution (if exists) before we update it
 			$history = $this->getDocumentData('H');
-			
-			// For each target fields, we compare the data we want to send and the data already in the target solution
+
+            // For each target fields, we compare the data we want to send and the data already in the target solution
 			// If one is different we stop the function
 			if (!empty($this->ruleFields)) {
 				foreach ($this->ruleFields as $field) {
@@ -1276,7 +1285,7 @@ class documentcore {
 					try {
 					    eval($f.';'); // exec
 					} catch (\ParseError $e) {
-						throw new \Exception( 'FATAL error because of Invalid formula "'.$ruleField['formula'].';" : '.$e->getMessage());	
+						throw new \Exception( 'FATAL error because of Invalid formula "'.$ruleField['formula'].';" converted as "'.$f.';" : '.$e->getMessage());
 					}
 					// Execute eval only if formula is valid
 					eval('$rFormula = '.$f.';'); // exec
@@ -1301,7 +1310,7 @@ class documentcore {
 				}
 				
 				// If the relationship is a parent type, we don't search the id in the child rule now. Data will be read from the child rule when we will send the parent document. So no target id is required now.
-				if (!empty($ruleField['parent'])) {
+                if (!empty($ruleField['parent'])) {
 					return null;
 				}
 				
@@ -1723,7 +1732,6 @@ class documentcore {
 		try {
 			// On ajoute un contôle dans le cas on voudrait changer le statut
 			$new_status = $this->beforeStatusChange($new_status);
-			
 			$now = gmdate('Y-m-d H:i:s');
 			// Récupération du statut global
 			$globalStatus = $this->globalStatus[$new_status];

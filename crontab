@@ -1,2 +1,3 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-*/5 * * * * root bash /var/www/html/myddleware-cron.sh 2>&1
+*/5 * * * * www-data bash /var/www/html/myddleware-cron.sh 2>&1
+* * * * * root bash /var/www/html/dev/script/monitoring.sh 2>&1

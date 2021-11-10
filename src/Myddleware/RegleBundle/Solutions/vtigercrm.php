@@ -144,6 +144,13 @@ class vtigercrmcore extends solution
     ];
 
     /**
+     *
+     */
+    protected $customRelatedFields = [
+        //'*Module*' => ['*field1*', '*field2*']
+    ];
+
+    /**
      * Current module list.
      *
      * @var array $moduleList
@@ -400,7 +407,7 @@ class vtigercrmcore extends solution
             }
 
             $mandatory = $field['mandatory'] || in_array($field['name'], $requiredFields, true);
-            $this->addVtigerFieldToModuleFields($field, $mandatory);
+            $this->addVtigerFieldToModuleFields($field, $mandatory, $module, $type);
         }
 
         if (count($this->fieldsRelate) > 0) {
@@ -416,9 +423,12 @@ class vtigercrmcore extends solution
      * @param $field
      * @param $mandatory
      */
-    protected function addVtigerFieldToModuleFields($field, $mandatory)
+    protected function addVtigerFieldToModuleFields($field, $mandatory, $module, $type = 'source')
     {
-        if ($field['type']["name"] == "reference" || $field['type']["name"] == "owner") {
+        if (isset($this->customRelatedFields[$module]) && in_array($field['name'], $this->customRelatedFields[$module])) {
+            $field['type']['name'] = 'reference';
+        }
+        if (isset($field['type']["name"]) && ($field['type']["name"] == "reference" || $field['type']["name"] == "owner")) {
             $this->fieldsRelate[$field['name']] = array(
                 'label' => $field['label'],
                 'required' => $mandatory,
@@ -433,7 +443,7 @@ class vtigercrmcore extends solution
                 'type' => 'varchar(127)', // ? Set right type?
                 'type_bdd' => 'varchar(127)'
             ];
-            if ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist") {
+            if (isset($field['type']["name"]) && ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist")) {
                 foreach ($field['type']["picklistValues"] as $option) {
                     $this->moduleFields[$field['name']]["option"][$option["value"]] = $option["label"];
                 }
@@ -473,6 +483,9 @@ class vtigercrmcore extends solution
                 $query = $this->getVtigerClient()->query("SELECT {$queryParam} FROM {$module} {$where} ORDER BY modifiedtime DESC LIMIT 0,1;");
             } else {
                 $query = $this->getVtigerClient()->retrieve($param['query']['id']);
+                if (empty($query['result'])) {
+                    return $this->errorVtigerNoDataRetrieved(['done' => false]);
+                }
                 $query['result'][0] = $query['result'];
             }
 
@@ -486,7 +499,7 @@ class vtigercrmcore extends solution
 
             if ($hasVtigerRelatedRecordFields) {
                 //file_put_contents('/var/www/html/var/logs/vtigercrm.0.log', __FILE__.':'.__LINE__.' ID='.$query['result'][0]['id']."\n", FILE_APPEND);
-                $retrieveResponse = $this->getVtigerClient()->retrieve($query['result'][0]['id'], 1);
+                $retrieveResponse = $this->getVtigerClient()->retrieve($query['result'][0]['id'], 1, $module);
                 $query['result'][0] = empty($retrieveResponse['success']) ? $query['result'][0] : $retrieveResponse['result'];
                 //file_put_contents('/var/www/html/var/logs/vtigercrm.0.log', __FILE__.':'.__LINE__.' '.json_encode($retrieveResponse)."\n", FILE_APPEND);
             }
@@ -642,7 +655,7 @@ class vtigercrmcore extends solution
                         $result['date_ref'] = $value['modifiedtime'];
                         $result['values'][$value['id']] = $value;
                         if ($hasVtigerRelatedRecordFields) {
-                            $retrieveResponse = $this->getVtigerClient()->retrieve($value['id'], 1);
+                            $retrieveResponse = $this->getVtigerClient()->retrieve($value['id'], 1, $param['module']);
                             $result['values'][$value['id']] = empty($retrieveResponse['success']) ? $value : $retrieveResponse['result'];
                         }
                         if (in_array($param['rule']['mode'], ['0', 'S'])) {

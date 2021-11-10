@@ -5,6 +5,7 @@ services:
   myddleware:
     environment:
       - VT_CLIENT_LOG_FILE=/var/www/html/var/logs/vtigercrm.log
+      - VT_CLIENT_PROFILING_FILE=/var/www/html/var/logs/vtigercrm.json
     links:
       - phpmyadmin
 
