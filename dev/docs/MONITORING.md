@@ -20,7 +20,7 @@ Fare riferimento alla guida ufficiale di Myddleware al seugnete link
 Per impostare un tempo minimo per cui ricevere la mail di avvisto che un task non si sia concluso settare dei valori in "minuti" all'interno delle chiavi   "alert_time_limit", "alert_reminder_time" rispettivamente per:
 
 - "alert_time_limit": tempo minimo di attesa necessario per considerare un task come bloccato (60 minuti) 
-- "alert_reminder_time": tempo di attesa richisto per inviare un secondo avviso nel caso all'utente sia sfuggito il primo, suggeriamo di mettere questo valore a 360 minuti almeno
+- "alert_reminder_time": tempo di attesa richiesto per inviare un secondo avviso nel caso all'utente sia sfuggito il primo, suggeriamo di mettere questo valore a 360 minuti almeno
 
 
 
