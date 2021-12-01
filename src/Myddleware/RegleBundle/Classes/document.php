@@ -591,7 +591,8 @@ class documentcore {
 				if (empty($this->documentType)) {
 					throw new \Exception('Failed to find a type for this document. ');
 				}
-				$this->updateType($this->documentType, 'existing record with source id='.$this->sourceId.' into Document table');
+                $typeReason = $this->documentType != 'C' ? 'due to existing record with source id='.$this->sourceId.' into Document table' : null;
+				$this->updateType($this->documentType, $typeReason);
 			}
 			
 			// Update the target ID if we found it (target Id is required for update and deletion)
