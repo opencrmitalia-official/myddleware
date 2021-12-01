@@ -57,17 +57,19 @@ INSERT INTO B_Prodotti (ProdottoID, Descrizione, Prezzo) VALUES (1, 'Zucchero', 
 CREATE TABLE B_Listini (
     ListinoID INT,
     Nome VARCHAR(255),
-)
+    Descrizione VARCHAR(255) DEFAULT NULL
+);
 
-INSERT INTO B_Listini (ListinoID, Nome) VALUES (1, 'Nuovi Clienti'), (2, 'Clienti Fedeli')
+INSERT INTO B_Listini (ListinoID, Nome) VALUES (1, 'Nuovi Clienti'), (2, 'Clienti Fedeli');
 
 CREATE TABLE B_ListiniProdotti (
     ListinoID INT,
     ProdottoID INT,
-    Prezzo MONEY
-)
+    Prezzo MONEY,
+    Disattivato BIT DEFAULT 0
+);
 
-INSERT INTO B_ListiniProdotti (ListinoID, ProdottoID, Prezzo) VALUES (1, 1, 10), (2, 1, 9)
+INSERT INTO B_ListiniProdotti (ListinoID, ProdottoID, Prezzo) VALUES (1, 1, 10), (2, 1, 9);
 
 CREATE TABLE C_Aliquote (
     AliquotaID INT,
@@ -78,7 +80,7 @@ CREATE TABLE C_Aliquote (
 INSERT INTO C_Aliquote (AliquotaID, Descrizione, Percentuale) VALUES
 (1, 'Aliquota Base', 22),
 (2, 'Aliquita Ridotta', 10),
-(3, 'Non Tassabile', 0)
+(3, 'Non Tassabile', 0);
 
 CREATE TABLE C_Fatture (
     FatturaID INT,
