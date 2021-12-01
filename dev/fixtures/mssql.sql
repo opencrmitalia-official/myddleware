@@ -63,13 +63,14 @@ CREATE TABLE B_Listini (
 INSERT INTO B_Listini (ListinoID, Nome) VALUES (1, 'Nuovi Clienti'), (2, 'Clienti Fedeli');
 
 CREATE TABLE B_ListiniProdotti (
+    Chiave INT,
     ListinoID INT,
     ProdottoID INT,
     Prezzo MONEY,
     Disattivato BIT DEFAULT 0
 );
 
-INSERT INTO B_ListiniProdotti (ListinoID, ProdottoID, Prezzo) VALUES (1, 1, 10), (2, 1, 9);
+INSERT INTO B_ListiniProdotti (Chiave, ListinoID, ProdottoID, Prezzo) VALUES (100, 1, 1, 10), (101, 2, 1, 9);
 
 CREATE TABLE C_Aliquote (
     AliquotaID INT,

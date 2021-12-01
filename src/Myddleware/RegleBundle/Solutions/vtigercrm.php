@@ -473,14 +473,14 @@ class vtigercrmcore extends solution
             $hasVtigerRelatedRecordFields = $this->hasVtigerRelatedRecordFields($param['fields']);
             $baseFields = $this->cleanVtigerRelatedRecordFields($param['fields']);
 
-            $queryParam = implode(',', $baseFields ?? "") ?: '*';
+            $queryParam = $param['date_ref'] != '1970-01-02 00:00:00' ? (implode(',', $baseFields ?? "") ?: '*') : '*';
             $where = $this->getReadLastVtigerWhereCondition($param);
 
             if ($module == "LineItem") {
                 $query = $this->readLastVtigerLineItemQuery($param, $where);
             } elseif (empty($param['query']['id'])) {
-                //file_put_contents('/var/www/html/var/logs/vtigercrm.0.log', __FILE__.':'.__LINE__."\n", FILE_APPEND);
-                $query = $this->getVtigerClient()->query("SELECT {$queryParam} FROM {$module} {$where} ORDER BY modifiedtime DESC LIMIT 0,1;");
+                $sql = "SELECT {$queryParam} FROM {$module} {$where} ORDER BY modifiedtime DESC LIMIT 0,1;";
+                $query = $this->getVtigerClient()->query($sql);
             } else {
                 $query = $this->getVtigerClient()->retrieve($param['query']['id']);
                 if (empty($query['result'])) {

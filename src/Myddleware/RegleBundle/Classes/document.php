@@ -579,7 +579,8 @@ class documentcore {
 			}	
 
 			// Get the target id and the type of the document
-			$type_document = $this->checkRecordExist($this->sourceId);			
+            $reasonOfRecordExist = '';
+            $type_document = $this->checkRecordExist($this->sourceId, $reasonOfRecordExist);
 			// Don't change the document type if the type is deletion
 			if ($this->documentType <> 'D') {
 				$this->documentType = $type_document;
@@ -592,7 +593,7 @@ class documentcore {
 					throw new \Exception('Failed to find a type for this document. ');
 				}
                 $typeReason = $this->documentType != 'C' ? 'due to existing record with source id='.$this->sourceId.' into Document table' : null;
-				$this->updateType($this->documentType, $typeReason);
+				$this->updateType($this->documentType, $reasonOfRecordExist.$typeReason);
 			}
 			
 			// Update the target ID if we found it (target Id is required for update and deletion)
@@ -868,7 +869,7 @@ class documentcore {
 				} 			
 	
 				if ($history === -1) {
-					throw new \Exception('Failed to search duplicate data in the target system. This document is queued. ');
+					throw new \Exception('Failed to search duplicate data in the target system. This document is queued. '.json_encode($searchFields));
 				}
 				// Si la fonction renvoie false (pas de données trouvée dans la cible) ou true (données trouvée et correctement mise à jour)
 				elseif ($history === false) {
@@ -1463,7 +1464,7 @@ class documentcore {
 				$ruleRelationShips = $stmt->fetchAll();
 				if(!empty($ruleRelationShips)){						
 					foreach ($ruleRelationShips AS $ruleRelationShip) {
-						// If it is a normal relationship we take the target field 
+                        // If it is a normal relationship we take the target field
 						// but if it is a parent relationship we have to take the source field in the relation (wich corresponding to the target field)
 						if (empty($ruleRelationShip['parent'])) {
 							$fields[] = $ruleRelationShip['field_name_target'];
@@ -1512,7 +1513,7 @@ class documentcore {
 	// Permet de déterminer le type de document (Create ou Update)
 	// En entrée : l'id de l'enregistrement source
 	// En sortie : le type de docuement (C ou U)
-	protected function checkRecordExist($id) {	
+	protected function checkRecordExist($id, &$reason = null) {
 		try {	
 			// Query used in the method several times
 			// Sort : target_id to get the target id non empty first; on global_status to get Cancel last 
@@ -1596,6 +1597,7 @@ class documentcore {
 							// Si on trouve la target dans la règle liée alors on passe le doc en UPDATE (the target id can be found even if the relationship is a parent (if we update data), but it isn't required)
 							if (!empty($result['target_id'])) {							
 								$this->targetId = $result['target_id'];
+                                $reason = __LINE__.' ';
 								return 'U';
 							}
 							// Sinon on bloque la création du document 
@@ -1610,6 +1612,7 @@ class documentcore {
 							) {
 								return 'C';
 							} else {
+                                $reason = __LINE__.' ';
 								return 'U';
 							}
 						}
@@ -1637,6 +1640,7 @@ class documentcore {
 							// Si on trouve la target dans la règle liée alors on passe le doc en UPDATE (the target id can be found even if the relationship is a parent (if we update data), but it isn't required)
 							if (!empty($document['target_id'])) {							
 								$this->targetId = $document['target_id'];
+                                $reason = __LINE__.' ';
 								return 'U';
 							}
 							// If the document found is Cancel, there is only Cancel documents (see query order) so we return C and not U
@@ -1646,6 +1650,7 @@ class documentcore {
 							) {
 								return 'C';
 							} else {
+                                $reason = __LINE__.' ';
 								return 'U';
 							}
 						}
@@ -1689,12 +1694,14 @@ class documentcore {
 				) {
 					return 'C';
 				} else {
+                    $reason = __LINE__.' ';
 					return 'U';
 				}
 			}
 			// Si on est sur une règle child alors on est focément en update (seule la règle root est autorisée à créer des données)
 			// We check now because we take every chance we can to get the target_id
-			if ($this->isChild()){			
+			if ($this->isChild()){
+                $reason = __LINE__.' ';
 				return 'U';
 			}
 			// Si aucune règle avec relation Myddleware_element_id alors on est en création
