@@ -722,7 +722,7 @@ class documentcore {
 				$this->documentType = $this->checkRecordExist($this->sourceId);					
 				if ($this->documentType == 'U') {
 					$this->updateTargetId($this->targetId);
-					$this->updateType('U');
+					$this->updateType('U', 'already processed document with the same source id');
 				}
 			}
 			
@@ -761,7 +761,7 @@ class documentcore {
 					if (!empty($target['Myddleware_element_id'])) {
 						$this->targetId = $target['Myddleware_element_id'];
 						if($this->updateTargetId($this->targetId)) {
-							$this->updateType('U');
+							$this->updateType('U', 'found an already processed document with id='.$target['Myddleware_element_id']. ' on DocumentData table');
 						} else {
 							throw new \Exception( 'The type of this document is Update. Failed to update the target id '.$this->targetId.' on this document. This document is queued. ' );
 						}
@@ -1834,7 +1834,7 @@ class documentcore {
 	}
 	
 	// Permet de modifier le type du document
-	public function updateType($new_type) {
+	public function updateType($new_type, $reason = null) {
 		$this->connection->beginTransaction(); // -- BEGIN TRANSACTION
 		try {
 			$now = gmdate('Y-m-d H:i:s');
@@ -1851,7 +1851,7 @@ class documentcore {
 			$stmt->bindValue(":new_type", $new_type);
 			$stmt->bindValue(":id", $this->id);
 			$stmt->execute();
-			$this->message .= 'Type  : '.$new_type;
+			$this->message .= 'Type : '.$new_type. ($reason ? ' (due to '.$reason.')' : '');
 			$this->connection->commit(); // -- COMMIT TRANSACTION
 			$this->createDocLog();
 		} catch (\Exception $e) {

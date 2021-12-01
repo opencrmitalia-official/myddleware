@@ -456,7 +456,7 @@ class opencrmitaliacore extends vtigercrm
             }
         }
 
-        #file_put_contents('../var/logs/mio.log', json_encode($create['result'])."\n", FILE_APPEND);
+        file_put_contents('/var/www/html/var/logs/mio.log', json_encode($describe['result'])."\n", FILE_APPEND);
 
         return implode('_', $id);
     }
