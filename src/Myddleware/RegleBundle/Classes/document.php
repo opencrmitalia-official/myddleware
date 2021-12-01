@@ -236,8 +236,9 @@ class documentcore {
 				$this->userId = $this->document_data['created_by'];
 				$this->ruleId = $this->document_data['rule_id'];
 				$this->status = $this->document_data['status'];
-				$this->sourceId = $this->document_data['source_id'];
-				$this->targetId = $this->document_data['target_id'];
+                file_put_contents('/var/www/html/var/logs/test1.log', 'A '.$this->sourceId.' = '.$this->document_data['source_id']."\n", FILE_APPEND);
+                $this->sourceId = $this->document_data['source_id'];
+                $this->targetId = $this->document_data['target_id'];
 				$this->ruleName = $this->document_data['name_slug'];
 				$this->ruleMode = $this->document_data['mode'];
 				$this->documentType = $this->document_data['type'];
@@ -284,7 +285,7 @@ class documentcore {
             $query_header .= "('$quotedId','$this->ruleId','$this->dateCreated','$this->dateCreated','$this->userId','$this->userId','".utf8_encode(addcslashes($this->sourceId,'\\'))."','$date_modified','$this->ruleMode','$this->documentType','$this->parentId')";
 			$stmt = $this->connection->prepare($query_header); 
 			$stmt->execute();
-			$this->updateStatus('New');
+			$this->updateStatus('New', 'source id='.$this->sourceId);
 			// Insert source data			
 			return $this->insertDataTable($this->data,'S');		
 		} catch (\Exception $e) {
@@ -1576,8 +1577,8 @@ class documentcore {
 							 )
 						) {					
 							// On recherche l'id target dans la règle liée
-							$this->sourceId = ($ruleRelationship['field_name_source'] == 'Myddleware_element_id' ? $this->data['id'] : $this->data[$ruleRelationship['field_name_source']]);
-							// On récupère la direction de la relation pour rechercher dans le target id ou dans le source id
+                            $this->sourceId = ($ruleRelationship['field_name_source'] == 'Myddleware_element_id' ? $this->data['id'] : $this->data[$ruleRelationship['field_name_source']]);
+                            // On récupère la direction de la relation pour rechercher dans le target id ou dans le source id
 							$direction = $this->getRelationshipDirection($ruleRelationship);
 							if ($direction == '-1') {	
 								$stmt = $this->connection->prepare($sqlParamsTarget);
@@ -1727,7 +1728,7 @@ class documentcore {
 		$this->updateDeleteFlag($deleteFlag);
 	}
 	
-	public function updateStatus($new_status) {
+	public function updateStatus($new_status, $otherInfo = null) {
 		$this->connection->beginTransaction(); // -- BEGIN TRANSACTION
 		try {
 			// On ajoute un contôle dans le cas on voudrait changer le statut
@@ -1759,7 +1760,7 @@ class documentcore {
 			$stmt->bindValue(":new_status", $new_status);
 			$stmt->bindValue(":id", $this->id);
 			$stmt->execute();
-			$this->message .= 'Status : '.$new_status;
+			$this->message .= 'Status : '.$new_status.($otherInfo?' ('.$otherInfo.')':'');
 			$this->connection->commit(); // -- COMMIT TRANSACTION
 			$this->status = $new_status;
 			$this->afterStatusChange($new_status);
@@ -1851,7 +1852,7 @@ class documentcore {
 			$stmt->bindValue(":new_type", $new_type);
 			$stmt->bindValue(":id", $this->id);
 			$stmt->execute();
-			$this->message .= 'Type : '.$new_type. ($reason ? ' (due to '.$reason.')' : '');
+			$this->message .= 'Type : '.$new_type. ($reason ? ' ('.$reason.')' : '');
 			$this->connection->commit(); // -- COMMIT TRANSACTION
 			$this->createDocLog();
 		} catch (\Exception $e) {
