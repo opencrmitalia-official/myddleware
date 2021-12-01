@@ -236,7 +236,6 @@ class documentcore {
 				$this->userId = $this->document_data['created_by'];
 				$this->ruleId = $this->document_data['rule_id'];
 				$this->status = $this->document_data['status'];
-                file_put_contents('/var/www/html/var/logs/test1.log', 'A '.$this->sourceId.' = '.$this->document_data['source_id']."\n", FILE_APPEND);
                 $this->sourceId = $this->document_data['source_id'];
                 $this->targetId = $this->document_data['target_id'];
 				$this->ruleName = $this->document_data['name_slug'];
