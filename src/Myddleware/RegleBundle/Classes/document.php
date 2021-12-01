@@ -900,7 +900,7 @@ class documentcore {
 						$this->updateStatus('Found');
 					} else {
 						$this->updateStatus('Ready_to_send');
-						$this->updateType('U', 'found the following exising record on target system: '.json_encode($target));
+						$this->updateType('U', 'due to found the following exising record on target system: '.json_encode($target));
 					}
 					$this->updateTargetId($history);
 				}
