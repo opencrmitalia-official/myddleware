@@ -590,7 +590,7 @@ class documentcore {
 				if (empty($this->documentType)) {
 					throw new \Exception('Failed to find a type for this document. ');
 				}
-				$this->updateType($this->documentType);
+				$this->updateType($this->documentType, 'existing record with source id='.$this->sourceId.' into Document table');
 			}
 			
 			// Update the target ID if we found it (target Id is required for update and deletion)
@@ -898,7 +898,7 @@ class documentcore {
 						$this->updateStatus('Found');
 					} else {
 						$this->updateStatus('Ready_to_send');
-						$this->updateType('U');
+						$this->updateType('U', 'found the following exising record on target system: '.json_encode($target));
 					}
 					$this->updateTargetId($history);
 				}
