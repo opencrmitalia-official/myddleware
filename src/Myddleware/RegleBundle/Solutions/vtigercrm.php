@@ -208,6 +208,9 @@ class vtigercrmcore extends solution
      */
     protected function notVtigerClient()
     {
+        $client = $this->createVtigerClient();
+        $this->setVtigerClient($client);
+
         return empty($this->vtigerClient);
     }
 
