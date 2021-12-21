@@ -1,0 +1,463 @@
+name: template_gestionali
+description: 'Connessione con gestionali'
+rules:
+    -
+        name: 'ERP2CRM -> Tipi pagament'
+        nameSlug: erp2crm_tipi_pagament
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_Tipipagamento
+        targetModule: ModalitaPagamento
+        fields:
+            - { target: modalitapagamento_descrizione, source: DES_PAG, formula: null }
+            - { target: codice_pagamento, source: COD_PAG, formula: null }
+        params:
+            - { name: limit, value: '1000' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: 0 }
+            - { name: fieldId, value: COD_PAG }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+            - { name: description, value: '' }
+    -
+        name: 'ERP2CRM -> Listini testata'
+        nameSlug: erp2crm_listini_testata
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_Listini
+        targetModule: PriceBooks
+        fields:
+            - { target: bookname, source: COD_LISTINO, formula: null }
+            - { target: description, source: DES_LISTINO, formula: null }
+            - { target: active, source: my_value, formula: '"1"' }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: description, value: '' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: COD_LISTINO }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '1' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Agenti'
+        nameSlug: erp2crm_agenti
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_Agenti
+        targetModule: Agenti
+        fields:
+            - { target: cellulare, source: CELL, formula: null }
+            - { target: codice_agente, source: COD_AGENTE, formula: null }
+            - { target: email, source: EMAIL, formula: null }
+            - { target: nome_agente, source: NOME_AGENTE, formula: null }
+            - { target: telefono, source: TEL, formula: null }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: COD_AGENTE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Codici IVA'
+        nameSlug: erp2crm_codici_iva
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_CodiciIva
+        targetModule: SuiteTaxRates
+        fields:
+            - { target: suitetaxrates_code, source: COD_IVA, formula: null }
+            - { target: suitetaxrates_description, source: DES_IVA, formula: null }
+            - { target: suitetaxrates_value, source: PRC_IVA, formula: null }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: COD_IVA }
+            - { name: fieldDateRef, value: COD_IVA }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Scadenze'
+        nameSlug: erp2crm_scadenze
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_SCADENZE
+        targetModule: Pagamenti
+        fields:
+            - { target: data_scadenza, source: DAT_SCADENZA, formula: null }
+            - { target: importo_pagamento, source: VAL_IMPORTO, formula: null }
+            - { target: note, source: DES_PARTITA, formula: null }
+        params:
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: CHIAVE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: deletionField, value: compareTable }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '1' }
+    -
+        name: 'ERP2CRM -> Sedi'
+        nameSlug: erp2crm_sedi
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_Sedi
+        targetModule: Sedi
+        fields:
+            - { target: cap, source: CAP, formula: null }
+            - { target: codice_cliente, source: COD_PIVA, formula: null }
+            - { target: codice_sede, source: CDN_SEDE, formula: null }
+            - { target: email, source: DES_EMAIL, formula: null }
+            - { target: indirizzo, source: INDIRIZZO, formula: null }
+            - { target: localit, source: LOCALITA, formula: null }
+            - { target: nazione, source: NAZIONE, formula: null }
+            - { target: nome_sede, source: DES_SEDE, formula: null }
+            - { target: predefinita, source: FLG_PREDEFINITA, formula: null }
+            - { target: provincia, source: PROVINCIA, formula: null }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: CHIAVE_SEDE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Aziende'
+        nameSlug: erp2crm_aziende
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_Clienti
+        targetModule: Accounts
+        fields:
+            - { target: accountname, source: RAGSOC, formula: null }
+            - { target: bill_city, source: LOCALITA, formula: null }
+            - { target: bill_code, source: CAP, formula: null }
+            - { target: bill_country, source: STATO, formula: null }
+            - { target: bill_state, source: PROVINCIA, formula: null }
+            - { target: bill_street, source: INDIRIZZO, formula: null }
+            - { target: codice_cliente, source: COD_CLIENTE, formula: null }
+            - { target: description, source: RAGSOC_ES, formula: null }
+            - { target: email1, source: DES_EMAIL, formula: null }
+            - { target: fe_cod_destinatario, source: SDI, formula: null }
+            - { target: fe_cod_fisc, source: cfis, formula: null }
+            - { target: fe_pec, source: PEC, formula: null }
+            - { target: fe_piva, source: p_iva, formula: null }
+            - { target: phone, source: TEL, formula: null }
+            - { target: saldo, source: SALDO, formula: null }
+        relationships:
+            - { fieldNameSource: COD_AGENTE, fieldNameTarget: agente, fieldId: erp2crm_agenti, parent: false }
+            - { fieldNameSource: COD_PAG, fieldNameTarget: modalita_pagamento_predefinita, fieldId: erp2crm_tipi_pagament, parent: false }
+            - { fieldNameSource: COD_LISTINO, fieldNameTarget: pricebook_id, fieldId: erp2crm_listini_testata, parent: false }
+            - { fieldNameSource: COD_IVA, fieldNameTarget: suitetaxrate_id, fieldId: erp2crm_codici_iva, parent: false }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: COD_CLIENTE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Prodotti'
+        nameSlug: erp2crm_prodotti
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_Prodotti_Completa
+        targetModule: Products
+        fields:
+            - { target: productname, source: PRG_ART, formula: null }
+            - { target: codice_articolo, source: COD_ART, formula: null }
+            - { target: description, source: DES_ARTICOLO, formula: null }
+            - { target: descrizione_estesa, source: DES_ARTICOLO_EX, formula: null }
+            - { target: discontinued, source: ATTIVO, formula: null }
+            - { target: disponibilit, source: QTA_DISPONIB, formula: null }
+            - { target: disponibilit_immediata, source: QTA_DISPONIB_IMM, formula: null }
+            - { target: linea_prodotto, source: linea, formula: null }
+            - { target: productcategory, source: DES_GRUMERC, formula: null }
+            - { target: qtyinstock, source: QTA_ESISTENZA, formula: null }
+            - { target: usageunit, source: UNIT_MISURA, formula: null }
+        relationships:
+            - { fieldNameSource: COD_IVA, fieldNameTarget: suitetaxrate_id, fieldId: erp2crm_codici_iva, parent: false }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: PRG_ART }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Listini righe'
+        nameSlug: erp2crm_listini_righe
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_ListiniBase
+        targetModule: ProductPricebook
+        fields:
+            - { target: listprice, source: PREZZO, formula: null }
+            - { target: discount1, source: SCONTO1, formula: null }
+            - { target: discount2, source: SCONTO2, formula: null }
+            - { target: discount3, source: SCONTO3, formula: null }
+            - { target: discount4, source: SCONTO4, formula: null }
+            - { target: discount5, source: SCONTO5, formula: null }
+            - { target: discount6, source: SCONTO6, formula: null }
+        relationships:
+            - { fieldNameSource: COD_LISTINO, fieldNameTarget: pricebookid, fieldId: erp2crm_listini_testata, parent: false }
+            - { fieldNameSource: PRG_ART, fieldNameTarget: productid, fieldId: erp2crm_prodotti, parent: false }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: CHIAVE }
+            - { name: fieldDateRef, value: DATA_ULTIMO_AGG }
+            - { name: deletionField, value: compareTable }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '1' }
+    -
+        name: 'ERP2CRM -> Ordini righe'
+        nameSlug: erp2crm_ordini_righe
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_OrdiniRighe
+        targetModule: LineItem
+        fields:
+            - { target: listprice, source: PRZ_MERCE, formula: null }
+            - { target: quantity, source: QTA_MERCE, formula: null }
+            - { target: discount2_percent, source: PRC_SCONTO2, formula: null }
+            - { target: discount3_percent, source: PRC_SCONTO3, formula: null }
+            - { target: discount4_percent, source: PRC_SCONTO4, formula: null }
+            - { target: discount5_percent, source: PRC_SCONTO5, formula: null }
+            - { target: discount6_percent, source: PRC_SCONTO6, formula: null }
+            - { target: discount_percent, source: PRC_SCONTO1, formula: null }
+            - { target: quantit_evasa, source: QTA_EVASA, formula: null }
+            - { target: unit_di_misura, source: COD_UM, formula: null }
+        relationships:
+            - { fieldNameSource: PRG_ART, fieldNameTarget: productid, fieldId: erp2crm_prodotti, parent: false }
+            - { fieldNameSource: COD_IVA, fieldNameTarget: suitetaxrate_id, fieldId: erp2crm_codici_iva, parent: false }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: myddleware_generated }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: C }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Fatture righe'
+        nameSlug: erp2crm_fatture_righe
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_FattureRighe
+        targetModule: LineItem
+        fields:
+            - { target: listprice, source: PRZ_MERCE, formula: null }
+            - { target: quantity, source: QTA_MERCE, formula: null }
+            - { target: comment, source: DES_ARTICOLO_RIGA, formula: null }
+            - { target: discount2_percent, source: PRC_SCONTO2, formula: null }
+            - { target: discount3_percent, source: PRC_SCONTO3, formula: null }
+            - { target: discount4_percent, source: PRC_SCONTO4, formula: null }
+            - { target: discount5_percent, source: PRC_SCONTO5, formula: null }
+            - { target: discount6_percent, source: PRC_SCONTO6, formula: null }
+            - { target: discount_percent, source: PRC_SCONTO1, formula: null }
+            - { target: unit_di_misura, source: COD_UM, formula: null }
+        relationships:
+            - { fieldNameSource: PRG_ART, fieldNameTarget: productid, fieldId: erp2crm_prodotti, parent: false }
+            - { fieldNameSource: COD_IVA, fieldNameTarget: suitetaxrate_id, fieldId: erp2crm_codici_iva, parent: false }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: myddleware_generated }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: C }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Righe preventivi'
+        nameSlug: erp2crm_righe_preventivi
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_PreventiviRighe
+        targetModule: LineItem
+        fields:
+            - { target: listprice, source: PREZZO, formula: null }
+            - { target: quantity, source: QTA_MERCE, formula: null }
+            - { target: comment, source: DES_ARTICOLO_RIGA, formula: null }
+            - { target: discount2_percent, source: PRC_SCONTO2, formula: null }
+            - { target: discount3_percent, source: PRC_SCONTO3, formula: null }
+            - { target: discount4_percent, source: PRC_SCONTO4, formula: null }
+            - { target: discount5_percent, source: PRC_SCONTO5, formula: null }
+            - { target: discount6_percent, source: PRC_SCONTO6, formula: null }
+            - { target: discount_percent, source: PRC_SCONTO1, formula: null }
+            - { target: quantit_evasa, source: QTA_EVASA, formula: null }
+            - { target: stato_evasione, source: STATO_EVASIONE, formula: null }
+        relationships:
+            - { fieldNameSource: PRG_ART, fieldNameTarget: productid, fieldId: erp2crm_prodotti, parent: false }
+            - { fieldNameSource: COD_IVA, fieldNameTarget: suitetaxrate_id, fieldId: erp2crm_codici_iva, parent: false }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: myddleware_generated }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: C }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Preventivi testate'
+        nameSlug: erp2crm_preventivi_testate
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_PreventiviTestata
+        targetModule: Quotes
+        fields:
+            - { target: bill_street, source: INDIRIZZO, formula: null }
+            - { target: quotestage, source: STATO_EVASIONE, formula: null }
+            - { target: ship_street, source: INDIRIZZOSPED, formula: null }
+            - { target: subject, source: DES_NUM_DOC, formula: null }
+            - { target: bill_city, source: LOCALITA, formula: null }
+            - { target: bill_code, source: CAP, formula: null }
+            - { target: bill_country, source: NAZIONE, formula: null }
+            - { target: bill_state, source: PROVINCIA, formula: null }
+            - { target: serie_documento, source: SIG_SERIE_DOC, formula: null }
+            - { target: ship_city, source: LOCALITASPED, formula: null }
+            - { target: ship_code, source: CAPSPED, formula: null }
+            - { target: ship_country, source: NAZIONESPED, formula: null }
+            - { target: ship_state, source: PROVINCIASPED, formula: null }
+            - { target: tipo_documento, source: DES_TIPODOC, formula: null }
+        relationships:
+            - { fieldNameSource: COD_CLIENTE, fieldNameTarget: account_id, fieldId: erp2crm_aziende, parent: false }
+            - { fieldNameSource: COD_AGENTE, fieldNameTarget: agente, fieldId: erp2crm_agenti, parent: false }
+            - { fieldNameSource: CHIAVE, fieldNameTarget: CHIAVEPADRE_ID, fieldId: erp2crm_righe_preventivi, parent: true }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: CHIAVE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> ordini testate'
+        nameSlug: erp2crm_ordini_testate
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_OrdiniTestata
+        targetModule: SalesOrder
+        fields:
+            - { target: sostatus, source: STATO_EVASIONE, formula: null }
+            - { target: subject, source: DES_NUM_DOC, formula: null }
+            - { target: bill_city, source: LOCALITA, formula: null }
+            - { target: bill_code, source: CAP, formula: null }
+            - { target: bill_country, source: NAZIONE, formula: null }
+            - { target: bill_state, source: PROVINCIA, formula: null }
+            - { target: bill_street, source: INDIRIZZO, formula: null }
+            - { target: serie_documento_ord, source: SIG_SERIE_DOC, formula: null }
+            - { target: ship_city, source: LOCALITASPED, formula: null }
+            - { target: ship_code, source: CAPSPED, formula: null }
+            - { target: ship_country, source: NAZIONESPED, formula: null }
+            - { target: ship_state, source: PROVINCIASPED, formula: null }
+            - { target: ship_street, source: INDIRIZZOSPED, formula: null }
+            - { target: tipologia_documento, source: DES_TIPODOC, formula: null }
+        relationships:
+            - { fieldNameSource: COD_CLIENTE, fieldNameTarget: account_id, fieldId: erp2crm_aziende, parent: false }
+            - { fieldNameSource: COD_AGENTE, fieldNameTarget: agente, fieldId: erp2crm_agenti, parent: false }
+            - { fieldNameSource: CHIAVE_SEDE, fieldNameTarget: sede_destinazione, fieldId: erp2crm_sedi, parent: false }
+            - { fieldNameSource: CHIAVE, fieldNameTarget: CHIAVEPADRE_ID, fieldId: erp2crm_ordini_righe, parent: true }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: CHIAVE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
+    -
+        name: 'ERP2CRM -> Fatture testata'
+        nameSlug: erp2crm_fatture_testata
+        sourceSolution: microsoftsql
+        targetSolution: opencrmitalia
+        sourceModule: ETL_ERP2CRM_FattureTestata
+        targetModule: Invoice
+        fields:
+            - { target: subject, source: NUM_DOC, formula: null }
+            - { target: bill_city, source: INDIRIZZO, formula: null }
+            - { target: bill_code, source: CAP, formula: null }
+            - { target: bill_country, source: NAZIONE, formula: null }
+            - { target: bill_state, source: PROVINCIA, formula: null }
+            - { target: bill_street, source: INDIRIZZO, formula: null }
+            - { target: invoicedate, source: DATA_DOC, formula: null }
+            - { target: ship_city, source: LOCALITA, formula: null }
+            - { target: ship_code, source: CAPSPED, formula: null }
+            - { target: ship_country, source: NAZIONESPED, formula: null }
+            - { target: ship_state, source: PROVINCIASPED, formula: null }
+            - { target: ship_street, source: INDIRIZZOSPED, formula: null }
+        relationships:
+            - { fieldNameSource: COD_CLIENTE, fieldNameTarget: account_id, fieldId: erp2crm_aziende, parent: false }
+            - { fieldNameSource: COD_AGENTE, fieldNameTarget: agente, fieldId: erp2crm_agenti, parent: false }
+            - { fieldNameSource: COD_PAG, fieldNameTarget: condizioni_pagamento, fieldId: erp2crm_tipi_pagament, parent: false }
+            - { fieldNameSource: CHIAVE_SEDE, fieldNameTarget: sede_destinazione, fieldId: erp2crm_sedi, parent: false }
+            - { fieldNameSource: CHIAVE, fieldNameTarget: CHIAVEPADRE_ID, fieldId: erp2crm_fatture_righe, parent: true }
+        params:
+            - { name: readAll, value: '0' }
+            - { name: limit, value: '100' }
+            - { name: delete, value: '60' }
+            - { name: datereference, value: '1970-01-01 00:00:00' }
+            - { name: fieldId, value: CHIAVE }
+            - { name: fieldDateRef, value: ULT_AGG }
+            - { name: readAll, value: '0' }
+            - { name: mode, value: '0' }
+            - { name: deletion, value: '0' }
