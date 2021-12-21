@@ -1,4 +1,4 @@
-name: template_gestionali
+name: microsoftsql_opencrmitalia_template_gestionali_v1
 description: 'Connessione con gestionali'
 rules:
     -
