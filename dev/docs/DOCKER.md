@@ -39,8 +39,8 @@ This is the file that run multiple containers, as expected Myddleware is not onl
 
 > Open: <https://github.com/opencrmitalia-official/myddleware/blob/stable/docker-compose.override.yml>
 
-This file is used on DEVELOPMENT for creating fake services to syncronize using Myddleware. 
-It is most important to have Microsoft Dabatase with fake data to test multiple aspect of the software
+This file is used on DEVELOPMENT for creating fake services to syncronize it using Myddleware. 
+It is most important to have Microsoft Dabatase with fake data to test multiple aspect of the software or connect multiple Vtiger instances.
 
 ## The `docker-compose.debug.yml`
 
