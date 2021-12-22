@@ -2,7 +2,7 @@
 
 This project is based on Docker to crete a flexible runtime environment with all system requirements inside.
 
-There project different files to manage Docker aspects
+There are different files to manage Docker aspects on this project.
 
 ## The `Dockerfile`
 
