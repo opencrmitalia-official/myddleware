@@ -14,7 +14,7 @@ services:
   phpmyadmin:
     environment:
       - PMA_USER=root
-      - PMA_PASSWORD=secret
+      - PMA_PASSWORD=${mysql_root_password:-secret}
 
   vtiger1:
     image: javanile/vtiger:7.1.0
