@@ -120,6 +120,9 @@ fix:
 bash:
 	@docker-compose -f docker-compose.yml exec myddleware bash
 
+update-secret:
+	@bash dev/script/update-secret.sh
+
 generate-template:
 	@docker-compose -f docker-compose.yml exec myddleware bash dev/script/generate-template.sh
 

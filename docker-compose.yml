@@ -9,7 +9,7 @@ services:
     environment:
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=myddleware
-      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_ROOT_PASSWORD=${mysql_root_password:-secret}
     volumes:
       - ./:/var/www/html:cached
       - ./app/config/parameters.yml.docker:/var/www/html/app/config/parameters.yml
@@ -23,7 +23,9 @@ services:
     image: mysql:5.7.28
     environment:
       - MYSQL_DATABASE=myddleware
-      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_ROOT_PASSWORD=${mysql_root_password:-secret}
+      - MYSQL_USER=myddleware
+      - MYSQL_PASSWORD=${mysql_password:-secret}
       - max_allowed_packet=524288000
       - wait_timeout=100
     volumes:
