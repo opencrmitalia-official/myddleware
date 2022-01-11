@@ -507,7 +507,7 @@ class documentcore {
 		
 			// if id found, we stop to send an error
 			if (!empty($result['id'])) {
-				throw new \Exception('The document '.$result['id'].' is on the same record and is not closed. This document is queued. ');
+				throw new \Exception('The document '.$result['id'].' is on the same record and is not closed. This document is queued. ('.json_encode($result).') (data_created:'.$this->document_data['date_created'].')');
 			}
 			
 			// Check predecessor in the opposite bidirectional rule
