@@ -41,7 +41,10 @@ class jobSchedulerCommand extends ContainerAwareCommand {
 
 	// Run the job scheduler
     protected function execute(InputInterface $input, OutputInterface $output) {
-		try {		
+		try {
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo "Starting job scheduler...\n";
+            }
 			$jobScheduler = $this->getContainer()->get('myddleware.jobScheduler');		
 			$jobScheduler->setJobsToRun();
 			$jobScheduler->runJobs();	

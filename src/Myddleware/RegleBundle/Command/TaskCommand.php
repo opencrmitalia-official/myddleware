@@ -52,6 +52,7 @@ class TaskCommand extends ContainerAwareCommand {
 			// alias de la règle en params
 			$rule = $input->getArgument('rule');
 			$api = $input->getArgument('api');
+
 			// Récupération du Job			
 			$job = $this->getContainer()->get('myddleware_job.job');
 			// Clear message in case this task is run by jobscheduler. In this case message has to be refreshed.
@@ -59,9 +60,11 @@ class TaskCommand extends ContainerAwareCommand {
 			$job->setApi($api);					
 			
 			if ($job->initJob('Synchro : '.$rule)) {
-				$output->writeln( '1;'.$job->id );  // Not removed, user for manual job and webservices
-				
-				if (!empty($rule)) {			
+                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                    echo "Synchro: $rule\n";
+                }
+                $output->writeln( '1;'.$job->id );  // Not removed, user for manual job and webservices
+                if (!empty($rule)) {
 					if ($rule == 'ERROR') {
 						// Premier paramètre : limite d'enregistrement traités
 						// Deuxième paramètre, limite d'erreur : si un flux a plus de tentative que le paramètre il n'est pas relancé
@@ -76,37 +79,64 @@ class TaskCommand extends ContainerAwareCommand {
 							$rules[] = $rule;
 						}								
 						if (!empty($rules)) {
-							foreach ($rules as $key => $value) {								
+							foreach ($rules as $key => $value) {
 								// Don't display rule id if the command is called from the api
 								if (empty($api)) {
-									echo $value.chr(10);
+									echo "Rule: {$value}\n";
 								}
+                                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                    echo "====[ Processing: $value ]====\n";
+                                }
 								$output->writeln('Read data for rule : <question>'.$value.'</question>');
 								// Chargement des données de la règle
 								if ($job->setRule($value)) {		
 									// Sauvegarde des données sources dans les tables de myddleware
-									$output->writeln($value.' : Create documents.');			
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Create documents...'."\n";
+                                    }
+                                    $output->writeln($value.' : Create documents.');
 									$nb = $job->createDocuments();
-									$output->writeln($value.' : Number of documents created : '.$nb); 
+									$output->writeln($value.' : Number of documents created : '.$nb);
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Number of documents created: '.$nb."\n";
+                                    }
 
 									// Permet de filtrer les documents
 									$job->filterDocuments();
-									
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Filter OK!'."\n";
+                                    }
+
 									// Permet de valider qu'aucun document précédent pour la même règle et le même id n'est pas bloqué
 									$job->ckeckPredecessorDocuments();
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Predecessor OK!'."\n";
+                                    }
 
-									// Permet de valider qu'au moins un document parent(relation père) est existant
+                                    // Permet de valider qu'au moins un document parent(relation père) est existant
 									$job->ckeckParentDocuments();
-									
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Parent OK!'."\n";
+                                    }
+
 									// Permet de transformer les docuement avant d'être envoyés à la cible
-									$job->transformDocuments();	
+									$job->transformDocuments();
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Transform OK!'."\n";
+                                    }
 
 									// Historisation des données avant modification dans la cible
 									$job->getTargetDataDocuments();
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Target data OK!'."\n";
+                                    }
 
 									// Envoi des documents à la cible
-									$job->sendDocuments();	
-								}
+									$job->sendDocuments();
+                                    if (getenv('MYDDLEWARE_CRON_RUN')) {
+                                        echo $value.' => Send OK!'."\n";
+                                    }
+                                }
 							}
 						}
 					}
@@ -114,18 +144,38 @@ class TaskCommand extends ContainerAwareCommand {
 			}
 		}
 		catch(\Exception $e) {
-			$job->message .= $e->getMessage();
+			$exceptionMessage = $e->getMessage().' at '.$e->getFile().':'.$e->getLine();
+            $job->message .= $exceptionMessage;
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo "==> ERROR: $exceptionMessage\n";
+                echo $e->getTraceAsString()."\n";
+                echo "\n";
+            }
 		}
 		
 		// Close job if it has been created
 		if($job->createdJob === true) {
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Closing the task...'."\n";
+            }
 			$job->closeJob();
-		}
+		} else {
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Closing task problem.'."\n";
+            }
+        }
 		
 		// Retour en console --------------------------------------
 		if (!empty($job->message)) {
 			$output->writeln( '0;<error>'.$job->message.'</error>');
 			$logger->error( $job->message );
-		} 
-	}
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo "Error: $job->message\n";
+            }
+		}
+
+        if (getenv('MYDDLEWARE_CRON_RUN')) {
+            echo "[synchro exit]\n";
+        }
+    }
 }

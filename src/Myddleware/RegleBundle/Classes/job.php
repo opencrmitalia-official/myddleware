@@ -200,8 +200,8 @@ class jobcore  {
 	}
 	
 	// Fonction permettant d'initialiser le job
-	public function initJob($paramJob) {	
-		$this->paramJob = $paramJob;
+	public function initJob($paramJob) {
+        $this->paramJob = $paramJob;
 		$this->id = uniqid('', true);
 		$this->start = microtime(true);		
 		// Check if a job is already running
@@ -428,10 +428,10 @@ class jobcore  {
 				// Run documents
 				if (!empty($documents)) {
 					foreach ($documents as $doc) {
-						$errors = $rule->actionDocument($doc->id,'rerun');
+						$errors = $rule->actionDocument($doc->id, 'rerun');
 						// Check errors
 						if (!empty($errors)) {									
-							$this->message .=  'Document '.$doc->id.' in error (rule '.$ruleId.')  : '.$errors[0].'. ';
+							$this->message .=  'Document '.$doc->id.' in error on job (rule '.$ruleId.')  : ('.count($errors).') '.$errors[0].'. ';
 						}
 					}
 				}
@@ -903,7 +903,10 @@ class jobcore  {
 			$stmt->bindValue("message", $message);
 			$stmt->bindValue("id", $this->id);
 			$stmt->execute();
-			$this->connection->commit(); // -- COMMIT TRANSACTION			
+			$this->connection->commit(); // -- COMMIT TRANSACTION
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Task closed at '.$now."\n";
+            }
 		} catch (\Exception $e) {
 			$this->connection->rollBack(); // -- ROLLBACK TRANSACTION
 			$this->logger->error( 'Failed to update Job : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )' );

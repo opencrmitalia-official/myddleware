@@ -44,8 +44,8 @@ class databasecore extends solution {
 		try {
 			try {
 				$this->pdo = $this->generatePdo();
-				$this->pdo->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );	
-			    $this->connexion_valide = true;	
+				$this->pdo->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );
+			    $this->connexion_valide = true;
 			} catch (\PDOException $e) {
 				$error = $e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
 				$this->logger->error($error);
@@ -317,7 +317,10 @@ class databasecore extends solution {
 	} // read_last($param)
 	
 	// Permet de récupérer les enregistrements modifiés depuis la date en entrée dans la solution
-	public function read($param) {		
+	public function read($param) {
+        if (getenv('MYDDLEWARE_CRON_RUN')) {
+            echo 'Solution checkpoint: '.__METHOD__.' ('.date('Y-m-d H:i:s').")\n";
+        }
 		$result = array();
 		$result['count'] = 0;
 		$result['date_ref'] = $param['date_ref'];
@@ -404,15 +407,32 @@ class databasecore extends solution {
 			$requestSQL = $this->queryValidation($param, 'read', $requestSQL);
 
 			// Appel de la requête
-			$q = $this->pdo->prepare($requestSQL);		
-			$exec = $q->execute();
-
-			if(!$exec) {
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/prepare ('.date('Y-m-d H:i:s').")\n";
+            }
+			$q = $this->pdo->prepare($requestSQL);
+            $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            if ($pdoDriverName == 'dblib') {
+                $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+            }
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/execute ('.date('Y-m-d H:i:s').")\n";
+            }
+            $exec = $q->execute();
+			if ($exec === false) {
 				$errorInfo = $this->pdo->errorInfo();
-				throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
+                if (empty($errorInfo[2])) {
+                    $errorInfo[2] = '['.$pdoDriverName.':'.$exec.'] '.implode(', ', $errorInfo);
+                }
+                throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
-			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
-
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/fetchAll ('.date('Y-m-d H:i:s').")\n";
+            }
+            $fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
+            if (!getenv('MYDDLEWARE_CRON_RUN')) {
+                file_put_contents('/var/www/html/var/logs/last_fetch.json', json_encode(['driver' => $pdoDriverName, 'query' => $requestSQL, 'result' => $fetchAll], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+            }
 			$row = array();
 			if(!empty($fetchAll)) {
 				$result['count'] = count($fetchAll);
@@ -428,8 +448,8 @@ class databasecore extends solution {
 						}
 						if($key === $param['ruleParams']['fieldDateRef']) {
 							// If the reference isn't a valid date (it could be an ID in case there is no date in the table) we set the current date
-							if (strtotime($value) !== false) {;
-								$row['date_modified'] = $value;
+							if ((bool)strtotime($value)) {;
+								$row['date_modified'] = $value; // (string)date('Y-m-d H:i:s');
 							} else {							
 								$row['date_modified'] = date('Y-m-d H:i:s');
 							}
@@ -442,7 +462,7 @@ class databasecore extends solution {
 						// Manage deletion by adding the flag Myddleware_deletion to the record						
 						if (
 								!empty($param['ruleParams']['deletion'])
-							AND $param['ruleParams']['deletionField'] === $key
+							AND @$param['ruleParams']['deletionField'] === $key
 							AND !empty($value)
 						) {
 							$row['myddleware_deletion'] = true;
@@ -450,14 +470,19 @@ class databasecore extends solution {
 					}
 					$result['values'][$row['id']] = $row;
 				}
-			}		
-			// Search for delete data 
+			}
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison ('.date('Y-m-d H:i:s').")\n";
+            }
 			$result = $this->searchDeletionByComparison($param, $result);
 		}
 		catch (\Exception $e) {
 		    $result['error'] = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
-		}	
-		return $result;
+		}
+        if (getenv('MYDDLEWARE_CRON_RUN')) {
+            echo 'Solution checkpoint: '.__METHOD__.'/return ('.date('Y-m-d H:i:s').")\n";
+        }
+        return $result;
 	} // read($param)
 	
 	protected function searchDeletionByComparison($param, $result) {
@@ -469,13 +494,22 @@ class databasecore extends solution {
 		) {
 			// Search all data in the source application (can take long time)
 			$requestSQL = 'SELECT '.$this->stringSeparatorOpen.$param['ruleParams']['fieldId'].$this->stringSeparatorClose.' FROM '.$this->stringSeparatorOpen.$param['module'].$this->stringSeparatorClose;
-			$q = $this->pdo->prepare($requestSQL);		
-			$exec = $q->execute();
-			if(!$exec) {
+            $q = $this->pdo->prepare($requestSQL);
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:prepare ('.date('Y-m-d H:i:s').")\n";
+            }
+            $exec = $q->execute();
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:execute ('.date('Y-m-d H:i:s').")\n";
+            }
+            if(!$exec) {
 				$errorInfo = $this->pdo->errorInfo();
 				throw new \Exception('Read: '.$errorInfo[2].' . Query : '.$requestSQL);
 			}
-			$fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:fetchAll ('.date('Y-m-d H:i:s').")\n";
+            }
+            $fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
 			// If result is empty, we stop the process because it would remove all data
 			if(!empty($fetchAll)) {
 				// Format result
@@ -494,8 +528,8 @@ class databasecore extends solution {
 				$stmt = $connection->prepare($query);
 				$stmt->bindValue(":id_rule", $param['rule']['id']);
 				$stmt->execute();	   				
-				$documents = $stmt->fetchAll(); 
-				
+				$documents = $stmt->fetchAll();
+
 				// Test all document found in Myddleware
 				foreach ($documents as $document) {
 					// if Myddleware record doesn't exist anymore in the source table
@@ -518,8 +552,14 @@ class databasecore extends solution {
 						$result['count']++;
 					}
 				}
+                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                    echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post1 ('.date('Y-m-d H:i:s').")\n";
+                }
 			}
-		}
+            if (getenv('MYDDLEWARE_CRON_RUN')) {
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post2 ('.date('Y-m-d H:i:s').")\n";
+            }
+        }
 		return $result;
 	}
 	
@@ -559,15 +599,29 @@ class databasecore extends solution {
 					$values .= ")"; // VALUES (value1,value2,value3,...)
 					$sql .= ") VALUES ".$values; // INSERT INTO table_name (column1,column2,column3,...) VALUES (value1,value2,value3,...)	
 					// Query validation
-					$sql = $this->queryValidation($param, 'create', $sql);	
-					
+					$sql = $this->queryValidation($param, 'create', $sql);
+
 					$q = $this->pdo->prepare($sql);
-					$exec = $q->execute();	
-					if(!$exec) {
+                    if ($q === false) {
+                        $errorInfo = $this->pdo->errorInfo();
+                        if (empty($errorInfo[2])) {
+                            $errorInfo[2] = implode(', ', $errorInfo);
+                        }
+                        throw new \Exception('Create: Prepare '.$errorInfo[2].' . Query : '.$sql);
+                    }
+
+                    $pdoDriverName = $this->pdo->getAttribute(\PDO::ATTR_DRIVER_NAME);
+                    if ($pdoDriverName == 'dblib') {
+                        $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                    }
+                    $exec = $q->execute();
+					if ($exec === false) {
 						$errorInfo = $this->pdo->errorInfo();
-						throw new \Exception('Create: '.$errorInfo[2].' . Query : '.$sql);
-					}
-					
+                        if (empty($errorInfo[2])) {
+                            $errorInfo[2] = implode(', ', $errorInfo);
+                        }
+                        throw new \Exception('Create: Execute '.$errorInfo[2].' . Query : '.$sql);
+                    }
 					// If the target reference field isn't in data sent
 					if (!isset($idTarget)) {
 						// If the target reference field is a primary key auto increment, we retrive the value here
@@ -807,9 +861,10 @@ class databasecore extends solution {
 		return parent::get_module_fields_relate($module, $param);
 	}
 
-	public function getFieldsParamUpd($type, $module) {	
+	public function getFieldsParamUpd($type, $module) {
 		try {
 			$fieldsSource = $this->get_module_fields($module, $type, false);
+
 			// List only real database field so we remove the Myddleware_element_id field
 			unset($fieldsSource['Myddleware_element_id']);
 			if(!empty($fieldsSource)) {
@@ -854,7 +909,7 @@ class databasecore extends solution {
 					$params[] = $idParam;
 					$params[] = $dateParam;
 					$params[] = $deletionParam;
-				} else {
+                } else {
 					// Add param to store the fieldname corresponding to the record id
 					$idParam = array(
 								'id' => 'targetFieldId',

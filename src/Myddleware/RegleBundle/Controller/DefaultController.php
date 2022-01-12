@@ -1501,7 +1501,6 @@ class DefaultControllerCore extends Controller
             $lst_relation_target = array();
             $lst_relation_target_alpha = array();
             if ($relation) {
-
                 foreach ($relation as $key => $value) {
                     $lst_relation_target[] = $key;
                 }
@@ -1741,7 +1740,7 @@ class DefaultControllerCore extends Controller
             }
 			
 			// Add param to allow deletion (need source and target application ok to enable deletion)
-			if (
+            if (
 					$solution_source->getReadDeletion($module['source']) == true
 				AND	$solution_cible->getSendDeletion($module['cible']) == true
 			){

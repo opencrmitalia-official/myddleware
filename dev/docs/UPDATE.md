@@ -7,6 +7,7 @@ eseguire i seguenti comandi. (La cartella myhost puù variare da cliente a clien
 ```
 sudo su
 cd /home/(myhost)/myddleware
+make down
 git pull
 ```
 
@@ -24,13 +25,21 @@ mv ./src/Myddleware/RegleBundle/Custom/Solutions/oracle.php ./src/Myddleware/Reg
 
 viene aggiunto semplicemente la parola '.client' prima dell'estensione '.php'.
 
-A questo punto si deve ripetere le segueti operazioni
+A questo punto si deve ripetere almeno due o tre volte il seguente comando
 
 ```
 git pull
 ```
 
-> Ancora non abbiamo finito
+Fino a quando il messaggio a video non sarà come questo
+
+```
+Already up to date.
+```
+
+> **ATTENZIONE:** Se questo messaggio non dovesse apparire, contattre l'assistenza sviluppo per riolvere i conflitti sul progetto.
+
+Se non vi sono stati problemi si proceda con i seguenti passaggi.
 
 Adesso bisogna installare le eventuali nuove librerie rilasciate quindi, va eseguito il seguente comando
 
@@ -46,4 +55,5 @@ Adesso si puo riportare l'ambiente nella modalità PRODUCTION con il seguente co
 
 ```
 make prod
+make fix
 ``` 

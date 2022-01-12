@@ -46,12 +46,18 @@ class notificationcore  {
 	}
 	
 	// Send alert if a job is running too long
-	public function sendAlert() {
+	public function sendAlert($alertTimeLimit = null) {
 		try {
-			$notificationParameter = $this->container->getParameter('notification');
-			if (empty($notificationParameter['alert_time_limit'])) {
-				throw new \Exception ('No alert time set in the parameters file. Please set the parameter alert_limit_minute in the file config/parameters.yml.');
-			}
+            if ($alertTimeLimit === null) {
+                $notificationParameter = $this->container->getParameter('notification');
+                if (empty($notificationParameter['alert_time_limit'])) {
+                    throw new \Exception ('No alert time set in the parameters file. Please set the parameter alert_limit_minute in the file config/parameters.yml.');
+                }
+            } else {
+                $notificationParameter = [
+                    'alert_time_limit' => $alertTimeLimit
+                ];
+            }
 			// Calculate the date corresponding to the beginning still authorised
 			$timeLimit = new \DateTime('now',new \DateTimeZone('GMT'));
 			$timeLimit->modify('-'.$notificationParameter['alert_time_limit'].' minutes');
@@ -81,19 +87,31 @@ class notificationcore  {
 					$textMail .= chr(10).$this->container->getParameter('base_uri').chr(10);
 				}
 				$textMail .= $this->tools->getTranslation(array('email_notification', 'best_regards')).chr(10).$this->tools->getTranslation(array('email_notification', 'signature'));
-				$message = \Swift_Message::newInstance()
-					->setSubject($this->tools->getTranslation(array('email_alert', 'subject')))
-					->setFrom((!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : 'no-reply@myddleware.com'))
+                $mailerUser = $this->container->getParameter('mailer_user');
+                $mailer = $this->container->get('mailer');
+
+                $defaultEmailFrom = filter_var($mailerUser, FILTER_VALIDATE_EMAIL) ? $mailerUser : (!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : ('no-reply@myddleware.com'));
+
+                $instanceName = 'Myddleware';
+                if (file_exists($customJsonFile = __DIR__.'/../Custom/Custom.json')) {
+                    $customJson = json_decode(file_get_contents($customJsonFile), true);
+                    $instanceName = isset($customJson['instance_name']) && $customJson['instance_name'] ? $customJson['instance_name'] : 'Myddleware';
+                }
+                $message = \Swift_Message::newInstance()
+					->setSubject($this->tools->getTranslation(array('email_alert', 'subject')).' ['.$instanceName.']')
+					->setFrom($defaultEmailFrom)
 					->setBody($textMail)
 				;
 				// Send the message to all admins
 				foreach ($this->emailAddresses as $emailAddress) {
 					$message->setTo($emailAddress);
-					$send = $this->container->get('mailer')->send($message);
-					if (!$send) {
-						$this->logger->error('Failed to send alert email : '.$textMail.' to '.$contactMail);	
-						throw new \Exception ('Failed to send alert email : '.$textMail.' to '.$contactMail);
-					}			
+                    $send = $mailer->send($message);
+                    if ($send) {
+                        $this->logger->info('Alert email was sent to: '.$emailAddress);
+                    } else {
+						$this->logger->error('Failed to send alert email : '.$textMail.' to '.$emailAddress);
+						throw new \Exception ('Failed to send alert email : '.$textMail.' to '.$emailAddress);
+					}
 				}
 			}
 			return true;
@@ -105,7 +123,7 @@ class notificationcore  {
 	}
 	
 	// Send notification to receive statistique about myddleware data transfer
-	public function sendNotification() {
+	public function sendNotification($hasProblem = false) {
 		try {
 			// Check that we have at least one email address
 			if (empty($this->emailAddresses)) {
@@ -114,6 +132,10 @@ class notificationcore  {
 			
 			// Write the introduction
 			$textMail = $this->tools->getTranslation(array('email_notification', 'hello')).chr(10).chr(10).$this->tools->getTranslation(array('email_notification', 'introduction')).chr(10);
+
+            if ($hasProblem) {
+                $textMail .= $this->getProblemAsString();
+            }
 
 			// Récupération du nombre de données transférées depuis la dernière notification. On en compte qu'une fois les erreurs
 			$sqlParams = "	SELECT
@@ -140,7 +162,7 @@ class notificationcore  {
 			$stmt = $this->connection->prepare($sqlParams);
 			$stmt->execute();	   				
 			$cptLogs = $stmt->fetchAll();
-			$job_open = 0;
+            $job_open = 0;
 			$job_close = 0;
 			$job_cancel = 0;
 			$job_error = 0;
@@ -185,7 +207,7 @@ class notificationcore  {
 			else {
 				$textMail .= chr(10).$this->tools->getTranslation(array('email_notification', 'no_active_rule')).chr(10);
 			}
-			
+
 			// Get errors since the last notification
 			if ($job_error > 0) {
 				$sqlParams = "	SELECT
@@ -229,21 +251,33 @@ class notificationcore  {
 			}
 			// Create text
 			$textMail .= chr(10).$this->tools->getTranslation(array('email_notification', 'best_regards')).chr(10).$this->tools->getTranslation(array('email_notification', 'signature'));
-					
-			$message = \Swift_Message::newInstance()
-				->setSubject($this->tools->getTranslation(array('email_notification', 'subject')))
- 				->setFrom((!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : 'no-reply@myddleware.com'))
+
+            $mailerUser = $this->container->getParameter('mailer_user');
+            $defaultEmailFrom = filter_var($mailerUser, FILTER_VALIDATE_EMAIL) ? $mailerUser : (!empty($this->container->getParameter('email_from')) ? $this->container->getParameter('email_from') : ('no-reply@myddleware.com'));
+            $instanceName = 'Myddleware';
+            if (file_exists($customJsonFile = __DIR__.'/../Custom/Custom.json')) {
+                $customJson = json_decode(file_get_contents($customJsonFile), true);
+                $instanceName = isset($customJson['instance_name']) && $customJson['instance_name'] ? $customJson['instance_name'] : 'Myddleware';
+            }
+            $message = \Swift_Message::newInstance()
+				->setSubject(($hasProblem?'(PROBLEM) ':'').$this->tools->getTranslation(array('email_notification', 'subject')).' ['.$instanceName.']')
+ 				->setFrom($defaultEmailFrom)
 				->setBody($textMail)
 			;
+
 			// Send the message to all admins
 			foreach ($this->emailAddresses as $emailAddress) {
-				$message->setTo($emailAddress);
+                $message->setTo($emailAddress);
 				$send = $this->container->get('mailer')->send($message);
 				if (!$send) {
-					$this->logger->error('Failed to send email : '.$textMail.' to '.$contactMail);	
-					throw new \Exception ('Failed to send email : '.$textMail.' to '.$contactMail);
-				}			
+					$this->logger->error('Failed to send email : '.$textMail.' to '.$emailAddress);
+					throw new \Exception ('Failed to send email : '.$textMail.' to '.$emailAddress);
+				}
 			}
+            if ($hasProblem) {
+                $this->unsetProblem();
+            }
+
 			return true;
 		} catch (\Exception $e) {
 			$error = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
@@ -267,7 +301,62 @@ class notificationcore  {
 			}
 		}
 	}
-	
+
+    /**
+     *
+     */
+    public function takeNoteAboutProblem($problemType, $problem)
+    {
+        $problemStatus = [];
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        if (file_exists($problemFile)) {
+            $problemStatus = json_decode(file_get_contents($problemFile), true);
+        }
+
+        $problemStatus[$problemType] = is_array($problem) ? $problem : ['problem' => $problem];
+        $problemStatus[$problemType]['problem_time'] = date('Y-m-d H:i:s');
+
+        file_put_contents($problemFile, json_encode($problemStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     *
+     */
+    public function hasProblem()
+    {
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        if (!file_exists($problemFile)) {
+            return false;
+        }
+
+        $problemStatus = json_decode(file_get_contents($problemFile), true);
+
+        return !empty($problemStatus);
+    }
+
+    /**
+     *
+     */
+    public function getProblemAsString()
+    {
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        if (!file_exists($problemFile)) {
+            return '';
+        }
+
+        return chr(10)."*** INSTANCE WITH PROBLEM ***".chr(10).file_get_contents($problemFile).chr(10).chr(10);
+    }
+
+    /**
+     *
+     */
+    public function unsetProblem()
+    {
+        $problemFile = $this->container->get('kernel')->getLogDir().'/problem.json';
+        if (file_exists($problemFile)) {
+            unlink($problemFile);
+        }
+    }
 }
 
 
