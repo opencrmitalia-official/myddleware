@@ -97,3 +97,6 @@ NOTES.md
 !/src/Myddleware/RegleBundle/Custom/Solutions/vtigercrm.php
 !/src/Myddleware/RegleBundle/Custom/Solutions/woocommerce.php
 # OCI:END
+
+# JavaScript libraries
+/node_modules
