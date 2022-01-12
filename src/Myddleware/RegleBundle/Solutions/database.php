@@ -512,7 +512,10 @@ class databasecore extends solution {
             $fetchAll = $q->fetchAll(\PDO::FETCH_ASSOC);
 			// If result is empty, we stop the process because it would remove all data
 			if(!empty($fetchAll)) {
-				// Format result
+                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                    echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post0 ('.date('Y-m-d H:i:s').")\n";
+                }
+                // Format result
 				foreach ($fetchAll as $sourceTableRecord) {
 					$sourceTableRecords[$sourceTableRecord[$param['ruleParams']['fieldId']]] = $sourceTableRecord[$param['ruleParams']['fieldId']];
 				}				
@@ -530,7 +533,11 @@ class databasecore extends solution {
 				$stmt->execute();	   				
 				$documents = $stmt->fetchAll();
 
-				// Test all document found in Myddleware
+                if (getenv('MYDDLEWARE_CRON_RUN')) {
+                    echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post1 ('.date('Y-m-d H:i:s').")\n";
+                }
+
+                // Test all document found in Myddleware
 				foreach ($documents as $document) {
 					// if Myddleware record doesn't exist anymore in the source table
 					// and if no deletion document has alreday been generated for this record
@@ -553,11 +560,11 @@ class databasecore extends solution {
 					}
 				}
                 if (getenv('MYDDLEWARE_CRON_RUN')) {
-                    echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post1 ('.date('Y-m-d H:i:s').")\n";
+                    echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post2 ('.date('Y-m-d H:i:s').")\n";
                 }
 			}
             if (getenv('MYDDLEWARE_CRON_RUN')) {
-                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post2 ('.date('Y-m-d H:i:s').")\n";
+                echo 'Solution checkpoint: '.__METHOD__.'/searchDeletionByComparison:post3 ('.date('Y-m-d H:i:s').")\n";
             }
         }
 		return $result;
