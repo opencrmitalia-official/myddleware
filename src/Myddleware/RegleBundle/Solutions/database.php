@@ -44,7 +44,8 @@ class databasecore extends solution {
 		try {
 			try {
 				$this->pdo = $this->generatePdo();
-			    $this->connexion_valide = true;
+				$this->pdo->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_WARNING );	
+			    $this->connexion_valide = true;	
 			} catch (\PDOException $e) {
 				$error = $e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
 				$this->logger->error($error);
@@ -433,9 +434,9 @@ class databasecore extends solution {
 						}
 						if($key === $param['ruleParams']['fieldDateRef']) {
 							// If the reference isn't a valid date (it could be an ID in case there is no date in the table) we set the current date
-							if ((bool)strtotime($value)) {;
-								$row['date_modified'] = (string)date('Y-m-d H:i:s');
-							} else {
+							if (strtotime($value) !== false) {;
+								$row['date_modified'] = $value;
+							} else {							
 								$row['date_modified'] = date('Y-m-d H:i:s');
 							}
 							$result['date_ref'] = $value;
@@ -657,15 +658,21 @@ class databasecore extends solution {
 					// Execute the query
 					$q = $this->pdo->prepare($sql);
 					$exec = $q->execute();
+					// Query error
 					if(!$exec) {
 						$errorInfo = $this->pdo->errorInfo();
 						throw new \Exception('Update: '.$errorInfo[2].' . Query : '.$sql);
 					}
+
+					// Several modifications
+					if ($q->rowCount() > 1) {
+						throw new \Exception('Update query has modified several records. It shoudl never happens. Please check that your id in your database is unique. Query : '.$sql);
+					}
 					// Send the target ifd to Myddleware
 					$result[$idDoc] = array(
 											'id' => $idTarget,
-											'error' => ($q->rowCount() ? false : 'There is no error but 0 rows have been updated')
-									);
+											'error' => ($q->rowCount() ? false : 'There is no error but 0 record have been updated')
+									);									
 				}
 				catch (\Exception $e) {
 					$error = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
@@ -740,7 +747,7 @@ class databasecore extends solution {
 
 	// Function to escape characters
 	protected function escape($value) {
-		return str_replace("'", "''", $value);
+		return str_replace("'", "''", stripslashes($value));
 	}
 
 	// Get the strings which can identify what field is an id in the table
