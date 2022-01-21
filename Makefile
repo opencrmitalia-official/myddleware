@@ -73,7 +73,7 @@ setup-files:
 setup-database: up sleep
 	@docker-compose -f docker-compose.yml exec myddleware bash prepare-database.sh
 
-setup: setup-files setup-database
+setup: setup-files setup-database fix
 	@echo "Setup Myddleware files and database: OK!"
 
 schedule:
