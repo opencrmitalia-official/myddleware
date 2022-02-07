@@ -15,6 +15,11 @@ cd CLONE
 #git push --set-upstream origin hotfix
 
 ## Aggiorna la branch master del nostro progetto con le novità presenti nel master dell'UPSTRAM
+git checkout main
+git pull https://github.com/Myddleware/myddleware.git main -X theirs --no-edit
+git push
+
+## Aggiorna la branch master del nostro progetto con le novità presenti nel master dell'UPSTRAM
 git checkout master
 git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit
 git push
