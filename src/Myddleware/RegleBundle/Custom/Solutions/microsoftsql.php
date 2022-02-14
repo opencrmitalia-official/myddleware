@@ -19,7 +19,7 @@ class microsoftsqlbase extends microsoftsqlcore
         // Redefine reference date format (add milliseconds)
         try {
             $date = new \DateTime($param['date_ref']);
-            $param['date_ref'] = $date->format('Y-m-d H:i:s.v');
+            $param['date_ref'] = $date->format('Ymd H:i:s.v');
         } catch (\Exception $error) {
             // Ignore problem on date_ref
         }
