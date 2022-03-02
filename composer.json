@@ -30,7 +30,7 @@
     "friendsofsymfony/jsrouting-bundle": "^2.3",
     "illuminate/encryption": "5.3.*@dev",
     "incenteev/composer-parameter-handler": "^2.0",
-    "javanile/vtiger-client": "^0.0.13",
+    "javanile/vtiger-client": "^0.0.28",
     "jquery/jquery": "^3.5.1",
     "jquery/jquery_ui": "^1.11.1",
     "laminas/laminas-code": "~3.4.1|^4.0",
