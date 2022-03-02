@@ -93,6 +93,9 @@ install: php-install js-install
 php-install: up
 	@docker-compose run --rm --no-deps myddleware composer install
 
+php-update: up
+	@docker-compose run --rm --no-deps myddleware composer update
+
 ## ----------
 ## JavaScript
 ## ----------
