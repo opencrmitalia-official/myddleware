@@ -225,7 +225,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function read($param)
+    public function readData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::read($param);
@@ -297,7 +297,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function create($param)
+    public function createData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::create($param);
@@ -346,7 +346,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function update($param)
+    public function updateData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::update($param);
@@ -390,7 +390,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function delete($param)
+    public function deleteData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::delete($param);
