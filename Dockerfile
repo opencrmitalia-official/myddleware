@@ -1,5 +1,9 @@
-FROM --platform=linux/amd64 php:7.4.26-apache
+FROM --platform=linux/amd64 php:7.4.26-apache-bullseye
 LABEL maintainer="Francesco Bianco <francescobianco@opencrmitalia.com>"
+
+# Useful global ARGS
+# Debian package installation in non interactive mode
+ARG DEBIAN_FRONTEND=noninteractive
 
 ## Configure PHP
 RUN apt-get update && apt-get upgrade -y && \
@@ -37,14 +41,15 @@ RUN pecl install -f xdebug && \
     echo "xdebug.remote_mode = req" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
 
 ## Install MS Database
-#RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-#     curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
-#    apt-get update && \
-#    apt-get install --no-install-recommends -y msodbcsql17 unixodbc-dev && \
-#    pecl install -f sqlsrv pdo_sqlsrv && \
-#    docker-php-ext-enable sqlsrv pdo_sqlsrv && \
-#    sed -i 's,^\(MinProtocol[ ]*=\).*,\1'TLSv1.0',g' /etc/ssl/openssl.cnf && \
-#    sed -i 's,^\(CipherString[ ]*=\).*,\1'DEFAULT@SECLEVEL=1',g' /etc/ssl/openssl.cnf
+ARG ACCEPT_EULA=Y
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+     curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y msodbcsql17 unixodbc-dev && \
+    pecl install -f sqlsrv pdo_sqlsrv && \
+    docker-php-ext-enable sqlsrv pdo_sqlsrv && \
+    sed -i 's,^\(MinProtocol[ ]*=\).*,\1'TLSv1.0',g' /etc/ssl/openssl.cnf && \
+    sed -i 's,^\(CipherString[ ]*=\).*,\1'DEFAULT@SECLEVEL=1',g' /etc/ssl/openssl.cnf
 
 ## Install Oracle Database
 RUN curl "https://download.oracle.com/otn_software/linux/instantclient/195000/oracle-instantclient19.5-sqlplus-19.5.0.0.0-1.x86_64.rpm" -o "/mnt/oracle-instant-sqlplus.rpm" && \
@@ -74,14 +79,14 @@ COPY docker/etc/crontab /etc/
 RUN chmod 600 /etc/crontab
 
 ## Install DBLIB
-#RUN apt-get update && \
-#    apt-get install -y freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev zlib1g-dev libicu-dev g++ libc-client-dev && \
-#    docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu && \
-#    docker-php-ext-configure intl && \
-#    docker-php-ext-install pdo_dblib && \
-#    docker-php-ext-install intl && \
-#    docker-php-ext-install mbstring && \
-#    docker-php-ext-enable intl mbstring pdo_dblib
+RUN apt-get update && \
+    apt-get install -y freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev zlib1g-dev libicu-dev g++ libc-client-dev libonig-dev && \
+    docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu && \
+    docker-php-ext-configure intl && \
+    docker-php-ext-install pdo_dblib && \
+    docker-php-ext-install intl && \
+    docker-php-ext-install mbstring && \
+    docker-php-ext-enable intl mbstring pdo_dblib
 
 ## Sysadmin tools
 RUN apt-get update && apt-get upgrade -y && \
