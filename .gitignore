@@ -101,4 +101,5 @@ composer.phar
 
 ##> Opencrmitalia ##
 !src/Custom/Manager/CustomSolutionManager.php
+!src/Custom/Solutions/opencrmitalia.php
 ##< Opencrmitalia ##
