@@ -98,3 +98,7 @@ composer.phar
 !/docker/var/*/.gitkeep
 .env.docker
 ##< Docker ##
+
+##> Opencrmitalia ##
+!src/Custom/Manager/CustomSolutionManager.php
+##< Opencrmitalia ##
