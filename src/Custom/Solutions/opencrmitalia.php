@@ -1,7 +1,8 @@
 <?php
-namespace Myddleware\RegleBundle\Solutions;
+namespace App\Custom\Solutions;
 
 use Javanile\VtigerClient\VtigerClient;
+use App\Solutions\vtigercrm;
 
 class opencrmitaliacore extends vtigercrm
 {
@@ -129,79 +130,12 @@ class opencrmitaliacore extends vtigercrm
     }
 
     /**
-     * Read Last
-     *
-     * @param array $param
-     * @return array
-     */
-    public function read_last($param)
-    {
-        if (!in_array($param['module'], $this->dbRecordModules)) {
-            return parent::read_last($param);
-        }
-
-        if ($this->notVtigerClient()) {
-            return $this->errorMissingVtigerClient(['done' => -1]);
-        }
-
-        $result = [];
-        $vtigerClient = $this->getVtigerClient();
-
-        if (empty($param['query']['id'])) {
-            $select = $vtigerClient->post([
-                'form_params' => [
-                    'operation' => 'dbrecord_crud_row',
-                    'sessionName' => $vtigerClient->getSessionName(),
-                    'name' => $param['module'],
-                    'mode' => 'select',
-                    'element' => json_encode([
-                        'limit' => 1,
-                        'offset' => 0
-                    ]),
-                ],
-            ]);
-            if (empty($select['success']) || empty($select['result']['success'])) {
-                throw new \Exception($select["error"]["message"] ?? json_encode($select));
-            }
-            if (empty($select['result']['records'][0])) {
-                throw new \Exception("No records found on module '{$param[module]}'");
-            }
-            $result['values'] = $select['result']['records'][0];
-            $result['values']['id'] = $this->assignIdDbRecordModule($param['module'], $select['result']['records'][0]);
-        } elseif (isset($param['fields']) && is_array($param['fields']) && in_array('id', $param['fields'])) {
-            throw new \Exception('Unimplemented read_last case on opencrmitalia solution: '.json_encode($param));
-            $query = $this->getVtigerClient()->retrieve($param['query']['id']);
-            $query['result'][0] = $query['result'];
-        } else {
-            $query = $this->explodeIdQueryDbRecordModule($param['query']['id'], $param['module']);
-            $read = $vtigerClient->post([
-                'form_params' => [
-                    'operation' => 'dbrecord_crud_row',
-                    'sessionName' => $vtigerClient->getSessionName(),
-                    'name' => $param['module'],
-                    'mode' => 'read',
-                    'element' => json_encode($query),
-                ],
-            ]);
-            if (empty($read['success']) || empty($read['result']['success'])) {
-                throw new \Exception($read["error"]["message"] ?? json_encode($read));
-            }
-            $result['values'] = $read['result']['record'];
-            $result['values']['id'] = $param['query']['id'];
-        }
-
-        $result['done'] = true;
-
-        return $result;
-    }
-
-    /**
      * Read
      *
      * @param array $param
      * @return array
      */
-    public function read($param)
+    public function readData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::read($param);
@@ -273,7 +207,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function create($param)
+    public function createData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::create($param);
@@ -322,7 +256,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function update($param)
+    public function updateData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::update($param);
@@ -366,7 +300,7 @@ class opencrmitaliacore extends vtigercrm
      * @param array $param
      * @return array
      */
-    public function delete($param)
+    public function deleteData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::delete($param);
