@@ -25,6 +25,6 @@ services:
   #     decoration_priority: 1
 
   App\Custom\Solutions\opencrmitalia:
-      decorates: App\Solutions\wordpress
+      #decorates: App\Solutions\wordpress
       decoration_on_invalid: ignore
       decoration_priority: 1
