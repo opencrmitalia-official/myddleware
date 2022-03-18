@@ -35,6 +35,7 @@ class LoadSolutionData implements FixtureInterface
     protected $solutionData = [
         ['name' => 'sugarcrm',			'active' => 1, 'source' => 1, 'target' => 1],
         ['name' => 'vtigercrm',			'active' => 1, 'source' => 1, 'target' => 1],
+        ['name' => 'vtigercrmcustom',   'active' => 1, 'source' => 1, 'target' => 1],
         ['name' => 'salesforce',		'active' => 1, 'source' => 1, 'target' => 1],
         ['name' => 'prestashop',		'active' => 1, 'source' => 1, 'target' => 1],
         ['name' => 'suitecrm',			'active' => 1, 'source' => 1, 'target' => 1],
