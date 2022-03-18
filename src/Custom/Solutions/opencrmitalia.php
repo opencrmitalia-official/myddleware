@@ -1,10 +1,10 @@
 <?php
 namespace App\Custom\Solutions;
 
+use App\Solutions\vtigercrmcustom;
 use Javanile\VtigerClient\VtigerClient;
-use App\Solutions\vtigercrm;
 
-class opencrmitaliacore extends vtigercrm
+class opencrmitaliacore extends vtigercrmcustom
 {
     /** @var array inventoryModules */
     protected $inventoryModules = [
