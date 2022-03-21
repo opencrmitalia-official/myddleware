@@ -14,7 +14,7 @@
 #@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f vtigercrm.client.php ] || cp  ../../../../../var/solutions/vtigercrm.client.php vtigercrm.client.php
 #@cd src/Myddleware/RegleBundle/Custom/Solutions && [ -f woocommerce.client.php ] || cp  ../../../../../var/solutions/woocommerce.client.php woocommerce.client.php
 #@cd src/Myddleware/RegleBundle/Custom && [ -f Custom.json ] || cp  ../../../../var/custom/Custom.json Custom.json
-#@cd var/databases && [ -d filebrowser.db ] && rm -fr filebrowser.db || true; touch filebrowser.db
+#
 
 ## Initialize environment
 if [ ! -f .env.local ]; then
@@ -29,3 +29,7 @@ chmod 777 .env.local .env.docker
 ## Fix files permissions
 [ -d var/log ] && chmod 777 -R var/log || true
 [ -d var/logs ] && chmod 777 -R var/logs || true
+
+## Init FileBrowser
+[ -d docker/var/filebrowser.db ] && rm -fr docker/var/filebrowser.db || true
+touch docker/var/filebrowser.db

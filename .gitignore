@@ -106,3 +106,8 @@ composer.phar
 /phpunit.xml
 .phpunit.result.cache
 ###< phpunit/phpunit ###
+
+##> Opencrmitalia ##
+!src/Custom/Manager/CustomSolutionManager.php
+!src/Custom/Solutions/opencrmitalia.php
+##< Opencrmitalia ##

@@ -55,6 +55,7 @@ use App\Solutions\shopapplication;
 use App\Solutions\sugarcrm;
 use App\Solutions\suitecrm;
 use App\Solutions\vtigercrm;
+use App\Solutions\vtigercrmcustom;
 use App\Solutions\woocommerce;
 use App\Solutions\wooeventmanager;
 use App\Solutions\wordpress;
@@ -94,6 +95,7 @@ class SolutionManager
         sapcrm $sapcrm,
         sagecrm $sagecrm,
         vtigercrm $vtigercrm,
+        vtigercrmcustom $vtigercrmcustom,
         suitecrm $suitecrm,
         eventbrite $eventbrite,
         mailchimp $mailchimp,
@@ -125,6 +127,7 @@ class SolutionManager
             'sapcrm' => $sapcrm,
             'sagecrm' => $sagecrm,
             'vtigercrm' => $vtigercrm,
+            'vtigercrmcustom' => $vtigercrmcustom,
             'suitecrm' => $suitecrm,
             'eventbrite' => $eventbrite,
             'mailchimp' => $mailchimp,
