@@ -1122,8 +1122,8 @@ class rulecore
 			} elseif ($event === 'deleteDocumentJob') {
 				exec($php.' '.__DIR__.'/../../bin/console myddleware:massaction remove rule '.$ruleId.' Y --env='.$this->env.' > '.$fileTmp.' &', $output);
 			} else {
-                //$commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp.' &';
-                $commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp;
+                $commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp.' &';
+                //$commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp;
                 exec($commandToRun, $output);
 			}			
 			$cpt = 0;
