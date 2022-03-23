@@ -4,7 +4,7 @@ init:
 	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware bash docker/script/init.sh
 
 clean:
-	@docker-compose run --rm --no-deps myddleware bash docker/script/clean.sh
+	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware bash docker/script/clean.sh
 
 wait:
 	@docker-compose run --rm myddleware bash -c "while ! (mysqladmin ping -uroot -hmysql > /dev/null 2>&1); do sleep 1; done"
@@ -84,17 +84,17 @@ docker-stop-all:
 reset: clean
 	@bash docker/script/reset.sh
 
-install: php-install js-install
+install: init php-install js-install
 	@echo "Myddleware installation complete."
 
 ## ---
 ## PHP
 ## ---
 php-install: up
-	@docker-compose run --rm --no-deps myddleware composer install
+	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware composer install
 
 php-update: up
-	@docker-compose run --rm --no-deps myddleware composer update
+	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware composer update
 
 ## ----------
 ## JavaScript
