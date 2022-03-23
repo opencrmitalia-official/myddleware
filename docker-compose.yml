@@ -65,6 +65,7 @@ services:
       - ./src/Custom:/srv/Custom
       #- ./src/Myddleware/RegleBundle/Templates:/srv/Templates
       - ./var/log:/srv/Log
+      - ./var/cache:/srv/Cache
       #- ./var/vpn:/srv/VPN
       - ./docker/etc/.filebrowser.json:/.filebrowser.json
       - ./docker/var/filebrowser.db:/database.db
