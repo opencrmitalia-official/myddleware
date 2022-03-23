@@ -176,6 +176,10 @@ test-debug: reset install setup debug
 test-prod: reset install setup prod
 	@docker-compose ps
 
+test-mysql: reset init
+	@docker-compose up -d --force-recreate mysql
+	@docker-compose ps
+
 test-backup: up
 	@docker-compose -f docker-compose.yml logs -f backup
 

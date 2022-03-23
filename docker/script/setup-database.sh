@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+set -e
+
+echo "Setup database..."
 
 ## Setup database then create admin user
 php bin/console doctrine:schema:update --force
