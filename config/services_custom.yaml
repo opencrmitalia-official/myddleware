@@ -24,7 +24,7 @@ services:
   #     decoration_on_invalid: ignore
   #     decoration_priority: 1
 
-  #App\Custom\Solutions\opencrmitalia:
-  #  decorates: App\Solutions\vtigercrmcustom
-  #  decoration_priority: 1
-  #  decoration_on_invalid: ignore
+  App\Custom\Solutions\opencrmitalia:
+    decorates: App\Solutions\vtigercrmcustom
+    decoration_priority: 1
+    decoration_on_invalid: ignore
