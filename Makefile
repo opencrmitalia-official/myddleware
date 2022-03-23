@@ -7,7 +7,10 @@ clean:
 	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware bash docker/script/clean.sh
 
 wait:
-	@docker-compose run --rm myddleware bash -c "while ! (mysqladmin ping -uroot -hmysql > /dev/null 2>&1); do sleep 1; done"
+	@docker-compose run --rm myddleware bash -c "\
+		echo -n 'Waiting the database bootstrapping ...' && \
+		while ! (mysqladmin ping -umyddleware -hmysql > /dev/null 2>&1); do sleep 1; echo -n '.'; done && \
+		echo ' done'"
 
 clean-cache:
 	@docker-compose -f docker-compose.yml run --rm myddleware rm -fr var/cache/*
@@ -84,6 +87,9 @@ docker-stop-all:
 reset: clean
 	@bash docker/script/reset.sh
 
+reset-mysql:
+	@bash docker/script/reset-mysql.sh
+
 install: init php-install js-install
 	@echo "Myddleware installation complete."
 
@@ -114,6 +120,9 @@ ps:
 
 up:
 	@docker-compose -f docker-compose.yml up -d
+
+up-mysql:
+	@docker-compose -f docker-compose.yml up -d --force-recreate mysql
 
 down:
 	@docker-compose down --remove-orphans
@@ -176,9 +185,9 @@ test-debug: reset install setup debug
 test-prod: reset install setup prod
 	@docker-compose ps
 
-test-mysql: reset init
-	@docker-compose up -d --force-recreate mysql
-	@docker-compose ps
+test-mysql: reset-mysql init up-mysql wait
+	@docker-compose -f docker-compose.yml up -d phpmyadmin
+	@docker-compose -f docker-compose.yml logs -f mysql
 
 test-backup: up
 	@docker-compose -f docker-compose.yml logs -f backup
