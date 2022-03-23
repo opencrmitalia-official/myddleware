@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-chmod 777 -R var/cache
+chmod 777 -R var/cache var/log
