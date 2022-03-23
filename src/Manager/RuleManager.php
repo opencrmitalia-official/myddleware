@@ -156,7 +156,7 @@ class rulecore
 		$this->solutionManager = $solutionManager;
 		$this->documentManager = $documentManager;
 		$this->parameterBagInterface = $parameterBagInterface;
-		$this->env = getenv('APP_ENV');	
+		$this->env = getenv('APP_ENV') ?: 'prod';
 		$this->formulaManager = $formulaManager;
 	}
 	
