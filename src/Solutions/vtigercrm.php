@@ -404,7 +404,6 @@ class vtigercrmcore extends solution
     protected function populateModuleFieldsFromVtigerModule($fields, $module, $type = 'source')
     {
         $this->moduleFields = [];
-        $this->fieldsRelate = [];
         $excludeFields = $this->exclude_field_list[$module] ?? $this->exclude_field_list['default'];
         $excludeFields = $excludeFields[$type] ?? $excludeFields['default'];
         $requiredFields = $this->force_required_module_fields[$module] ?? [];
@@ -416,10 +415,6 @@ class vtigercrmcore extends solution
 
             $mandatory = $field['mandatory'] || in_array($field['name'], $requiredFields, true);
             $this->addVtigerFieldToModuleFields($field, $mandatory, $module, $type);
-        }
-
-        if (count($this->fieldsRelate) > 0) {
-            $this->moduleFields = array_merge($this->moduleFields, $this->fieldsRelate);
         }
 
         return $this->moduleFields;
@@ -437,19 +432,21 @@ class vtigercrmcore extends solution
             $field['type']['name'] = 'reference';
         }
         if (isset($field['type']["name"]) && ($field['type']["name"] == "reference" || $field['type']["name"] == "owner")) {
-            $this->fieldsRelate[$field['name']] = array(
+            $this->moduleFields[$field['name']] = array(
                 'label' => $field['label'],
                 'required' => $mandatory,
                 'type' => 'varchar(127)', // ? Set right type?
                 'type_bdd' => 'varchar(127)',
-                'required_relationship' => 0
+                'required_relationship' => 0,
+                'relate' => true,
             );
         } else {
             $this->moduleFields[$field['name']] = [
                 'label' => $field['label'],
                 'required' => $mandatory,
                 'type' => 'varchar(127)', // ? Set right type?
-                'type_bdd' => 'varchar(127)'
+                'type_bdd' => 'varchar(127)',
+                'relate' => false,
             ];
             if (isset($field['type']["name"]) && ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist")) {
                 foreach ($field['type']["picklistValues"] as $option) {
