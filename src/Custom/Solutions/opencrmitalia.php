@@ -105,7 +105,7 @@ class opencrmitaliacore extends vtigercrmcustom
      *
      * @return array|bool
      */
-    public function get_module_fields($module, $type = 'source')
+    public function get_module_fields($module, $type = 'source', $param = null)
     {
         if ($this->notVtigerClient()) {
             return $this->errorMissingVtigerClient();
@@ -126,7 +126,7 @@ class opencrmitaliacore extends vtigercrmcustom
             return $this->populateModuleFieldsFromVtigerModule($fields, $module, $type);
         }
 
-        return parent::get_module_fields($module, $type);
+        return parent::get_module_fields($module, $type, $param);
     }
 
     /**
