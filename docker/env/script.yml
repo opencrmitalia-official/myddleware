@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+
+  myddleware:
+    image: opencrmitalia/myddleware:v3
+    volumes:
+      - ../../:/var/www/html
+      - ../../docker/tmp/composer:/root/.composer:cached

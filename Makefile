@@ -1,7 +1,7 @@
 #!make
 
 init:
-	@docker-compose run --rm --no-deps myddleware bash docker/script/init.sh
+	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware bash docker/script/init.sh
 
 clean:
 	@docker-compose run --rm --no-deps myddleware bash docker/script/clean.sh

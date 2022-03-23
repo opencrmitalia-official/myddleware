@@ -10,6 +10,8 @@ services:
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=myddleware
       - MYSQL_ROOT_PASSWORD=${mysql_root_password:-secret}
+    env_file:
+      - .env.local
     volumes:
       - ./:/var/www/html:cached
       - ./docker/tmp/composer:/root/.composer:cached
