@@ -156,7 +156,7 @@ class rulecore
 		$this->solutionManager = $solutionManager;
 		$this->documentManager = $documentManager;
 		$this->parameterBagInterface = $parameterBagInterface;
-		$this->env = getenv('APP_ENV') ?: 'prod';
+		$this->env = getenv('APP_ENV');
 		$this->formulaManager = $formulaManager;
 	}
 	
@@ -1123,6 +1123,8 @@ class rulecore
 				exec($php.' '.__DIR__.'/../../bin/console myddleware:massaction remove rule '.$ruleId.' Y --env='.$this->env.' > '.$fileTmp.' &', $output);
 			} else {
                 $commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp.' &';
+                var_dump($commandToRun);
+                die();
                 //$commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp;
                 exec($commandToRun, $output);
 			}			
