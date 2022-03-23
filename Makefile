@@ -35,7 +35,7 @@ require-vtiger-client:
 require-woocommerce-client:
 	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar require automattic/woocommerce:^3.0.0 -vvvv --ignore-platform-reqs --no-scripts
 
-setup: js-build setup-database
+setup: up js-build setup-database
 	@echo "Myddleware files and database setup completed."
 
 setup-database: wait init
