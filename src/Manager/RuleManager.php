@@ -1123,11 +1123,8 @@ class rulecore
 				exec($php.' '.__DIR__.'/../../bin/console myddleware:massaction remove rule '.$ruleId.' Y --env='.$this->env.' > '.$fileTmp.' &', $output);
 			} else {
                 //$commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp.' &';
-                $commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env;
-				var_dump($commandToRun);
+                $commandToRun = $php.' '.__DIR__.'/../../bin/console myddleware:synchro '.$ruleId.' --env='.$this->env.' > '.$fileTmp;
                 exec($commandToRun, $output);
-                var_dump($output);
-                die();
 			}			
 			$cpt = 0;
 			// Boucle tant que le fichier n'existe pas
