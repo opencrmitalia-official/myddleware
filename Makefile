@@ -135,6 +135,9 @@ push:
 	@docker build -t opencrmitalia/myddleware:v3 .
 	@docker push opencrmitalia/myddleware:v3
 
+pull:
+	@docker-compose -f docker-compose.yml pull --include-deps
+
 ## -------
 ## Develop
 ## -------
