@@ -63,9 +63,6 @@ prod: init clean-cache fix
 start: prod
 	@echo ">>> Myddleware is ready."
 
-recreate: init
-	@docker-compose -f docker-compose.yml up -d --remove-orphans --force-recreate
-
 restart: recreate
 	@echo ">>> Myddleware is ready."
 
@@ -137,6 +134,9 @@ push:
 
 pull:
 	@docker-compose -f docker-compose.yml pull --include-deps
+
+recreate: init
+	@docker-compose -f docker-compose.yml up -d --remove-orphans --force-recreate
 
 ## -------
 ## Develop
