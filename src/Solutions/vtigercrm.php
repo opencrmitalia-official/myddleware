@@ -31,9 +31,18 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class vtigercrmcore extends solution
 {
-    // Enable to delete data
+    /**
+     * Apply deletion of record as target.
+     *
+     * @param bool $sendDeletion
+     */
     protected $sendDeletion = true;
 
+    /**
+     * Limit number of element per API call.
+     *
+     * @var int
+     */
     protected $limitPerCall = 100;
 
     /**
@@ -134,8 +143,12 @@ class vtigercrmcore extends solution
         'PurchaseOrder'
     ];
 
-    // Module list that allows to make parent relationships
-    protected $allowParentRelationship = ['Quotes', 'SalesOrder'];
+    /**
+     *
+     */
+    protected $customRelatedFields = [
+        //'*Module*' => ['*field1*', '*field2*']
+    ];
 
     /**
      * Current module list.
@@ -407,34 +420,37 @@ class vtigercrmcore extends solution
         return $this->moduleFields;
     }
 
-            $escludeField = $this->exclude_field_list[$module] ?? $this->exclude_field_list['default'];
-            $escludeField = $escludeField[$type] ?? $escludeField['default'];
-            $this->moduleFields = [];
-            foreach ($fields as $field) {
-                if (!in_array($field['name'], $escludeField)) {
-                    if ('reference' == $field['type']['name'] || 'owner' == $field['type']['name']) {
-                        $this->moduleFields[$field['name']] = [
-                            'label' => $field['label'],
-                            'required' => $field['mandatory'],
-                            'type' => 'varchar(127)', // ? Settare il type giusto?
-                            'type_bdd' => 'varchar(127)',
-                            'required_relationship' => 0,
-                            'relate' => true,
-                        ];
-                    } else {
-                        $this->moduleFields[$field['name']] = [
-                            'label' => $field['label'],
-                            'required' => $field['mandatory'],
-                            'type' => 'varchar(127)', // ? Settare il type giusto?
-                            'type_bdd' => 'varchar(127)',
-                            'relate' => false,
-                        ];
-                        if ('picklist' == $field['type']['name'] || 'multipicklist' == $field['type']['name']) {
-                            foreach ($field['type']['picklistValues'] as $option) {
-                                $this->moduleFields[$field['name']]['option'][$option['value']] = $option['label'];
-                            }
-                        }
-                    }
+    /**
+     * Add field to $moduleFields.
+     *
+     * @param $field
+     * @param $mandatory
+     */
+    protected function addVtigerFieldToModuleFields($field, $mandatory, $module, $type = 'source')
+    {
+        if (isset($this->customRelatedFields[$module]) && in_array($field['name'], $this->customRelatedFields[$module])) {
+            $field['type']['name'] = 'reference';
+        }
+        if (isset($field['type']["name"]) && ($field['type']["name"] == "reference" || $field['type']["name"] == "owner")) {
+            $this->moduleFields[$field['name']] = array(
+                'label' => $field['label'],
+                'required' => $mandatory,
+                'type' => 'varchar(127)', // ? Set right type?
+                'type_bdd' => 'varchar(127)',
+                'required_relationship' => 0,
+                'relate' => true,
+            );
+        } else {
+            $this->moduleFields[$field['name']] = [
+                'label' => $field['label'],
+                'required' => $mandatory,
+                'type' => 'varchar(127)', // ? Set right type?
+                'type_bdd' => 'varchar(127)',
+                'relate' => false,
+            ];
+            if (isset($field['type']["name"]) && ($field['type']["name"] == "picklist" || $field['type']["name"] == "multipicklist")) {
+                foreach ($field['type']["picklistValues"] as $option) {
+                    $this->moduleFields[$field['name']]["option"][$option["value"]] = $option["label"];
                 }
             }
         }
@@ -1193,50 +1209,43 @@ class vtigercrmcore extends solution
         return $result;
     }
 
-    // Function to delete a record
-    public function deleteData($param)
+    /**
+     * @param $idDoc
+     * @param $data
+     * @param $result
+     * @throws \Exception
+     */
+    protected function deleteElementOnVtiger($idDoc, $data, &$result)
     {
-        try {
-            // For every document
-            foreach ($param['data'] as $idDoc => $data) {
-                try {
-                    // Check control before delete
-                    $data = $this->checkDataBeforeDelete($param, $data);
-                    if (empty($data['target_id'])) {
-                        throw new \Exception('No target id found. Failed to delete the record.');
-                    }
-                    // Delete the record
-                    $resultDelete = $this->vtigerClient->delete($data['target_id']);
-                    if (empty($resultDelete['success'])) {
-                        throw new \Exception($resultDelete['error']['message'] ?? 'Error');
-                    }
-                    // Generate return for Myddleware
-                    $result[$idDoc] = [
-                                            'id' => $data['target_id'],
-                                            'error' => false,
-                                        ];
-                } catch (\Exception $e) {
-                    $error = 'Error : '.$e->getMessage();
-                    $result[$idDoc] = [
-                            'id' => '-1',
-                            'error' => $error,
-                    ];
-                }
-                // Status modification for the transfer
-                $this->updateDocumentStatus($idDoc, $result[$idDoc], $param);
-            }
-        } catch (\Exception $e) {
-            $error = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
-            $result[$idDoc] = [
-                    'id' => '-1',
-                    'error' => $error,
-            ];
-        }
+        $id = $data['target_id'];
 
-        return $result;
+        try {
+            $resultDelete = $this->getVtigerClient()->delete($id);
+
+            if (empty($resultDelete['success']) || empty($resultDelete['result']['status']) || $resultDelete['result']['status'] != 'successful') {
+                throw new \Exception($resultDelete["error"]["message"] ?? json_encode($resultDelete));
+            }
+
+            $result[$idDoc] = [
+                'id' => $id,
+                'error' => false,
+            ];
+        } catch (\Exception $e) {
+            $result[$idDoc] = array(
+                'id' => '-1',
+                'error' => $e->getMessage()
+            );
+        }
     }
 
-    // Clean a record by removing all Myddleware fields
+    /**
+     * Clean a record by removing all Myddleware fields.
+     *
+     * @param $param
+     * @param $data
+     *
+     * @return mixed
+     */
     protected function cleanRecord($param, $data)
     {
         $myddlewareFields = array('target_id', 'source_date_modified', 'id_doc_myddleware', 'Myddleware_element_id');
@@ -1410,4 +1419,5 @@ class vtigercrmcore extends solution
 
 class vtigercrm extends vtigercrmcore
 {
+
 }
