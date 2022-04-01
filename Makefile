@@ -116,10 +116,10 @@ ps:
 	@docker-compose ps
 
 up:
-	@docker-compose -f docker-compose.yml up -d
+	@docker-compose --env-file .env.docker -f docker-compose.yml up -d
 
 up-mysql:
-	@docker-compose -f docker-compose.yml up -d --force-recreate mysql
+	@docker-compose --env-file .env.docker -f docker-compose.yml up -d --force-recreate mysql
 
 down:
 	@docker-compose down --remove-orphans
