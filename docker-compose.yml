@@ -65,7 +65,7 @@ services:
       - ${filebrowser_port:-30090}:30090
     volumes:
       - ./src/Custom:/srv/Custom
-      #- ./src/Myddleware/RegleBundle/Templates:/srv/Templates
+      - ./src/Templates:/srv/Templates
       - ./var/log:/srv/Log
       - ./var/cache:/srv/Cache
       #- ./var/vpn:/srv/VPN
