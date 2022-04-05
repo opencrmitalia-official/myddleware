@@ -174,7 +174,7 @@ class ManagementSMTPController extends Controller
             $message->setTo($user_email);
             $send = $mailer->send($message);
             if (!$send) {
-                $this->logger->error('Failed to send email : ' . $textMail . ' to ' . $user_email);
+                //$this->logger->error('Failed to send email : ' . $textMail . ' to ' . $user_email);
                 throw new \Exception ('Failed to send email : ' . $textMail . ' to ' . $user_email);
             }
         } catch (\Exception $e) {
