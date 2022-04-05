@@ -66,6 +66,7 @@ services:
     volumes:
       - ./src/Custom:/srv/Custom
       - ./src/Templates:/srv/Templates
+      - ./src/Solutions:/srv/Solutions
       - ./var/log:/srv/Log
       - ./var/cache:/srv/Cache
       #- ./var/vpn:/srv/VPN
