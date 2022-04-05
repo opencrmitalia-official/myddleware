@@ -1582,7 +1582,7 @@ class rulecore
                     $param['api'] = $this->api;
                     // Set the param values and clear all document attributes
                     $this->documentManager->setParam($param, true);
-                    $this->documentManager->setMessage('Failed to send document because this record is already send in another document. To prevent create duplicate data in the target system, this document will be send in the next job.');
+                    $this->documentManager->setMessage('Failed to send document because this record is already send in another document. To prevent create duplicate data in the target system, this document will be send in the next job. (concatKey='.$value['concatKey'].')');
                     $this->documentManager->setTypeError('W');
                     $this->documentManager->updateStatus('Transformed');
                     // Suppression du document dans l'envoi
