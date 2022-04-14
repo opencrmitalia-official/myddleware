@@ -138,7 +138,7 @@ class opencrmitaliacore extends vtigercrmcustom
     public function readData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
-            return parent::read($param);
+            return parent::readData($param);
         }
 
         if ($this->notVtigerClient()) {
@@ -210,7 +210,7 @@ class opencrmitaliacore extends vtigercrmcustom
     public function createData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
-            return parent::create($param);
+            return parent::createData($param);
         }
 
         if ($this->notVtigerClient()) {
@@ -259,7 +259,7 @@ class opencrmitaliacore extends vtigercrmcustom
     public function updateData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
-            return parent::update($param);
+            return parent::updateData($param);
         }
 
         if ($this->notVtigerClient()) {
@@ -303,7 +303,7 @@ class opencrmitaliacore extends vtigercrmcustom
     public function deleteData($param)
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
-            return parent::delete($param);
+            return parent::deleteData($param);
         }
 
         if ($this->notVtigerClient()) {
