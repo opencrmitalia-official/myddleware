@@ -176,6 +176,21 @@ dev-prepare-mssql:
 dev-create-random-contacts:
 	@docker-compose exec vtiger1 php -f dev/script/create-random-contacts.php
 
+## ---
+## VPN
+## ---
+vpn-start:
+	@docker-compose --env-file .env.docker up -d --force-recreate vpn
+
+vpn-set-passphrase:
+	@docker-compose --env-file .env.docker run --rm --no-deps vpn set_passphrase
+
+vpn-add-client:
+	@docker-compose --env-file .env.docker exec vpn add_client $(name)
+
+vpn-get-client:
+	@docker-compose --env-file .env.docker exec vpn get_client $(name)
+
 ## -------
 ## Testing
 ## -------
