@@ -55,7 +55,7 @@ logs-rotate:
 	@docker-compose run --rm --no-deps myddleware bash docker/script/logs-rotate.sh
 
 debug: init
-	@docker-compose -f docker-compose.yml -f docker-compose.debug.yml up -d --remove-orphans
+	@docker-compose --env-file .env.docker -f docker-compose.yml -f docker/env/debug.yml up -d --remove-orphans
 
 prod: init clean-cache fix
 	@docker-compose --env-file .env.docker up -d --remove-orphans
