@@ -10,7 +10,7 @@ SetEnvIf Authorization "(.*)" HTTP_AUTHORIZATION=$1
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    RewriteCond %{HTTP:WWW-Authorization} ^(.*)
+    RewriteCond %{HTTP:Authorization} ^(.*)
     RewriteRule .* - [e=HTTP_AUTHORIZATION:%1]
 
     # Determine the RewriteBase automatically and set it as environment variable.
