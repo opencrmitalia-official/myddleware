@@ -40,7 +40,7 @@ build:
 	@docker-compose build myddleware
 
 install: init up
-	@docker-compose -f docker-compose.yml run --rm myddleware php composer.phar install --ignore-platform-reqs --no-scripts
+	@docker-compose -f docker-compose.yml run --rm myddleware php composer2.phar install --ignore-platform-reqs --no-scripts
 	@echo "Install done."
 
 clean-cache:
@@ -189,3 +189,6 @@ test-monitoring:
 	@docker-compose -f docker-compose.yml exec myddleware rm -f /var/www/html/var/logs/monitoring.log
 	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh
 	@docker-compose -f docker-compose.yml exec myddleware cat /var/www/html/var/logs/monitoring.log
+
+test-api:
+	@bash dev/script/test-api.sh

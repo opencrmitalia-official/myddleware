@@ -1,5 +1,11 @@
 <?php
 
+//var_dump($headers['Authorization']);
+//die();
+
+//$headers = getallheaders();
+//$_SERVER['HTTP_AUTHORIZATION'] = $headers['Authorization'];
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Debug\Debug;
 
@@ -13,9 +19,13 @@ require __DIR__.'/../app/autoload.php';
 //require __DIR__.'/../vendor/autoload.php';
 Debug::enable();
 
+
+//var_dump($_POST);
+
 $kernel = new AppKernel('dev', true);
 $kernel->loadClassCache();
 $request = Request::createFromGlobals();
+
 $response = $kernel->handle($request);
 $response->send();
 $kernel->terminate($request, $response);
