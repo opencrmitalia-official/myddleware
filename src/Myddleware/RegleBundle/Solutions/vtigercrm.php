@@ -726,16 +726,18 @@ class vtigercrmcore extends solution
 
             foreach ($query['result'] as $parentElement) {
                 $retrieve = $this->getVtigerClient()->retrieve($parentElement['id']);
-                foreach ($retrieve['result']['LineItems'] as $index => $lineItem) {
-                    /*
-                    if ($index == 0) {
-                        continue;
+                if (isset($retrieve['result']['LineItems']) && is_array($retrieve['result']['LineItems'])) {
+                    foreach ($retrieve['result']['LineItems'] as $index => $lineItem) {
+                        /*
+                        if ($index == 0) {
+                            continue;
+                        }
+                        */
+                        $lineItem['parent_id'] = $parentElement['id'];
+                        $lineItem['modifiedtime'] = $parentElement['modifiedtime'];
+                        $lineItem['createdtime'] = $parentElement['createdtime'];
+                        $entities[] = $lineItem;
                     }
-                    */
-                    $lineItem['parent_id'] = $parentElement['id'];
-                    $lineItem['modifiedtime'] = $parentElement['modifiedtime'];
-                    $lineItem['createdtime'] = $parentElement['createdtime'];
-                    $entities[] = $lineItem;
                 }
             }
         }
