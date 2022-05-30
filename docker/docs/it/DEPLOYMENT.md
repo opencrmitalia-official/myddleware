@@ -64,12 +64,12 @@ seguire i seguenti passi
 
 - Creare una nuova cartella con il seguente comando `sudo mkdir -p /etc/myddleware`
 
-- Copiare il file `docker-compose.sh` che si trova dentro la cartella `dev/script` nella nuova cartella `/etc/myddleware/`
+- Copiare il file `docker-compose.sh` che si trova dentro la cartella `docker/script` nella nuova cartella `/etc/myddleware/`
 
 - Modificare il file appena copiato aggiugendo un blocco di codice per ogni istanza myddleware presente sul server
 indicando per ogniuna il nome istanza nel comando `echo` e la directory in cui è installata nel comando `cd`
 
-- Copiare il `myddleware.service` che si trova dentro la cartella `dev/script` nella cartella `/etc/systemd/system/`
+- Copiare il `myddleware.service` che si trova dentro la cartella `docker/script` nella cartella `/etc/systemd/system/`
 
 - Eseguire il comando `systemctl enable myddleware`
 
