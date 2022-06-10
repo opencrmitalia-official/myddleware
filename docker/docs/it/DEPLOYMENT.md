@@ -56,6 +56,10 @@ Adesso bisogna mettere la applicazione in modalità PRODUCTION
 make prod
 ```
 
+Inoltre sarà possibile usare il client Adminer alla al seguente indirizzo
+
+- Adminer <http://<indirizzo_macchina>:30080/adminer.php>
+
 ## Fase finale
 
 La fase finale si occupa di far riavviare myddleware automaticamente qual'ora il server in cui si trovi sia spento e poi riaccesso
