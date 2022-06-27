@@ -145,9 +145,9 @@ dev: \
 	init \
 	fix \
 	dev-clean \
-	dev-up \
-	dev-prepare-vtiger \
-	dev-prepare-mssql
+	dev-up
+	#dev-prepare-vtiger \
+	#dev-prepare-mssql
 
 dev-up: build
 	@docker-compose -f docker-compose.yml -f docker/env/dev.yml up --force-recreate -d
