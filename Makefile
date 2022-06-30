@@ -136,7 +136,7 @@ pull:
 	@docker-compose -f docker-compose.yml pull --include-deps
 
 recreate: init
-	@docker-compose -f docker-compose.yml up -d --remove-orphans --force-recreate
+	@docker-compose --env-file .env.docker up -d --force-recreate
 
 ## -------
 ## Develop
