@@ -72,9 +72,10 @@ class microsoftsqlcore extends database
     protected function get_query_select_limit_offset($param, $method)
     {
         // The limit is managed with TOP if we don't have the offset parameter
-        if ('read_last' == $method) {
+        if (isset($param['limit']) && $param['limit'] == 1) {
             return;
         }
+
         if (empty($param['offset'])) {
             $param['offset'] = 0;
         }
@@ -91,7 +92,7 @@ class microsoftsqlcore extends database
     protected function get_query_select_header($param, $method)
     {
         // The limit is managed with TOP if we don't have the offset parameter
-        if ('read_last' == $method) {
+        if (isset($param['limit']) && $param['limit'] == 1) {
             return 'SELECT TOP 1 ';
         }
 
