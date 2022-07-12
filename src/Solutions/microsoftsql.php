@@ -35,6 +35,9 @@ class microsoftsqlcore extends database
     protected $stringSeparatorOpen = '[';
     protected $stringSeparatorClose = ']';
 
+    protected $readDeletion = true;
+    protected $sendDeletion = true;
+
     // Generate PDO object
     protected function generatePdo()
     {
