@@ -1334,7 +1334,7 @@ class documentcore
                             $this->message .= 'No value found for the target field '.$ruleRelationship['field_name_target'].' because "Error if missing" is set to false.';
                             $this->typeError = 'W';
                         } else {
-                            throw new \Exception('Failed to transform relationship data: '.$ruleRelationship['field_name_target'].'. ');
+                            throw new \Exception('Failed to transform relationship data: '.$ruleRelationship['field_name_target'].'. MESSAGE: '.$this->message);
                         }
                     }
                     $targetField[$ruleRelationship['field_name_target']] = $value;
