@@ -1693,7 +1693,7 @@ class rulecore
             if (!empty($data)) {
                 $return[$document['id_doc_myddleware']] = array_merge($document, $data);
             } else {
-                $return['error'] = 'No data found in teh document';
+                $return['error'] = 'No data found in teh document: Document ID='.$document['id_doc_myddleware'];
             }
         }
 
