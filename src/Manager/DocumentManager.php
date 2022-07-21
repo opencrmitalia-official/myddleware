@@ -1328,13 +1328,14 @@ class documentcore
             if (isset($this->ruleRelationships)) {
                 // Récupération de l'ID target
                 foreach ($this->ruleRelationships as $ruleRelationship) {
+                    $this->transformError = false;
                     $value = $this->getTransformValue($this->sourceData, $ruleRelationship);
                     if (!empty($this->transformError)) {
                         if (empty($ruleRelationship['errorMissing'])) {
                             $this->message .= 'No value found for the target field '.$ruleRelationship['field_name_target'].' because "Error if missing" is set to false.';
                             $this->typeError = 'W';
                         } else {
-                            throw new \Exception('Failed to transform relationship data: '.$ruleRelationship['field_name_target'].'. MESSAGE: '.$this->message);
+                            throw new \Exception('Failed to transform relationship data: '.$ruleRelationship['field_name_target'].'. ');
                         }
                     }
                     $targetField[$ruleRelationship['field_name_target']] = $value;
