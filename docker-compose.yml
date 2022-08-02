@@ -21,7 +21,7 @@ services:
 
   mysql:
     image: mysql:5.7.28
-    command: --lower_case_table_names=2
+    command: --lower-case-table-names=2
     environment:
       - MYSQL_DATABASE=myddleware
       - MYSQL_ROOT_PASSWORD=${mysql_root_password:-secret}
