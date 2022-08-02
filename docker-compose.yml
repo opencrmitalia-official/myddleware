@@ -28,7 +28,7 @@ services:
       - MYSQL_PASSWORD=${mysql_password:-secret}
       - max_allowed_packet=524288000
       - wait_timeout=100
-      - lower_case_table_names=2
+      - lower_case_table_names=1
     volumes:
       - ./docker/var/mysql:/var/lib/mysql:rw
     restart: always
