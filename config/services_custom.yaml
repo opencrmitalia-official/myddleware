@@ -28,3 +28,8 @@ services:
     decorates: App\Solutions\vtigercrmcustom
     decoration_priority: 1
     decoration_on_invalid: ignore
+
+  App\Custom\Solutions\microsoftsqlcustom:
+    decorates: App\Solutions\microsoftsql
+    decoration_priority: 1
+    decoration_on_invalid: ignore
