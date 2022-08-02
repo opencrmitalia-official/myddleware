@@ -138,6 +138,12 @@ pull:
 recreate: init
 	@docker-compose --env-file .env.docker up -d --force-recreate
 
+## --------
+## Database
+## --------
+database-fix:
+	@echo "Database fix..."
+
 ## -------
 ## Develop
 ## -------
