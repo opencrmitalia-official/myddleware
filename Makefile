@@ -39,7 +39,7 @@ setup: up js-build setup-database
 	@echo "Myddleware files and database setup completed."
 
 setup-database: wait init
-	@docker-compose run --rm myddleware bash docker/script/setup-database.sh
+	@docker-compose exec myddleware bash docker/script/setup-database.sh
 
 schedule:
 	@docker-compose -f docker-compose.yml exec myddleware php -f /var/www/html/bin/console myddleware:resetScheduler --env=background
