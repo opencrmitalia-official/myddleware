@@ -1616,7 +1616,8 @@ class documentcore
                         if (empty($ruleRelationShip['parent'])) {
                             $fields[] = $ruleRelationShip['field_name_target'];
                         } else {
-                            $fields[] = $ruleRelationShip['field_name_source'];
+                            // This line was commented to avoid listing SOURCE fields into TARGET fields list
+                            // $fields[] = $ruleRelationShip['field_name_source'];
                         }
                     }
                 }
