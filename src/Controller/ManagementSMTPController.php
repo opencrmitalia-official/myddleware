@@ -227,6 +227,7 @@ class ManagementSMTPController extends AbstractController
             $message = (new \Swift_Message($subject));
             $message
                 #->setFrom((!empty($this->getParameter('email_from')) ? $this->getParameter('email_from') : $user))
+                ->setFrom($user)
                 ->setBody($textMail);
             $message->setTo($user_email);
             $send = $mailer->send($message);
