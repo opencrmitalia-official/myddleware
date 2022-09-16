@@ -894,16 +894,25 @@ class vtigercrmcore extends solution
      */
     protected function createVtigerLineItemsRecordsByParent($param, $lineItems, $parent, &$result)
     {
+        if (empty($this->moduleList)) {
+            $this->setAllModulesPrefix();
+        }
+
         if (empty($parent["invoicestatus"])) {
             $parent["invoicestatus"] = "AutoCreated";
         }
         unset($parent["LineItems_FinalDetails"]);
+
         $parent['LineItems'] = [];
         foreach ($lineItems as $lineItem) {
             $parent['LineItems'][] = $lineItem;
+            if (empty($parent['productid']) && isset($lineItem['productid']) && $lineItem['productid']) {
+                $parent['productid'] = $lineItem['productid'];
+            }
         }
 
-        $resultUpdate = $this->getVtigerClient()->update($parent["id"], $parent);
+        $prefix = explode("x", $parent["id"])[0];
+        $resultUpdate = $this->getVtigerClient()->update($this->moduleList[$prefix], $parent);
 
         if (empty($resultUpdate['success']) || empty($resultUpdate['result']['id'])) {
             foreach ($lineItems as $idDoc => $lineItem) {
