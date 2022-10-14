@@ -42,6 +42,11 @@ Adesso eseguire il comando per la creazione dei dati nel database
 make setup
 ```
 
+Finita l'installazione procedere con il comando: 
+```sudo chmod 777 -R var/cache var/logs
+```
+
+
 Adesso l'applicazione sara correttamente installata per accedere usate le seguenti istruzioni
 
 - Visitare la pagina <http://<indirizzo_macchina>:30080> 
