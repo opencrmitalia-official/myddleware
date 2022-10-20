@@ -17,25 +17,25 @@ cd CLONE
 ## Aggiorna la branch master del nostro progetto con le novità presenti nel master dell'UPSTRAM
 echo "==> Update: main"
 git checkout main
-git pull https://github.com/Myddleware/myddleware.git main -X theirs --no-edit --rebase
+git pull https://github.com/Myddleware/myddleware.git main -X theirs --no-edit --no-rebase
 git push
 
 ## Aggiorna la branch master del nostro progetto con le novità presenti nel master dell'UPSTRAM
 echo "==> Update: master"
 git checkout master
-git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit --rebase
+git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit --no-rebase
 git push
 
 ## Aggiorna la branch contribute con le novità presenti nel master dell'UPSTRAM
 echo "==> Update: contrib"
 git checkout contrib
-git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit --rebase
+git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit --no-rebase
 git push
 
 ## Aggiorna la branch contribute con le novità presenti nel master dell'UPSTRAM
 echo "==> Update: squash"
 git checkout squash
-git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit --rebase
+git pull https://github.com/Myddleware/myddleware.git master -X theirs --no-edit --no-rebase
 git push
 
 cd ..
