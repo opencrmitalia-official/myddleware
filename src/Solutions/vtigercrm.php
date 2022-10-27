@@ -663,9 +663,9 @@ class vtigercrmcore extends solution
                             $retrieveResponse = $this->getVtigerClient()->retrieve($value['id'], 1, $param['module']);
                             $result['values'][$value['id']] = empty($retrieveResponse['success']) ? $value : $retrieveResponse['result'];
                         }
-                        if (in_array($param['rule']['mode'], ['0', 'S'])) {
+                        if (in_array($param['ruleParams']['mode'], ['0', 'S'])) {
                             $result['values'][$value['id']]['date_modified'] = $value['modifiedtime'];
-                        } elseif ($param['rule']['mode'] == 'C') {
+                        } elseif ($param['ruleParams']['mode'] == 'C') {
                             $result['values'][$value['id']]['date_modified'] = $value['createdtime'];
                         }
                         $result['count']++;

@@ -133,7 +133,7 @@ docker-compose exec myddleware php bin/console myddleware:upgrade --env=backgrou
 Eseguire questo comando per risolvere problemi javascript post-aggiornamento
 
 ```
-rsync -Rr ./build/ ./build/
+cd public && rsync -Rr ./build/ ./build/ && cd ..
 ```
 
 Adesso si puo riportare l'ambiente nella modalità PRODUCTION con il seguente comando
@@ -147,6 +147,27 @@ Visitare myddleware al seguente indirizzo:
 
 ```
 http://{indirizzo-myddleware}:30080
+```
+
+Impostare come time zone "Eurupe/Rome" nella seguente pagina
+
+```
+http://{indirizzo-myddleware}:30080/index.php/rule/account
+```
+
+Rinominare la solition chiamata 'opencrmitalia' in 'vtigercrmcustom' che solitamente ha sol_id = 3
+
+si trova in questa pagina
+
+```
+http://{indirizzo-myddleware}:30088/index.php?route=/sql&server=1&db=myddleware&table=solution&pos=0
+```
+
+Adesso bisognamo sostituire il valore della variabile APP_SECRET con dentro il file `.env.local`
+con il seguente valore
+
+```
+APP_SECRET=Thissecretisnotsosecretchangeit
 ```
 
 ## Creare le regole personalizzate
