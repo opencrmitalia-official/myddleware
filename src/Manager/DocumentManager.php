@@ -1157,6 +1157,7 @@ class documentcore
         $read['query'] = $searchFields;
         $read['ruleParams'] = $this->ruleParams;
         $read['rule'] = $rule;
+        $read['limit'] = 1;
         $read['call_type'] = 'history';
         $read['date_ref'] = '1970-01-01 00:00:00'; // Required field but no needed for history search
         $read['document']['type'] = $this->documentType;
