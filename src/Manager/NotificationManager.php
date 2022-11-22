@@ -41,56 +41,26 @@ use Swift_Message;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
-/**
- * Class NotificationManager.
- */
 class NotificationManager
 {
-    protected $entityManager;
+    protected EntityManagerInterface $entityManager;
     protected $emailAddresses;
     protected $configParams;
-    protected $tools;
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-    /**
-     * @var ParameterBagInterface
-     */
-    private $params;
-    /**
-     * @var Connection
-     */
-    private $connection;
-    /**
-     * @var Swift_Mailer
-     */
-    private $mailer;
-    /**
-     * @var UserRepository
-     */
-    private $userRepository;
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
-    /**
-     * @var JobRepository
-     */
-    private $jobRepository;
-    /**
-     * @var RuleRepository
-     */
-    private $ruleRepository;
-    /**
-     * @var mixed|string
-     */
+    protected ToolsManager $tools;
+    private LoggerInterface $logger;
+    private ParameterBagInterface $params;
+    private Connection $connection;
+    private Swift_Mailer $mailer;
+    private UserRepository $userRepository;
+    private TranslatorInterface $translator;
+    private JobRepository $jobRepository;
+    private RuleRepository $ruleRepository;
     private $fromEmail;
-    /**
-     * @var Environment
-     */
-    private $twig;
+    private Environment $twig;
 
     public function __construct(
         LoggerInterface $logger,
@@ -118,20 +88,23 @@ class NotificationManager
         $this->twig = $twig;
     }
 
-    // Send alert if a job is running too long
-    public function sendAlert()
+    /**
+     * Send alert if a job is running too long.
+     *
+     * @throws Exception
+     */
+    public function sendAlert(): bool
     {
         try {
-            // Get the email adresses of all ADMIN
-            $this->setEmailAddresses();
+            
             // Set all config parameters
             $this->setConfigParam();
             if (empty($this->configParams['alert_time_limit'])) {
-                throw new Exception('No alert time set in the parameters file. Please set the parameter alert_limit_minute in the file config/parameters.yml.');
-            }
+				throw new Exception('No alert time set in the parameters file. Please set the parameter alert_limit_minute in the file config/parameters.yml.');
+			}
             // Calculate the date corresponding to the beginning still authorised
             $timeLimit = new DateTime('now', new \DateTimeZone('GMT'));
-            $timeLimit->modify('-' . $this->configParams['alert_time_limit'] . ' minutes');
+            $timeLimit->modify('-'.$this->configParams['alert_time_limit'].' minutes');
 
             // Search if a job is lasting more time that the limit authorized
             $job = $this->jobRepository->findJobStarted($timeLimit);
@@ -140,36 +113,73 @@ class NotificationManager
                 // Create text
                 $textMail = $this->translator->trans('email_alert.body', [
                     '%min%' => $this->configParams['alert_time_limit'],
-                    '%begin%' => $job['begin'],
-                    '%id%' => $job['id'],
-                    'base_uri' => $this->configParams['base_uri'] ?? '',
+                    '%begin%' => $job->getBegin()->format('Y-m-d H:i:s'),
+                    '%id%' => $job->getId(),
+                    '%base_uri%' => (!empty($this->configParams['base_uri']) ? $this->configParams['base_uri'].'rule/task/view/'.$job->getId().'/log' : ''),
                 ]);
 
-                $message =
-                    (new Swift_Message($this->translator->trans('email_alert.subject')))
-                    ->setFrom($this->configParams['email_from'] ?? 'no-reply@myddleware.com')
-                    ->setBody($textMail);
-                // Send the message to all admins
-                foreach ($this->emailAddresses as $emailAddress) {
-                    $message->setTo($emailAddress);
-                    $send = $this->mailer->send($message);
-                    if (!$send) {
-                        $this->logger->error('Failed to send alert email : ' . $textMail . ' to ' . $emailAddress);
-                        throw new Exception('Failed to send alert email : ' . $textMail . ' to ' . $emailAddress);
-                    }
-                }
+                return $this->send($textMail);
             }
 
             return true;
         } catch (Exception $e) {
-            $error = 'Error : ' . $e->getMessage() . ' ' . $e->getFile() . ' Line : ( ' . $e->getLine() . ' )';
+            $error = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
             $this->logger->error($error);
             throw new Exception($error);
         }
     }
+	
+		
+	protected function send($textMail) {
+		// Get the email adresses of all ADMIN
+		$this->setEmailAddresses();
+		// Check that we have at least one email address
+		if (empty($this->emailAddresses)) {
+			throw new Exception('No email address found to send notification. You should have at least one admin user with an email address.');
+		}
+		
+		if (!empty($_ENV['SENDINBLUE_APIKEY'])) {
+            $this->sendinblue = \SendinBlue\Client\Configuration::getDefaultConfiguration()->setApiKey('api-key', $_ENV['SENDINBLUE_APIKEY']);
+            $apiInstance = new \SendinBlue\Client\Api\TransactionalEmailsApi(new \GuzzleHttp\Client(), $this->sendinblue);
+            $sendSmtpEmail = new \SendinBlue\Client\Model\SendSmtpEmail(); // \SendinBlue\Client\Model\SendSmtpEmail | Values to send a transactional email
+            foreach ($this->emailAddresses as $emailAddress) {
+                $sendSmtpEmailTo[] = array('email' => $emailAddress);
+            }
+            $sendSmtpEmail['to'] = $sendSmtpEmailTo;
+            $sendSmtpEmail['subject'] = $this->translator->trans('email_alert.subject');
+            $sendSmtpEmail['htmlContent'] = $textMail;
+            $sendSmtpEmail['sender'] = array('email' => $this->configParams['email_from'] ?? 'no-reply@myddleware.com');
 
-    // Send notification to receive statistique about myddleware data transfer
-    public function sendNotification()
+            try {
+                $result = $apiInstance->sendTransacEmail($sendSmtpEmail);
+            } catch (Exception $e) {
+                throw new Exception('Exception when calling TransactionalEmailsApi->sendTransacEmail: '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )');
+            }
+        } else {
+            $message =
+                    (new Swift_Message($this->translator->trans('email_alert.subject')))
+                    ->setFrom($this->configParams['email_from'] ?? 'no-reply@myddleware.com')
+                    ->setBody($textMail);
+            // Send the message to all admins
+            foreach ($this->emailAddresses as $emailAddress) {
+                $message->setTo($emailAddress);
+                $send = $this->mailer->send($message);
+                if (!$send) {
+                    $this->logger->error('Failed to send alert email : '.$textMail.' to '.$emailAddress);
+                    throw new Exception('Failed to send alert email : '.$textMail.' to '.$emailAddress);
+                }
+            }
+        }
+        return true;
+	}
+
+
+    /**
+     * Send notification to receive statistics about Myddleware data transfers.
+     *
+     * @throws Exception
+     */
+    public function sendNotification(): bool
     {
         try {
             // Set all config parameters
@@ -224,41 +234,41 @@ class NotificationManager
                 }
             }
 
-            $textMail = $this->tools->getTranslation(['email_notification', 'hello']) . chr(10) . chr(10) . $this->tools->getTranslation(['email_notification', 'introduction']) . chr(10);
-            $textMail .= $this->tools->getTranslation(['email_notification', 'transfer_success']) . ' ' . $job_close . chr(10);
-            $textMail .= $this->tools->getTranslation(['email_notification', 'transfer_error']) . ' ' . $job_error . chr(10);
-            $textMail .= $this->tools->getTranslation(['email_notification', 'transfer_open']) . ' ' . $job_open . chr(10);
+            $textMail = $this->tools->getTranslation(['email_notification', 'hello']).chr(10).chr(10).$this->tools->getTranslation(['email_notification', 'introduction']).chr(10);
+            $textMail .= $this->tools->getTranslation(['email_notification', 'transfer_success']).' '.$job_close.chr(10);
+            $textMail .= $this->tools->getTranslation(['email_notification', 'transfer_error']).' '.$job_error.chr(10);
+            $textMail .= $this->tools->getTranslation(['email_notification', 'transfer_open']).' '.$job_open.chr(10);
 
             // Récupération des règles actives
             $activeRules = $this->ruleRepository->findBy(['active' => true, 'deleted' => false]);
             if (!empty($activeRules)) {
-                $textMail .= chr(10) . $this->tools->getTranslation(['email_notification', 'active_rule']) . chr(10);
+                $textMail .= chr(10).$this->tools->getTranslation(['email_notification', 'active_rule']).chr(10);
                 foreach ($activeRules as $activeRule) {
-                    $textMail .= ' - ' . $activeRule->getName() . chr(10);
+                    $textMail .= ' - '.$activeRule->getName().chr(10);
                 }
             } else {
-                $textMail .= chr(10) . $this->tools->getTranslation(['email_notification', 'no_active_rule']) . chr(10);
+                $textMail .= chr(10).$this->tools->getTranslation(['email_notification', 'no_active_rule']).chr(10);
             }
 
             // Get errors since the last notification
             if ($job_error > 0) {
                 $logs = $this->jobRepository->getErrorsSinceLastNotification();
                 if (100 == count($logs)) {
-                    $textMail .= chr(10) . chr(10) . $this->tools->getTranslation(['email_notification', '100_first_erros']) . chr(10);
+                    $textMail .= chr(10).chr(10).$this->tools->getTranslation(['email_notification', '100_first_erros']).chr(10);
                 } else {
-                    $textMail .= chr(10) . chr(10) . $this->tools->getTranslation(['email_notification', 'error_list']) . chr(10);
+                    $textMail .= chr(10).chr(10).$this->tools->getTranslation(['email_notification', 'error_list']).chr(10);
                 }
                 foreach ($logs as $log) {
-                    $textMail .= " - Règle $log[name], id transfert $log[id], le $log[begin] : $log[message]" . chr(10);
+                    $textMail .= " - Règle $log[name], id transfert $log[id], le $log[begin] : $log[message]".chr(10);
                 }
             }
 
             // Add url if the parameter base_uri is defined in app\config\public
             if (!empty($this->configParams['base_uri'])) {
-                $textMail .= chr(10) . $this->configParams['base_uri'] . chr(10);
+                $textMail .= chr(10).$this->configParams['base_uri'].chr(10);
             }
             // Create text
-            $textMail .= chr(10) . $this->tools->getTranslation(['email_notification', 'best_regards']) . chr(10) . $this->tools->getTranslation(['email_notification', 'signature']);
+            $textMail .= chr(10).$this->tools->getTranslation(['email_notification', 'best_regards']).chr(10).$this->tools->getTranslation(['email_notification', 'signature']);
 
             $message = (new \Swift_Message($this->tools->getTranslation(['email_notification', 'subject'])));
             $message
@@ -269,21 +279,21 @@ class NotificationManager
                 $message->setTo($emailAddress);
                 $send = $this->mailer->send($message);
                 if (!$send) {
-                    $this->logger->error('Failed to send email : ' . $textMail . ' to ' . $emailAddress);
-                    throw new Exception('Failed to send email : ' . $textMail . ' to ' . $emailAddress);
+                    $this->logger->error('Failed to send email : '.$textMail.' to '.$emailAddress);
+                    throw new Exception('Failed to send email : '.$textMail.' to '.$emailAddress);
                 }
             }
 
             return true;
         } catch (Exception $e) {
-            $error = 'Error : ' . $e->getMessage() . ' ' . $e->getFile() . ' Line : ( ' . $e->getLine() . ' )';
+            $error = 'Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
             $this->logger->error($error);
             throw new Exception($error);
         }
     }
 
     // Add every admin email in the notification list
-    private function setEmailAddresses()
+    protected function setEmailAddresses()
     {
         $users = $this->userRepository->findEmailsToNotification();
         foreach ($users as $user) {
@@ -291,6 +301,12 @@ class NotificationManager
         }
     }
 
+    /**
+     * @throws SyntaxError
+     * @throws RuntimeError
+     * @throws LoaderError
+     * @throws Exception
+     */
     public function resetPassword(User $user)
     {
         $message = (new Swift_Message('Initialisation du mot de passe'))

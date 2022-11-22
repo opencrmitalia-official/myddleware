@@ -31,26 +31,12 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 class vtigercrmcore extends solution
 {
-    /**
-     * Apply deletion of record as target.
-     *
-     * @param bool $sendDeletion
-     */
-    protected $sendDeletion = true;
+    // Enable to delete data
+    protected bool $sendDeletion = true;
 
-    /**
-     * Limit number of element per API call.
-     *
-     * @var int
-     */
-    protected $limitPerCall = 100;
+    protected int $limitPerCall = 100;
 
-    /**
-     * Required fields
-     *
-     * @var string[][]
-     */
-    protected $required_fields = [
+    protected array $required_fields = [
         'default' => [
             'id',
             'modifiedtime',
@@ -58,29 +44,7 @@ class vtigercrmcore extends solution
         ],
     ];
 
-    /**
-     * Per-module required fields.
-     *
-     * @var array
-     */
-    protected $force_required_module_fields = [
-        'default' => [],
-        'LineItem' => [
-            'productid',
-            'quantity',
-            'quantity',
-            'parent_id',
-            'sequence_no',
-            'listprice'
-        ],
-    ];
-
-    /**
-     * Control duplicate fields.
-     *
-     * @var array
-     */
-    protected $FieldsDuplicate = [
+    protected array $FieldsDuplicate = [
         'Contacts' => ['email', 'lastname'],
         'CompanyDetails' => ['organizationname'],
         'Leads' => ['email', 'lastname'],
@@ -88,23 +52,13 @@ class vtigercrmcore extends solution
         'default' => []
     ];
 
-    /**
-     * Excluded modules.
-     *
-     * @var array
-     */
-    protected $exclude_module_list = [
-        'default' => ['Users', "Documents"],
+    protected array $exclude_module_list = [
+        'default' => ['Users', 'Documents'],
         'target' => [],
         'source' => [],
     ];
 
-    /**
-     * Excluded fields.
-     *
-     * @var array[]
-     */
-    protected $exclude_field_list = [
+    protected array $exclude_field_list = [
         'default' => [
             'default' => [
                 'id'
@@ -119,50 +73,21 @@ class vtigercrmcore extends solution
         ],
     ];
 
-    /**
-     * Inventory modules
-     *
-     * @var string[]
-     */
-    protected $inventoryModules = [
+    protected array $inventoryModules = [
         'Invoice',
         'SalesOrder',
         'Quotes',
         'PurchaseOrder'
     ];
 
-    /**
-     * Module list that allows to make parent relationships
-     *
-     * @var string[]
-     */
-    protected $allowParentRelationship = [
-        'Invoice',
-        'Quotes',
-        'SalesOrder',
-        'PurchaseOrder'
-    ];
+    // Module list that allows to make parent relationships
+    protected array $allowParentRelationship = ['Quotes', 'SalesOrder'];
 
-    /**
-     *
-     */
-    protected $customRelatedFields = [
-        //'*Module*' => ['*field1*', '*field2*']
-    ];
+    /** @var array */
+    protected array $moduleList;
 
-    /**
-     * Current module list.
-     *
-     * @var array $moduleList
-     */
-    protected $moduleList;
-
-    /**
-     * Current vtiger client.
-     *
-     * @var VtigerClient $vtigerClient
-     */
-    protected $vtigerClient;
+    /** @var VtigerClient */
+    protected VtigerClient $vtigerClient;
 
     /**
      * @return VtigerClient
@@ -238,12 +163,7 @@ class vtigercrmcore extends solution
         }
     }
 
-    /**
-     * Make the logout
-     *
-     * @return bool
-     */
-    public function logout()
+    public function logout(): bool
     {
         // TODO: Vtiger Logout doesn't work.
         /*
@@ -262,7 +182,7 @@ class vtigercrmcore extends solution
      *
      * @return array
      */
-    public function getFieldsLogin()
+    public function getFieldsLogin(): array
     {
         return [
             [
@@ -298,7 +218,10 @@ class vtigercrmcore extends solution
         try {
             return $this->getVtigerModules($type) ?: false;
         } catch (\Exception $e) {
-            return $e->getMessage();
+            $error = $e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
+            $this->logger->error($error);
+
+            return ['error' => $error];
         }
     }
 
@@ -371,7 +294,7 @@ class vtigercrmcore extends solution
      *
      * @return array|bool
      */
-    public function get_module_fields($module, $type = 'source', $param = null)
+    public function get_module_fields($module, $type = 'source', $param = null): array
     {
         parent::get_module_fields($module, $type);
 
@@ -596,7 +519,7 @@ class vtigercrmcore extends solution
      * @param array $param
      * @return array
      */
-    public function readData($param)
+    public function readData($param): array
     {
         if ($this->notVtigerClient()) {
             return $this->errorMissingVtigerClient(['done' => false]);
@@ -794,7 +717,7 @@ class vtigercrmcore extends solution
      * @param array $param
      * @return array
      */
-    public function createData($param)
+    public function createData($param): array
     {
         if ($this->notVtigerClient()) {
             return $this->errorMissingVtigerClient();
@@ -1040,7 +963,7 @@ class vtigercrmcore extends solution
      * @param array $param
      * @return array
      */
-    public function updateData($param)
+    public function updateData($param): array
     {
         if ($this->notVtigerClient()) {
             return $this->errorMissingVtigerClient();
@@ -1062,134 +985,8 @@ class vtigercrmcore extends solution
         return $result;
     }
 
-    /**
-     * Get lineitem fields for specific module.
-     *
-     * @param $module
-     *
-     * @return array
-     */
-    protected function getVtigerLineItemFields($module)
-    {
-        $lineItemFields = [];
-
-        if (in_array($module, $this->inventoryModules, true)) {
-            $describe = $this->getVtigerClient()->describe('LineItem');
-
-            foreach ($describe['result']['fields'] as $field) {
-                $lineItemFields[] = $field['name'];
-            }
-        }
-
-        return $lineItemFields;
-    }
-
-    /**
-     * Update element on Vtiger.
-     *
-     * @param $idDoc
-     * @param $data
-     * @param $param
-     * @param $result
-     * @param $subDocIdArray
-     *
-     * @return void
-     */
-    protected function updateElementOnVtiger($idDoc, $data, $param, &$result, &$subDocIdArray)
-    {
-        $data['id'] = $data['target_id'];
-
-        try {
-            $data = $this->cleanRecord($param, $data);
-            $data = $this->sanitizeVtigerLineItemData($param, $data, $subDocIdArray);
-            $data = $this->sanitizeVtigerInventoryRecord($param, $data);
-
-            $resultUpdate = $this->getVtigerClient()->update($param['module'], $data);
-
-            if (empty($resultUpdate['success']) || empty($resultUpdate['result']['id'])) {
-                throw new \Exception($resultUpdate["error"]["message"] ?? "Error");
-            }
-
-            $result[$idDoc] = [
-                'id' => $resultUpdate['result']['id'],
-                'error' => false,
-            ];
-        } catch (\Exception $e) {
-            $result[$idDoc] = [
-                'id' => '-1',
-                'error' => $e->getMessage()
-            ];
-        }
-    }
-
-    /**
-     *
-     *
-     * @param $param
-     * @param $data
-     * @param $subDocIdArray
-     *
-     * @return mixed
-     */
-    protected function sanitizeVtigerLineItemData($param, $data, &$subDocIdArray)
-    {
-        if (empty($data['LineItem'])) {
-            return $data;
-        }
-
-        foreach ($data['LineItem'] as $subIdDoc => $childRecord) {
-            if (empty($data['productid']) && isset($childRecord['productid'])) {
-                $data['productid'] = $childRecord['productid'];
-            }
-            $subDocIdArray[$subIdDoc] = array('id' => uniqid('', true));
-            $childRecord = $this->cleanRecord($param, $childRecord);
-            $data['LineItems'][] = $childRecord;
-        }
-
-        unset($data['LineItem']);
-
-        return $data;
-    }
-
-    /**
-     * Sanitize record for vtiger update.
-     *
-     * @param $param
-     * @param $data
-     *
-     * @return array
-     */
-    protected function sanitizeVtigerInventoryRecord($param, $data)
-    {
-        $lineItemFields = $this->getVtigerLineItemFields($param['module']);
-
-        if (empty($lineItemFields)) {
-            return $data;
-        }
-
-        if ($this->isVtigerInventoryModule($param['module'])) {
-            foreach ($data as $inventoryKey => $inventoryValue) {
-                if (in_array($inventoryKey, $lineItemFields, true) && $inventoryKey != "id") {
-                    $data["LineItems"][0][$inventoryKey] = $inventoryValue;
-                }
-            }
-            if (!isset($data["LineItems"][0]["sequence_no"])) {
-                $data["LineItems"][0]["sequence_no"] = 1;
-            }
-
-            $data["hdnTaxType"] = (($data["hdnTaxType"] ?? "") ?: "group");
-        }
-
-        return $data;
-    }
-
-    /**
-     * Delete existing record in target.
-     *
-     * @param array $param
-     * @return array
-     */
-    public function deleteData($param)
+    // Function to delete a record
+    public function deleteData($param): array
     {
         if ($this->notVtigerClient()) {
             return $this->errorMissingVtigerClient();
