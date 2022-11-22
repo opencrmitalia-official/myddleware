@@ -1073,7 +1073,7 @@ class vtigercrmcore extends solution
      *
      * @return string[]
      */
-    public function getRuleMode($module, $type)
+    public function getRuleMode($module, $type): array
     {
         if ($module == 'LineItem' && $type == 'target') {
             return ['C' => 'create_only'];

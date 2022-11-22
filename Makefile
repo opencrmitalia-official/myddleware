@@ -106,8 +106,8 @@ js-install: up
 	@docker-compose -f docker-compose.yml -f docker/env/dev.yml run --rm --no-deps myddleware yarn install
 
 js-build: up fix
-	@docker-compose -f docker-compose.yml -f docker/env/dev.yml run --rm --no-deps myddleware yarn run build
-	@docker-compose run --rm --no-deps -w /var/www/html/public myddleware rsync -Rr ./build/ ./build/
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm --no-deps myddleware yarn run build
+	@docker compose run --rm --no-deps -w /var/www/html/public myddleware rsync -Rr ./build/ ./build/
 
 ## ------
 ## Docker

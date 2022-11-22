@@ -37,9 +37,6 @@ class microsoftsqlcore extends database
     protected bool $sendDeletion = true;
     protected bool $readDeletion = true;
 
-    protected $readDeletion = true;
-    protected $sendDeletion = true;
-
     // Generate PDO object
     protected function generatePdo(): \PDO
     {

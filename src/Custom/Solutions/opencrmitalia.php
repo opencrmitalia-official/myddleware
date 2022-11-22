@@ -7,7 +7,7 @@ use Javanile\VtigerClient\VtigerClient;
 class opencrmitaliacore extends vtigercrmcustom
 {
     /** @var array inventoryModules */
-    protected $inventoryModules = [
+    protected array $inventoryModules = [
         "Invoice",
         "SalesOrder",
         "Quotes",
@@ -105,7 +105,7 @@ class opencrmitaliacore extends vtigercrmcustom
      *
      * @return array|bool
      */
-    public function get_module_fields($module, $type = 'source', $param = null)
+    public function get_module_fields($module, $type = 'source', $param = null) : array
     {
         if ($this->notVtigerClient()) {
             return $this->errorMissingVtigerClient();
@@ -135,7 +135,7 @@ class opencrmitaliacore extends vtigercrmcustom
      * @param array $param
      * @return array
      */
-    public function readData($param)
+    public function readData($param): array
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::readData($param);
@@ -207,7 +207,7 @@ class opencrmitaliacore extends vtigercrmcustom
      * @param array $param
      * @return array
      */
-    public function createData($param)
+    public function createData($param): array
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::createData($param);
@@ -256,7 +256,7 @@ class opencrmitaliacore extends vtigercrmcustom
      * @param array $param
      * @return array
      */
-    public function updateData($param)
+    public function updateData($param): array
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::updateData($param);
@@ -300,7 +300,7 @@ class opencrmitaliacore extends vtigercrmcustom
      * @param array $param
      * @return array
      */
-    public function deleteData($param)
+    public function deleteData($param): array
     {
         if (!in_array($param['module'], $this->dbRecordModules)) {
             return parent::deleteData($param);

@@ -2,11 +2,12 @@
 
 namespace App\Custom\Solutions;
 
+use PDO;
 use App\Solutions\microsoftsql;
 
 class microsoftsqlcustom extends microsoftsql
 {
-    protected function generatePdo()
+    protected function generatePdo(): PDO
     {
         $newPdo = null;
 
