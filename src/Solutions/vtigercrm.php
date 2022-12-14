@@ -985,6 +985,127 @@ class vtigercrmcore extends solution
         return $result;
     }
 
+    /**
+     * Get lineitem fields for specific module.
+     *
+     * @param $module
+     *
+     * @return array
+     */
+    protected function getVtigerLineItemFields($module)
+    {
+        $lineItemFields = [];
+
+        if (in_array($module, $this->inventoryModules, true)) {
+            $describe = $this->getVtigerClient()->describe('LineItem');
+
+            foreach ($describe['result']['fields'] as $field) {
+                $lineItemFields[] = $field['name'];
+            }
+        }
+
+        return $lineItemFields;
+    }
+
+    /**
+     * Update element on Vtiger.
+     *
+     * @param $idDoc
+     * @param $data
+     * @param $param
+     * @param $result
+     * @param $subDocIdArray
+     *
+     * @return void
+     */
+    protected function updateElementOnVtiger($idDoc, $data, $param, &$result, &$subDocIdArray)
+    {
+        $data['id'] = $data['target_id'];
+
+        try {
+            $data = $this->cleanRecord($param, $data);
+            $data = $this->sanitizeVtigerLineItemData($param, $data, $subDocIdArray);
+            $data = $this->sanitizeVtigerInventoryRecord($param, $data);
+
+            $resultUpdate = $this->getVtigerClient()->update($param['module'], $data);
+
+            if (empty($resultUpdate['success']) || empty($resultUpdate['result']['id'])) {
+                throw new \Exception($resultUpdate["error"]["message"] ?? "Error");
+            }
+
+            $result[$idDoc] = [
+                'id' => $resultUpdate['result']['id'],
+                'error' => false,
+            ];
+        } catch (\Exception $e) {
+            $result[$idDoc] = [
+                'id' => '-1',
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     *
+     *
+     * @param $param
+     * @param $data
+     * @param $subDocIdArray
+     *
+     * @return mixed
+     */
+    protected function sanitizeVtigerLineItemData($param, $data, &$subDocIdArray)
+    {
+        if (empty($data['LineItem'])) {
+            return $data;
+        }
+
+        foreach ($data['LineItem'] as $subIdDoc => $childRecord) {
+            if (empty($data['productid']) && isset($childRecord['productid'])) {
+                $data['productid'] = $childRecord['productid'];
+            }
+            $subDocIdArray[$subIdDoc] = array('id' => uniqid('', true));
+            $childRecord = $this->cleanRecord($param, $childRecord);
+            $data['LineItems'][] = $childRecord;
+        }
+
+        unset($data['LineItem']);
+
+        return $data;
+    }
+
+    /**
+     * Sanitize record for vtiger update.
+     *
+     * @param $param
+     * @param $data
+     *
+     * @return array
+     */
+    protected function sanitizeVtigerInventoryRecord($param, $data)
+    {
+        $lineItemFields = $this->getVtigerLineItemFields($param['module']);
+
+        if (empty($lineItemFields)) {
+            return $data;
+        }
+
+        if ($this->isVtigerInventoryModule($param['module'])) {
+            foreach ($data as $inventoryKey => $inventoryValue) {
+                if (in_array($inventoryKey, $lineItemFields, true) && $inventoryKey != "id") {
+                    $data["LineItems"][0][$inventoryKey] = $inventoryValue;
+                }
+            }
+            if (!isset($data["LineItems"][0]["sequence_no"])) {
+                $data["LineItems"][0]["sequence_no"] = 1;
+            }
+
+            $data["hdnTaxType"] = (($data["hdnTaxType"] ?? "") ?: "group");
+        }
+
+        return $data;
+    }
+
     // Function to delete a record
     public function deleteData($param): array
     {
