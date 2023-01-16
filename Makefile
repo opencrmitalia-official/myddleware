@@ -161,6 +161,9 @@ dev: \
 dev-up: build
 	@docker compose -f docker-compose.yml -f docker/env/dev.yml up -d --force-recreate --remove-orphans
 
+dev-ps:
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml ps
+
 dev-clean:
 	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
 
