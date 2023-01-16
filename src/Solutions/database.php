@@ -564,6 +564,9 @@ class databasecore extends solution
                         $row['id'] = $document['source_id'];
                         $row['date_modified'] = date('Y-m-d H:i:s');
                         $result['values'][$document['source_id']] = $row;
+                        if (empty($result['count'])) {
+                            $result['count'] = 0;
+                        }
                         ++$result['count'];
                     }
                 }
