@@ -8,8 +8,6 @@ services:
       - MYSQL_DATABASE=myddleware
       - MYSQL_ROOT_PASSWORD=secret
       - VT_CLIENT_LOG_FILE=/var/www/html/var/logs/vtigercrm.log
-    env_file:
-      - .env.local
     links:
       - mysql
       - phpmyadmin

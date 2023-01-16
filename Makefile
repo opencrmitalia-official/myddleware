@@ -226,3 +226,7 @@ test-monitoring:
 	@docker-compose -f docker-compose.yml exec myddleware rm -f /var/www/html/var/logs/monitoring.log
 	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitoring.sh
 	@docker-compose -f docker-compose.yml exec myddleware cat /var/www/html/var/logs/monitoring.log
+
+test-env:
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml up -d --force-recreate --remove-orphans myddleware
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml exec myddleware printenv | grep DATABASE_URL
