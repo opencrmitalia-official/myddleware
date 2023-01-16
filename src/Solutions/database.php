@@ -542,8 +542,8 @@ class databasecore extends solution
 							GROUP BY source_id";
                 $stmt = $connection->prepare($query);
                 $stmt->bindValue(':id_rule', $param['rule']['id']);
-                $result = $stmt->executeQuery();
-                $documents = $result->fetchAllAssociative();
+                $dbResult = $stmt->executeQuery();
+                $documents = $dbResult->fetchAllAssociative();
 
                 // Test all document found in Myddleware
                 foreach ($documents as $document) {
