@@ -429,7 +429,7 @@ class rulecore
         } else {
             // Save param modification in the audit table
             file_put_contents('/var/www/html/var/log/source.log', json_encode([
-                'param' => $param,
+                //'param' => $param,
                 'rule_id' => $this->ruleId,
                 'dataSource' => $this->dataSource
             ], JSON_PRETTY_PRINT), FILE_APPEND);
