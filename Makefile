@@ -154,33 +154,33 @@ dev: \
 	init \
 	fix \
 	dev-clean \
-	dev-up
-	#dev-prepare-vtiger \
-	#dev-prepare-mssql
+	dev-up \
+	dev-prepare-vtiger \
+	dev-prepare-mssql
 
 dev-up: build
-	@docker-compose -f docker-compose.yml -f docker/env/dev.yml up --force-recreate -d
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml up -d --force-recreate --remove-orphans
 
 dev-clean:
-	@docker-compose run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware bash -c "cd var/logs; rm -f vtigercrm.log; touch vtigercrm.log; chmod 777 vtigercrm.log"
 
 dev-install: dev-up
-	@docker-compose -f docker-compose.yml run --rm myddleware rm -fr vendor
-	@docker-compose -f docker-compose.yml run --rm myddleware composer install
-	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R vendor
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware rm -fr vendor
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware composer install
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware chmod 777 -R vendor
 
 dev-js-install: dev-up
-	@docker-compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware yarn install
-	@docker-compose -f docker-compose.yml run --rm myddleware chmod 777 -R node_modules yarn.lock
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware yarn install
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml run --rm myddleware chmod 777 -R node_modules yarn.lock
 
 dev-prepare-vtiger:
-	@docker-compose exec vtiger1 bash dev/script/vtiger-install.sh
-	@docker-compose exec vtiger2 bash dev/script/vtiger-install.sh
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml exec vtiger1 bash /script/vtiger-install.sh
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml exec vtiger2 bash /script/vtiger-install.sh
 
 dev-prepare-mssql:
-	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -Q 'DROP DATABASE IF EXISTS MSSQL;'
-	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -Q 'CREATE DATABASE MSSQL COLLATE Latin1_General_CS_AS;'
-	@docker-compose exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -i /fixtures/mssql.sql
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -Q 'DROP DATABASE IF EXISTS MSSQL;'
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -Q 'CREATE DATABASE MSSQL COLLATE Latin1_General_CS_AS;'
+	@docker compose -f docker-compose.yml -f docker/env/dev.yml exec mssql sqlcmd -S '127.0.0.1' -U 'sa' -P 'Secret.1234!' -i /fixtures/mssql.sql
 
 dev-create-random-contacts:
 	@docker-compose exec vtiger1 php -f dev/script/create-random-contacts.php

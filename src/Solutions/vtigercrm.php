@@ -1262,6 +1262,8 @@ class vtigercrmcore extends solution
      */
     protected function errorMissingVtigerClient($extend = [])
     {
+
+
         return array_merge(['error' => 'Error: no VtigerClient setup'], $extend);
     }
 

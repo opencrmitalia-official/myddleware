@@ -113,6 +113,7 @@ composer.phar
 !/docker/var/*/.gitkeep
 .env.docker
 /docker/etc/openvpn/*
+/docker/script/vtiger-custom-install.sh
 ##< Docker ##
 
 /migrations
