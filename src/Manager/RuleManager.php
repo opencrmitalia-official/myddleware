@@ -428,6 +428,7 @@ class rulecore
             throw new \Exception('No reference date for the rule '.$this->ruleId.'.');
         } else {
             // Save param modification in the audit table
+            file_put_contents('/var/www/html/var/log/source.log', json_encode($this->dataSource, JSON_PRETTY_PRINT), FILE_APPEND);
             if ($param->getValue() != $this->dataSource['date_ref']) {
                 $paramAudit = new RuleParamAudit();
                 $paramAudit->setRuleParamId($param->getId());
