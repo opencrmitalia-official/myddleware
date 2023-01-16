@@ -417,9 +417,6 @@ class rulecore
      */
     protected function updateReferenceDate()
     {
-        if (empty($this->dataSource['date_ref'])) {
-            return;
-        }
         $param = $this->entityManager->getRepository(RuleParam::class)
             ->findOneBy([
                     'rule' => $this->ruleId,
