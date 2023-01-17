@@ -101,7 +101,8 @@ class databasecore extends solution
             $modules = [];
 
             // Send the query to the database
-            $q = $this->pdo->prepare($this->get_query_show_tables());
+            $showTablesQuery = $this->get_query_show_tables();
+            $q = $this->pdo->prepare($showTablesQuery);
             $exec = $q->execute();
             // Error management
             if (!$exec) {

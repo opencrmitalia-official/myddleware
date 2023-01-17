@@ -61,13 +61,13 @@ class microsoftsqlcore extends database
     // Query to get all the tables of the database
     protected function get_query_show_tables(): string
     {
-        return 'SELECT table_name FROM information_schema.columns WHERE table_catalog = \''.$this->paramConnexion['database_name'].'\'';
+        return 'SELECT table_name FROM INFORMATION_SCHEMA.COLUMNS WHERE table_catalog = \''.$this->paramConnexion['database_name'].'\'';
     }
 
     // Query to get all the flieds of the table
     protected function get_query_describe_table($table): string
     {
-        return 'SELECT * FROM information_schema.columns WHERE table_name = \''.$table.'\'';
+        return 'SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = \''.$table.'\'';
     }
 
     // Get the limit operator of the select query in the read last function

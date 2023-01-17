@@ -157,10 +157,11 @@ dev: \
 	dev-up \
 	dev-prepare-vtiger \
 	dev-prepare-mssql
-	echo "-> Myddleware   <http://localhost:30080>"
-	echo "-> PhpMyAdmin   <http://localhost:30088>"
-	echo "-> Vtiger1      <http://localhost:30081>"
-	echo "-> Vtiger2      <http://localhost:30082>"
+	@echo "-> Myddleware . . . <http://localhost:30080>"
+	@echo "-> PhpMyAdmin . . . <http://localhost:30088>"
+	@echo "-> Vtiger 1 . . . . <http://localhost:30081>"
+	@echo "-> Vtiger 2 . . . . <http://localhost:30082>"
+	@echo "-> MicrosoftSQL . . <http://localhost:30099>"
 
 dev-up: build
 	@docker compose --env-file .env.docker -f docker-compose.yml -f docker/env/dev.yml up -d --force-recreate --remove-orphans
