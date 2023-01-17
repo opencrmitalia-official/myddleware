@@ -12,7 +12,9 @@ CREATE TABLE A_Persone (
     City                  VARCHAR(255),
     AziendaInCuiLavora_ID INT,
     DataUltimaModifica    DATETIME2(3),
-    IsDeleted             BIT
+    IsDeleted             BIT,
+
+    CONSTRAINT PK_Person PRIMARY KEY (PersonID)
 );
 
 INSERT INTO A_Persone (PersonID, LastName, FirstName, Email, City, AziendaInCuiLavora_ID, DataUltimaModifica, IsDeleted)
@@ -34,7 +36,9 @@ CREATE TABLE A_Aziende (
     DataInizioAttivita DATE,
     DataInvioCedolini DATETIME,
     DataUltimaModifica DATETIME2(3),
-    IsDeleted BIT
+    IsDeleted BIT,
+
+    CONSTRAINT PK_Aziende PRIMARY KEY (AziendaID)
 );
 
 INSERT INTO A_Aziende (AziendaID, RagioneSociale, Email, City, ContattoPrincipale, DataInizioAttivita, DataInvioCedolini, DataUltimaModifica, IsDeleted)
@@ -47,84 +51,86 @@ VALUES
 -- Gestione Prodotti/Listini
 --
 CREATE TABLE B_Prodotti (
-                            ProdottoID INT,
-                            Descrizione VARCHAR(255),
-                            Prezzo MONEY
+    ProdottoID INT,
+    Descrizione VARCHAR(255),
+    Prezzo MONEY,
+
+    CONSTRAINT PK_Prodotti PRIMARY KEY (ProdottoID)
 )
 
-    INSERT INTO B_Prodotti (ProdottoID, Descrizione, Prezzo) VALUES (1, 'Zucchero', 10.5), (2, 'Sale', 12.5)
+INSERT INTO B_Prodotti (ProdottoID, Descrizione, Prezzo) VALUES (1, 'Zucchero', 10.5), (2, 'Sale', 12.5)
 
 CREATE TABLE B_Listini (
-                           ListinoID INT,
-                           Nome VARCHAR(255),
-                           Descrizione VARCHAR(255) DEFAULT NULL
+    ListinoID INT,
+    Nome VARCHAR(255),
+    Descrizione VARCHAR(255) DEFAULT NULL
 );
 
 INSERT INTO B_Listini (ListinoID, Nome) VALUES (1, 'Nuovi Clienti'), (2, 'Clienti Fedeli');
 
 CREATE TABLE B_ListiniProdotti (
-                                   Chiave INT,
-                                   ListinoID INT,
-                                   ProdottoID INT,
-                                   Prezzo MONEY,
-                                   Disattivato BIT DEFAULT 0
+    Chiave INT,
+    ListinoID INT,
+    ProdottoID INT,
+    Prezzo MONEY,
+    Disattivato BIT DEFAULT 0
 );
 
 INSERT INTO B_ListiniProdotti (Chiave, ListinoID, ProdottoID, Prezzo) VALUES (100, 1, 1, 10), (101, 2, 1, 9);
 
 CREATE TABLE C_Aliquote (
-                            AliquotaID INT,
-                            Descrizione VARCHAR(255),
-                            Percentuale INT
+    AliquotaID INT,
+    Descrizione VARCHAR(255),
+    Percentuale INT
 );
 
 INSERT INTO C_Aliquote (AliquotaID, Descrizione, Percentuale) VALUES
-                                                                  (1, 'Aliquota Base', 22),
-                                                                  (2, 'Aliquita Ridotta', 10),
-                                                                  (3, 'Non Tassabile', 0);
+    (1, 'Aliquota Base', 22),
+    (2, 'Aliquita Ridotta', 10),
+    (3, 'Non Tassabile', 0);
 
 CREATE TABLE C_Fatture (
-                           FatturaID INT,
-                           ClienteID INT,
-                           Totale MONEY,
-                           DataAgg DATETIME
+    FatturaID INT,
+    ClienteID INT,
+    Totale MONEY,
+    DataAgg DATETIME
 );
 
 INSERT INTO C_Fatture (FatturaID, ClienteID, Totale, DataAgg) VALUES
-                                                                  (1, 1, 10, '2021-07-07 10:11:03'),
-                                                                  (2, 1, 9, '2021-05-07 15:19:13'),
-                                                                  (3, 1, 9, '2021-03-07 18:12:43');
+    (1, 1, 10, '2021-07-07 10:11:03'),
+    (2, 1, 9, '2021-05-07 15:19:13'),
+    (3, 1, 9, '2021-03-07 18:12:43');
 
 CREATE TABLE C_FattureDettagli (
-                                   FatturaID INT,
-                                   ProdottoID INT,
-                                   AliquotaID INT,
-                                   Prezzo MONEY,
-                                   Quantita INT,
-                                   Subtotale MONEY
+    FatturaID INT,
+    ProdottoID INT,
+    AliquotaID INT,
+    Prezzo MONEY,
+    Quantita INT,
+    Subtotale MONEY
 );
 
 INSERT INTO C_FattureDettagli (FatturaID, ProdottoID, AliquotaID, Prezzo, Quantita, Subtotale) VALUES
-                                                                                                   (1, 1, 1, 10, 1, 10),
-                                                                                                   (1, 2, 2, 12, 1, 12),
-                                                                                                   (1, 2, 3, 9, 1, 9),
-                                                                                                   (2, 1, 1, 10, 1, 10),
-                                                                                                   (2, 1, 2, 9, 1, 9),
-                                                                                                   (2, 2, 3, 9, 1, 9),
-                                                                                                   (3, 1, 1, 10, 1, 10),
-                                                                                                   (3, 2, 2, 9, 1, 9),
-                                                                                                   (3, 2, 3, 9, 1, 9);
+    (1, 1, 1, 10, 1, 10),
+    (1, 2, 2, 12, 1, 12),
+    (1, 2, 3, 9, 1, 9),
+    (2, 1, 1, 10, 1, 10),
+    (2, 1, 2, 9, 1, 9),
+    (2, 2, 3, 9, 1, 9),
+    (3, 1, 1, 10, 1, 10),
+    (3, 2, 2, 9, 1, 9),
+    (3, 2, 3, 9, 1, 9);
 
 CREATE TABLE D_Sedi (
-                        IdSede INT,
-                        NomeSede VARCHAR(100),
-                        CittaSede VARCHAR(100),
-                        Affitto MONEY,
-                        DataAgg DATETIME
+    IdSede INT,
+    NomeSede VARCHAR(100),
+    CittaSede VARCHAR(100),
+    Affitto MONEY,
+    DataAgg DATETIME
 );
 
 INSERT INTO D_Sedi (IdSede, NomeSede, CittaSede, Affitto, DataAgg) VALUES
-                                                                       (1, 'Sede Rossa', 'Palermo', 10, '2021-01-01'),
-                                                                       (2, 'Sede Verde', 'Milano', 12, '2021-01-01'),
-                                                                       (3, 'Sede Bianca', 'Bologna', 9, '2021-01-01'),
-                                                                       (4, 'Sede Blu', 'Torino', 10, '2021-01-01');
+    (1, 'Sede Rossa', 'Palermo', 10, '2021-01-01'),
+    (2, 'Sede Verde', 'Milano', 12, '2021-01-01'),
+    (3, 'Sede Bianca', 'Bologna', 9, '2021-01-01'),
+    (4, 'Sede Blu', 'Torino', 10, '2021-01-01');
