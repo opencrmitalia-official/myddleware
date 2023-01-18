@@ -79,8 +79,11 @@ class MonitoringCommand extends Command
         $output->writeln('Ping: '.$monitoringUrl);
 
         $payload = [
+            'ts' => date('Y-m-d H:i:s'),
             'key' => $monitoringKey
         ];
+
+        $output->writeln('Data: '.json_encode($payload));
 
         $ch = curl_init();
 
@@ -95,6 +98,6 @@ class MonitoringCommand extends Command
 
         $output->writeln('Info: '.$response);
 
-        return 1;
+        return 0;
     }
 }
