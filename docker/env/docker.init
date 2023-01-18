@@ -13,3 +13,7 @@ aws_secret_access_key=
 ## Secret
 mysql_password=secret
 mysql_root_password=secret
+
+## Monitoring
+monitoring_key=
+monitoring_url=
