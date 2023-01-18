@@ -66,65 +66,34 @@ class MonitoringCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $monitoringKey = getenv('MONITORING_KEY');
+        if (empty($monitoringKey)) {
+            $monitoringKey = 'myddleware';
+        }
+
         $monitoringUrl = getenv('MONITORING_URL');
-        /*
-        // We don't create job for alert
-        if ('alert' == $input->getArgument('type')) {
-            try {
-                $this->notificationManager->sendAlert();
-            } catch (\Exception $e) {
-                $output->writeln('<error>'.$e->getMessage().'</error>');
-            }
+        if (empty($monitoringUrl)) {
+            return 0;
         }
-        // Standard notification
-        else {
-            try {
-                $data = $this->jobManager->initJob('notification');
-
-                if (false === $data['success']) {
-                    $output->writeln('0;<error>'.$data['message'].'</error>');
-
-                    return 0;
-                }
-
-                $this->notificationManager->sendNotification();
-            } catch (\Exception $e) {
-                $message = $e->getMessage();
-                $output->writeln('<error>'.$message.'</error>');
-            }
-            // Close job if it has been created
-            $this->jobManager->closeJob();
-        }
-        */
 
         $output->writeln('Ping: '.$monitoringUrl);
 
+        $payload = [
+            'key' => $monitoringKey
+        ];
 
         $ch = curl_init();
 
-        curl_setopt($ch, CURLOPT_URL, "http://www.example.com/tester.phtml");
+        curl_setopt($ch, CURLOPT_URL, $monitoringUrl);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS,
-            "postvar1=value1&postvar2=value2&postvar3=value3");
-
-// In real life you should use something like:
-// curl_setopt($ch, CURLOPT_POSTFIELDS,
-//          http_build_query(array('postvar1' => 'value1')));
-
-// Receive server response ...
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-        $server_output = curl_exec($ch);
+        $response = curl_exec($ch);
 
         curl_close($ch);
 
-// Further processing ...
-        if ($server_output == "OK") {
-
-        } else {
-
-        }
-
+        $output->writeln('Info: '.$response);
 
         return 1;
     }

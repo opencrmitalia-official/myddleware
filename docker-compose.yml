@@ -10,6 +10,8 @@ services:
       - MYSQL_HOST=mysql
       - MYSQL_DATABASE=myddleware
       - MYSQL_ROOT_PASSWORD=${mysql_root_password:-secret}
+      - MONITORING_KEY=${monitoring_key:-}
+      - MONITORING_URL=${monitoring_url:-}
     env_file:
       - .env.local
     volumes:

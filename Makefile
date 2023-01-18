@@ -48,8 +48,8 @@ schedule:
 monitor:
 	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/dev/script/monitor.sh
 
-ping-monitoring:
-	@docker-compose -f docker-compose.yml exec myddleware bash /var/www/html/docker/script/ping-monitoring.sh
+monitoring:
+	@docker-compose --env-file .env.docker -f docker-compose.yml exec myddleware bash /var/www/html/docker/script/monitoring.sh
 
 logs: debug
 	@docker-compose logs -f myddleware
