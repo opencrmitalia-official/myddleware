@@ -89,8 +89,8 @@ class MonitoringCommand extends Command
         $result = $stmt->executeQuery();
         $job = $result->fetchAssociative();
 
-        $errors = $this->ruleRepository->errorByRule();
-        var_dump($errors);
+        #$errors = $this->ruleRepository->errorByRule();
+        #var_dump($errors);
 
         $output->writeln('Ping: '.$monitoringUrl);
 

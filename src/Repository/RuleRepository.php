@@ -148,7 +148,7 @@ class RuleRepository extends ServiceEntityRepository
             ->andWhere('document.deleted = 0')
             ->setParameter('status', ['Open', 'Error'])
             ->groupBy('r.id')
-            //->having('cpt > 0')
+            ->having('cpt > 0')
             ->orderBy('cpt', 'DESC');
 
         if ($user && !$user->isAdmin()) {
