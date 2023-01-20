@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 php:7.4.26-apache-bullseye
+FROM --platform=linux/amd64 docker
 LABEL maintainer="Francesco Bianco <francescobianco@opencrmitalia.com>"
 
 # Useful global ARGS
