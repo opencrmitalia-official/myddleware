@@ -74,9 +74,9 @@ class MonitoringCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        file_put_contents('/var/www/html/var/log/monitoring.log', "AA"."\n", FILE_APPEND);
-
         $monitoringKey = getenv('MONITORING_KEY');
+        file_put_contents('/var/www/html/var/log/monitoring.log', "KEY: ".$monitoringKey."\n", FILE_APPEND);
+
         if (empty($monitoringKey)) {
             $monitoringKey = 'myddleware';
         }
