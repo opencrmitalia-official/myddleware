@@ -74,12 +74,14 @@ class MonitoringCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $monitoringKey = getenv('MONITORING_KEY');
+        $env = parse_ini_file('/var/www/html/.env.docker', false, INI_SCANNER_RAW);
+
+        $monitoringKey = @$env['monitoring_key'];
         if (empty($monitoringKey)) {
             $monitoringKey = 'myddleware';
         }
 
-        $monitoringUrl = getenv('MONITORING_URL');
+        $monitoringUrl = @$env['monitoring_url'];
         file_put_contents('/var/www/html/var/log/monitoring.log', "KEY: ".$monitoringUrl."\n", FILE_APPEND);
         if (empty($monitoringUrl)) {
             return 0;

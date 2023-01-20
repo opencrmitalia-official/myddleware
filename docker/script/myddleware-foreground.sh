@@ -9,7 +9,6 @@ echo "--"
 ## Start Cronjob
 echo "====[ PREPARE CRON ]===="
 printenv | sed "s/^\(.*\)$/export \\1/g" | grep -E "^export MYSQL_" > /run/crond.env
-printenv | sed "s/^\(.*\)$/export \\1/g" | grep -E "^export MONITORING_" >> /run/crond.env
 cat crontab.client >> /etc/crontab
 cat /etc/crontab
 echo "--"
