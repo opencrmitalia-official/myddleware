@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ## Load variables
-source /run/crond.env
+cat /run/crond.env
 export MYDDLEWARE_CRON_RUN=1
 
 ## Run Monitoring Job
