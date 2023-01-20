@@ -92,7 +92,8 @@ class MonitoringCommand extends Command
         #$errors = $this->ruleRepository->errorByRule();
         #var_dump($errors);
 
-        $output->writeln('Ping: '.$monitoringUrl);
+        #$output->writeln('Ping: '.$monitoringUrl);
+        echo 'Ping: '.$monitoringUrl."\n";
 
         $payload = [
             'ts' => date('Y-m-d H:i:s'),
@@ -101,7 +102,8 @@ class MonitoringCommand extends Command
             'current_open_job_param' => $job['param'],
         ];
 
-        $output->writeln('Data: '.json_encode($payload));
+        #$output->writeln('Data: '.json_encode($payload));
+        echo 'Data: '.json_encode($payload)."\n";
 
         $ch = curl_init();
 
@@ -114,7 +116,8 @@ class MonitoringCommand extends Command
 
         curl_close($ch);
 
-        $output->writeln('Info: '.$response);
+        #$output->writeln('Info: '.$response);
+        echo 'Info: '.$response;
 
         return 0;
     }
