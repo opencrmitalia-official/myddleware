@@ -28,6 +28,8 @@ namespace App\Command;
 use App\Entity\Job;
 use App\Manager\JobManager;
 use App\Manager\NotificationManager;
+use App\Repository\RuleRepository;
+use Doctrine\DBAL\Connection as DriverConnection;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -41,15 +43,21 @@ class MonitoringCommand extends Command
 {
     private NotificationManager $notificationManager;
     private JobManager $jobManager;
+    protected DriverConnection $dbalConnection;
+    private RuleRepository $ruleRepository;
 
     public function __construct(
         NotificationManager $notificationManager,
         JobManager $jobManager,
+        DriverConnection $dbalConnection,
+        RuleRepository $ruleRepository,
         $name = null)
     {
         parent::__construct($name);
         $this->notificationManager = $notificationManager;
         $this->jobManager = $jobManager;
+        $this->dbalConnection = $dbalConnection;
+        $this->ruleRepository = $ruleRepository;
     }
 
     protected function configure()
@@ -76,11 +84,22 @@ class MonitoringCommand extends Command
             return 0;
         }
 
+        $sqlRule = "SELECT * FROM job WHERE Status='Start' ORDER BY begin ASC LIMIT 1";
+        $stmt = $this->dbalConnection->prepare($sqlRule);
+        $result = $stmt->executeQuery();
+        $job = $result->fetchAssociative();
+
+        $errors = $this->ruleRepository->errorByRule();
+
+        var_dump($errors);
+
         $output->writeln('Ping: '.$monitoringUrl);
 
         $payload = [
             'ts' => date('Y-m-d H:i:s'),
-            'key' => $monitoringKey
+            'key' => $monitoringKey,
+            'current_open_job_begin' => $job['begin'],
+            'current_open_job_param' => $job['param'],
         ];
 
         $output->writeln('Data: '.json_encode($payload));
