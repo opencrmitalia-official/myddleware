@@ -2,6 +2,7 @@
 
 ## Load variables
 source /run/crond.env
+export MONITORING_KEY MONITORING_URL
 export MYDDLEWARE_CRON_RUN=1
 
 ## Run Monitoring Job
