@@ -118,7 +118,7 @@ class MonitoringCommand extends Command
             'payload' => $payload,
             'response' => $response,
             'ping' => $monitoringUrl,
-        ])."\n", FILE_APPEND);
+        ], JSON_UNESCAPED_SLASHES)."\n", FILE_APPEND);
 
         $output->writeln('Info: '.$response);
 
