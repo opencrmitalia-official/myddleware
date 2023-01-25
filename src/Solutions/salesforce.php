@@ -367,7 +367,7 @@ class salesforcecore extends solution {
 			$param['fields'] = $this->addRequiredField($param['fields'], $param['module'], $param['ruleParams']['mode']);
 			
 			// Récupération du nom du champ date
-			$DateRefField = $this->getRefFieldName($param['module'], $param['ruleParams']['mode']);
+			$DateRefField = $this->getRefFieldName($param);
 
 			// Construction de la requête pour Salesforce
 			$baseQuery = $this->instance_url."/services/data/".$this->versionApi."/query/?q=";
@@ -490,7 +490,7 @@ class salesforcecore extends solution {
 				$parameter['attributes'] = array('type' => $param['module'], 'referenceId' => 'Ref'.$i);
 			    foreach ($data as $key => $value) {		
 			        // On n'envoie jamais le champ Myddleware_element_id à Salesforce
-					if (in_array($key, array('Myddleware_element_id'))) {
+					if (in_array($key, array('Myddleware_element_id','id_doc_myddleware','source_date_modified'))) {
 						continue;
 					}
 			        elseif ($key == 'target_id') {
@@ -605,7 +605,7 @@ class salesforcecore extends solution {
 				$query_url = $this->instance_url."/services/data/".$this->versionApi."/sobjects/" . $param['module'] . '/';
 			    foreach ($data as $key => $value) {
 					// On n'envoie jamais le champ Myddleware_element_id à Salesforce
-					if (in_array($key, array('Myddleware_element_id'))) {
+					if (in_array($key, array('Myddleware_element_id','id_doc_myddleware','source_date_modified'))) {
 						continue;
 					}
 			        elseif ($key == 'target_id') {
@@ -644,10 +644,10 @@ class salesforcecore extends solution {
 				) {
 					$parameters['Pricebook2Id'] = $param['ruleParams']['Pricebook2Id'];
 				}				
-				$parameters = json_encode($parameters);
 				
+				$parameters = json_encode($parameters);
 				// Appel de la requête				
-                $query_request_data = $this->call($query_url, $parameters, true);             
+                $query_request_data = $this->call($query_url, $parameters, true);             				
 				
 				if ($query_request_data === true) {
 					$result[$idDoc] = array(
@@ -711,7 +711,7 @@ class salesforcecore extends solution {
 			}
 		} else {
 			// On va chercher le nom du champ pour la date de référence: Création ou Modification
-			$DateRefField = $this->getRefFieldName($param['module'], $param['ruleParams']['mode']);
+			$DateRefField = $this->getRefFieldName($param);
 
 			// Mis en forme de la date de référence pour qu'elle corresponde aux exigeances du service Salesforce
 			$tab = explode(' ', $param['date_ref']);
@@ -743,7 +743,7 @@ class salesforcecore extends solution {
      */
     protected function getOrder($param): string
     {
-		$DateRefField = $this->getRefFieldName($param['module'], $param['ruleParams']['mode']);
+		$DateRefField = $this->getRefFieldName($param);
 		if($DateRefField == 'LastModifiedDate') {
 			$queryOrder = "+ORDER+BY+LastModifiedDate"; // Ajout du module souhaité
 		} else {
@@ -773,14 +773,14 @@ class salesforcecore extends solution {
     /**
      * @throws \Exception
      */
-    public function getRefFieldName($moduleSource, $RuleMode): string
+    public function getRefFieldName($param): string
     {
-		if(in_array($RuleMode,array("0","S"))) {
+		if(in_array($param['ruleParams']['mode'],array("0","S"))) {
 			return "LastModifiedDate";
-		} else if ($RuleMode == "C"){
+		} else if ($param['ruleParams']['mode'] == "C"){
 			return "CreatedDate";
 		} else {
-			throw new \Exception ("$RuleMode is not a correct Rule mode.");
+			throw new \Exception ("$param[ruleParams][mode] is not a correct Rule mode.");
 		}
 		return "";
 	}
