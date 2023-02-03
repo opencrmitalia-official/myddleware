@@ -100,7 +100,7 @@ php-install: up
 	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware composer install
 
 php-update: up
-	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware composer update
+	@docker-compose -f docker/env/script.yml run --rm --no-deps myddleware composer update -W
 
 ## ----------
 ## JavaScript
