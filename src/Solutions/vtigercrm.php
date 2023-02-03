@@ -757,6 +757,8 @@ class vtigercrmcore extends solution
                     throw new \Exception($resultCreate["error"]["message"] ?? "Error");
                 }
 
+                $this->itemSyncFeedbackQuery($param);
+
                 $result[$idDoc] = [
                     'id' => $resultCreate['result']['id'],
                     'error' => false,
@@ -1032,6 +1034,8 @@ class vtigercrmcore extends solution
             if (empty($resultUpdate['success']) || empty($resultUpdate['result']['id'])) {
                 throw new \Exception($resultUpdate["error"]["message"] ?? "Error");
             }
+
+            $this->itemSyncFeedbackQuery($param);
 
             $result[$idDoc] = [
                 'id' => $resultUpdate['result']['id'],
@@ -1344,6 +1348,23 @@ class vtigercrmcore extends solution
 
         return false;
     }
+
+
+    public function itemSyncFeedbackQuery($param)
+    {
+        $log = json_encode($param, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        file_put_contents('/var/www/html/var/log/itemsync.log', $log."\n", FILE_APPEND);
+        if (isset($param['sourcePdo']) && is_object($param['sourcePdo'])) {
+            $itemSyncFeedbackQuery = "
+                IF EXISTS(SELECT * FROM test WHERE id='')
+                    UPDATE test SET name='john' WHERE id=''
+                ELSE
+                    INSERT INTO test(name) VALUES ('john');
+            ";
+            $param['sourcePdo']->prepare($itemSyncFeedbackQuery)->execute();
+        }
+    }
+
 }
 
 class vtigercrm extends vtigercrmcore

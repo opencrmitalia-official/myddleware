@@ -420,21 +420,6 @@ class opencrmitaliacore extends vtigercrmcustom
 
         return $query;
     }
-
-    public function itemSyncFeedbackQuery($param)
-    {
-        $log = json_encode($param, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        file_put_contents('/var/www/html/var/log/itemsync.log', $log."\n", FILE_APPEND);
-        if (isset($param['sourcePdo']) && is_object($param['sourcePdo'])) {
-            $itemSyncFeedbackQuery = "
-                IF EXISTS(SELECT * FROM test WHERE id='')
-                    UPDATE test SET name='john' WHERE id=''
-                ELSE
-                    INSERT INTO test(name) VALUES ('john');
-            ";
-            $param['sourcePdo']->prepare($itemSyncFeedbackQuery)->execute();
-        }
-    }
 }
 
 //Sinon on met la classe suivante
