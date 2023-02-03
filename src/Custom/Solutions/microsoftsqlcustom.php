@@ -23,4 +23,10 @@ class microsoftsqlcustom extends microsoftsql
 
         return $newPdo;
     }
+
+    // Action to be done into the source solution before sending data
+    public function sourceActionBeforeSend($send) {
+        $send['sourcePdo'] = $this->pdo;
+        return parent::sourceActionBeforeSend($send);
+    }
 }

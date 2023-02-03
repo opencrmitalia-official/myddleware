@@ -282,6 +282,7 @@ class opencrmitaliacore extends vtigercrmcustom
                 if (empty($update['success']) || empty($update['result']['success'])) {
                     throw new \Exception($update["error"]["message"] ?? json_encode($update).' DATA: '.json_encode($data));
                 }
+                $this->itemSyncFeedbackQuery($param);
                 if (empty($result[$idDoc]['id'])) {
                     $result[$idDoc]['id'] = $this->assignIdDbRecordModule($param['module'], $update['result']['record']);
                 }
@@ -418,6 +419,21 @@ class opencrmitaliacore extends vtigercrmcustom
         #file_put_contents('../var/logs/mio.log', json_encode($create['result'])."\n", FILE_APPEND);
 
         return $query;
+    }
+
+    public function itemSyncFeedbackQuery($param)
+    {
+        $log = json_encode($param, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        file_put_contents('/var/www/html/var/log/itemsync.log', $log."\n", FILE_APPEND);
+        if (isset($param['sourcePdo']) && is_object($param['sourcePdo'])) {
+            $itemSyncFeedbackQuery = "
+                IF EXISTS(SELECT * FROM test WHERE id='')
+                    UPDATE test SET name='john' WHERE id=''
+                ELSE
+                    INSERT INTO test(name) VALUES ('john');
+            ";
+            $param['sourcePdo']->prepare($itemSyncFeedbackQuery)->execute();
+        }
     }
 }
 
