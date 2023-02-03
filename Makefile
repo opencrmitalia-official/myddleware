@@ -208,6 +208,15 @@ vpn-add-client:
 vpn-get-client:
 	@docker-compose --env-file .env.docker exec vpn get_client $(name)
 
+## ---
+## Git
+## ---
+
+release:
+	git add .
+	git commit -am "fix"
+	git push
+
 ## -------
 ## Testing
 ## -------
