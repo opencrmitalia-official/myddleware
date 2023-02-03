@@ -19,10 +19,12 @@ RUN apt-get update && apt-get upgrade -y && \
 #RUN pecl install -f ssh2-1.1.2 && docker-php-ext-enable ssh2
 
 ## Install PHP Accelerators
-RUN pecl install apcu \
-    && pecl install apcu_bc-1.0.3 \
-    && docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini \
-    && docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
+#RUN pecl install apcu \
+#    && pecl install apcu_bc \
+#    && docker-php-ext-enable apcu --ini-name 10-docker-php-ext-apcu.ini \
+#    && docker-php-ext-enable apc --ini-name 20-docker-php-ext-apc.ini
+RUN mkdir -p /usr/src/php/ext/apcu && curl -fsSL https://pecl.php.net/get/apcu | tar xvz -C "/usr/src/php/ext/apcu" --strip 1 && docker-php-ext-install apcu
+
 
 ## Intall NodeJS
 RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
