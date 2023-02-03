@@ -757,7 +757,7 @@ class vtigercrmcore extends solution
                     throw new \Exception($resultCreate["error"]["message"] ?? "Error");
                 }
 
-                $this->itemSyncFeedbackQuery($param);
+                $this->itemSyncFeedbackQuery($param, $resultCreate['result']['id']);
 
                 $result[$idDoc] = [
                     'id' => $resultCreate['result']['id'],
@@ -1035,7 +1035,7 @@ class vtigercrmcore extends solution
                 throw new \Exception($resultUpdate["error"]["message"] ?? "Error");
             }
 
-            $this->itemSyncFeedbackQuery($param);
+            $this->itemSyncFeedbackQuery($param, $resultUpdate['result']['id']);
 
             $result[$idDoc] = [
                 'id' => $resultUpdate['result']['id'],
@@ -1350,28 +1350,20 @@ class vtigercrmcore extends solution
     }
 
 
-    public function itemSyncFeedbackQuery($param)
+    public function itemSyncFeedbackQuery($param, $crmid)
     {
         $log = json_encode($param, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         file_put_contents('/var/www/html/var/log/itemsync.log', $log."\n", FILE_APPEND);
 
-        //$param['rule']['module_source'];
+        //;
 
         if (isset($param['sourcePdo']) && is_object($param['sourcePdo'])) {
-
-/* source_view_output
-            NSERT INTO [dbo].[ITEMSYNC_ROWS_FEEDBACK]
-           ([]
-           ,[key_value]
-           ,[crmid]
-           ,[last_update])
-     VALUES*/
-
+            $sourceViewOutput = $param['rule']['module_source'];
             $itemSyncFeedbackQuery = "
-                IF EXISTS(SELECT * FROM test WHERE source_view_output = '' AND key_value = '')
-                    UPDATE ITEMSYNC_ROWS_FEEDBACK SET name='john' WHERE id=''
+                IF EXISTS(SELECT * FROM ITEMSYNC_ROWS_FEEDBACK WHERE source_view_output = '$sourceViewOutput' AND key_value = '')
+                    UPDATE ITEMSYNC_ROWS_FEEDBACK SET crmid = '$crmid' WHERE source_view_output = '$sourceViewOutput' AND key_value = ''
                 ELSE
-                    INSERT INTO ITEMSYNC_ROWS_FEEDBACK (name) VALUES ('john');
+                    INSERT INTO ITEMSYNC_ROWS_FEEDBACK (source_view_output, key_value, crmid) VALUES ('$sourceViewOutput', '', '$crmid');
             ";
             $param['sourcePdo']->prepare($itemSyncFeedbackQuery)->execute();
         }

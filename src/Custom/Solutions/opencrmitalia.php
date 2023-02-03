@@ -237,6 +237,7 @@ class opencrmitaliacore extends vtigercrmcustom
                     'id' => $this->assignIdDbRecordModule($param['module'], $create['result']['record']),
                     'error' => false,
                 ];
+                $this->itemSyncFeedbackQuery($param, $result[$idDoc]['id']);
             } catch (\Exception $e) {
                 $result[$idDoc] = array(
                     'id' => '-1',
@@ -282,10 +283,10 @@ class opencrmitaliacore extends vtigercrmcustom
                 if (empty($update['success']) || empty($update['result']['success'])) {
                     throw new \Exception($update["error"]["message"] ?? json_encode($update).' DATA: '.json_encode($data));
                 }
-                $this->itemSyncFeedbackQuery($param);
                 if (empty($result[$idDoc]['id'])) {
                     $result[$idDoc]['id'] = $this->assignIdDbRecordModule($param['module'], $update['result']['record']);
                 }
+                $this->itemSyncFeedbackQuery($param, $result[$idDoc]['id']);
                 $this->updateDocumentStatus($idDoc, $result[$idDoc], $param);
             }
         } catch (\Exception $e) {
