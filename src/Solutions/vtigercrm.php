@@ -757,7 +757,7 @@ class vtigercrmcore extends solution
                     throw new \Exception($resultCreate["error"]["message"] ?? "Error");
                 }
 
-                $this->itemSyncFeedbackQuery($param, $resultCreate['result']['id']);
+                //$this->itemSyncFeedbackQuery($param, $resultCreate['result']['id']);
 
                 $result[$idDoc] = [
                     'id' => $resultCreate['result']['id'],
@@ -1035,7 +1035,7 @@ class vtigercrmcore extends solution
                 throw new \Exception($resultUpdate["error"]["message"] ?? "Error");
             }
 
-            $this->itemSyncFeedbackQuery($param, $resultUpdate['result']['id']);
+            //$this->itemSyncFeedbackQuery($param, $resultUpdate['result']['id']);
 
             $result[$idDoc] = [
                 'id' => $resultUpdate['result']['id'],
