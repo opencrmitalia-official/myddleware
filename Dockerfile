@@ -94,6 +94,8 @@ RUN apt-get update && \
 RUN apt-get update && apt-get upgrade -y && \
     apt-get -y install -qq --force-yes nano vim net-tools iputils-ping telnet
 
+RUN pecl install -f ssh2-1.1.2 && docker-php-ext-enable ssh2
+
 ## Entrypoint and scripts
 COPY ./docker/script/myddleware-cron.sh /usr/local/bin/myddleware-cron.sh
 COPY ./docker/script/myddleware-foreground.sh /usr/local/bin/myddleware-foreground.sh
