@@ -97,7 +97,7 @@ RUN apt-get update && apt-get upgrade -y && \
 RUN apt-get update && \
     apt-get -y install -qq --force-yes libssh2-1 libssh2-1-dev
 
-RUN pecl install -f ssh2-1.1.2 && docker-php-ext-enable ssh2
+RUN pecl install -f ssh2-1.3.1 && docker-php-ext-enable ssh2
 
 ## Entrypoint and scripts
 COPY ./docker/script/myddleware-cron.sh /usr/local/bin/myddleware-cron.sh
