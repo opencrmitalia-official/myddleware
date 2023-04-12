@@ -35,6 +35,7 @@ class filecore extends solution
     protected array $messages = [];
     protected array $duplicateDoc = [];
     protected \Doctrine\DBAL\Connection $connection;
+    protected $sshConnection;
     protected string $delimiter = ';';
     protected string $enclosure = '"';
     protected string $escape = '';
@@ -60,11 +61,11 @@ class filecore extends solution
                 throw new \Exception('Please enable extension ssh2. Help here : http://php.net/manual/fr/ssh2.installation.php');
             }
             // Connect to the server
-            $this->connection = ssh2_connect($this->paramConnexion['host'], $this->paramConnexion['port']);
-            ssh2_auth_password($this->connection, $this->paramConnexion['login'], $this->paramConnexion['password']);
+            $this->sshConnection = ssh2_connect($this->paramConnexion['host'], $this->paramConnexion['port']);
+            ssh2_auth_password($this->sshConnection, $this->paramConnexion['login'], $this->paramConnexion['password']);
 
             // Check if the directory exist
-            $stream = ssh2_exec($this->connection, 'cd '.$this->paramConnexion['directory'].';pwd');
+            $stream = ssh2_exec($this->sshConnection, 'cd '.$this->paramConnexion['directory'].';pwd');
             stream_set_blocking($stream, true);
             $output = stream_get_contents($stream);
             if (trim($this->paramConnexion['directory']) != trim($output)) {
@@ -115,7 +116,7 @@ class filecore extends solution
     {
         try {
             // Get the subfolders of the current directory
-            $stream = ssh2_exec($this->connection, 'cd '.$this->paramConnexion['directory'].';ls -d */');
+            $stream = ssh2_exec($this->sshConnection, 'cd '.$this->paramConnexion['directory'].';ls -d */');
             stream_set_blocking($stream, true);
             $output = stream_get_contents($stream);
             // Transform the directory list in an array
@@ -148,7 +149,7 @@ class filecore extends solution
                 $file = $this->get_last_file($this->paramConnexion['directory'].'/'.$module, '1970-01-01 00:00:00');
                 $fileName = trim($this->paramConnexion['directory'].'/'.$module.$file);
                 // Open the file
-                $sftp = ssh2_sftp($this->connection);
+                $sftp = ssh2_sftp($this->sshConnection);
                 $stream = fopen('ssh2.sftp://'.intval($sftp).$fileName, 'r');
                 $headerString = trim(fgets($stream));
                 // Close the file
@@ -292,7 +293,7 @@ class filecore extends solution
             $fileName = $this->paramConnexion['directory'].'/'.$param['module'].$file;
 
             // Open the file
-            $sftp = ssh2_sftp($this->connection);
+            $sftp = ssh2_sftp($this->sshConnection);
             $stream = fopen('ssh2.sftp://'.intval($sftp).$fileName, 'r');
             $header = $this->getFileHeader($stream, $param);
 
@@ -303,7 +304,7 @@ class filecore extends solution
             $allRuleField[] = $param['ruleParams']['fieldId'];
 
             // Get the date of modification of the file
-            $new_date_ref = ssh2_exec($this->connection, 'cd '.$this->paramConnexion['directory'].'/'.$param['module'].';stat -c %y '.$file);
+            $new_date_ref = ssh2_exec($this->sshConnection, 'cd '.$this->paramConnexion['directory'].'/'.$param['module'].';stat -c %y '.$file);
             stream_set_blocking($new_date_ref, true);
             $new_date_ref = stream_get_contents($new_date_ref);
             $new_date_ref = trim($new_date_ref);
@@ -577,7 +578,7 @@ class filecore extends solution
 
     protected function get_last_file($directory, $date_ref): string
     {
-        $stream = ssh2_exec($this->connection, 'cd '.$directory.';find . -newermt "'.$date_ref.'" -type f | sort |  head -n 1');
+        $stream = ssh2_exec($this->sshConnection, 'cd '.$directory.';find . -newermt "'.$date_ref.'" -type f | sort |  head -n 1');
         stream_set_blocking($stream, true);
         $file = stream_get_contents($stream);
         $file = ltrim($file, './'); // The filename can have ./ at the beginning
