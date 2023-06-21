@@ -435,8 +435,9 @@ class filecore extends solution
             fclose($stream);
 
             // Move file after read (only for short file less then 1000 lines)
-            if (getenv('MYDDLEWARE_SOLUTION_FILE_MOVE_TO') && isset($fileName)) {
-                $this->moveFileTo($fileName, getenv('MYDDLEWARE_SOLUTION_FILE_MOVE_TO'));
+            $customEnv = parse_ini_file(__DIR__.'/../../.env.docker', true);
+            if (isset($customEnv['myddleware_solution_file_move_to']) && isset($fileName)) {
+                $this->moveFileTo($fileName, $customEnv('myddleware_solution_file_move_to'));
                 $result['date_ref'] = '2000-01-01 00:00:00';
             }
         }
@@ -601,7 +602,9 @@ class filecore extends solution
 
     protected function moveFileTo($fileName, $destination)
     {
-        ssh2_exec($this->sshConnection, 'mv "'.$fileName.'" "'.$destination.'"');
+        $output = ssh2_exec($this->sshConnection, 'mv "'.$fileName.'" "'.$destination.'"');
+        stream_set_blocking($output, true);
+        $output = stream_get_contents($output);
     }
 }
 class file extends filecore
