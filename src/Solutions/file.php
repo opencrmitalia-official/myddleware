@@ -437,7 +437,7 @@ class filecore extends solution
             // Move file after read (only for short file less then 1000 lines)
             $customEnv = parse_ini_file(__DIR__.'/../../.env.docker', true);
             if (isset($customEnv['myddleware_solution_file_move_to']) && isset($fileName)) {
-                $this->moveFileTo($fileName, $customEnv('myddleware_solution_file_move_to'));
+                $this->moveFileTo($fileName, $customEnv['myddleware_solution_file_move_to']);
                 $result['date_ref'] = '2000-01-01 00:00:00';
             }
         }
