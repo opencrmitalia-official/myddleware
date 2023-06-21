@@ -431,8 +431,14 @@ class filecore extends solution
             $result['error'] = 'File '.(!empty($fileName) ? ' : '.$fileName : '').' : Error : '.$e->getMessage().' '.$e->getFile().' Line : ( '.$e->getLine().' )';
         }
         // Close the file
-        if (!empty($stream)) {
+        if (!empty($stream) ) {
             fclose($stream);
+
+            // Move file after read (only for short file less then 1000 lines)
+            if (getenv('MYDDLEWARE_SOLUTION_FILE_MOVE_TO') && isset($fileName)) {
+                $this->moveFileTo($fileName, getenv('MYDDLEWARE_SOLUTION_FILE_MOVE_TO'));
+                $result['date_ref'] = '2000-01-01 00:00:00';
+            }
         }
 
         return $result;
@@ -591,6 +597,11 @@ class filecore extends solution
     {
         // default is id
         return ['id'];
+    }
+
+    protected function moveFileTo($fileName, $destination)
+    {
+        ssh2_exec($this->sshConnection, 'mv "'.$fileName.'" "'.$destination.'"');
     }
 }
 class file extends filecore
