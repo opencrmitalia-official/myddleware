@@ -16,7 +16,7 @@ RUN apt-get update && apt-get upgrade -y && \
     sed -e 's!DocumentRoot /var/www/html!DocumentRoot /var/www/html/web!' -ri /etc/apache2/sites-available/000-default.conf
 
 ## Install Xdebug
-RUN pecl install -f xdebug && \
+RUN ( pecl install -f xdebug-2.8.1 || pecl install -f xdebug-2.7.2 || pecl install -f xdebug-2.5.5 ) && \
     docker-php-ext-enable xdebug && \
     echo "xdebug.remote_enable = 1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \
     echo "xdebug.remote_host=host.docker.internal" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && \

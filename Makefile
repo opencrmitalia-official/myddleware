@@ -137,9 +137,9 @@ reset: clean
 ## Docker Hub
 ## ----------
 push:
-	@docker login
-	@docker build -t opencrmitalia/myddleware:v1 .
-	@docker push opencrmitalia/myddleware:v1
+	@docker login --username opencrmitalia
+	@docker build -t opencrmitalia/myddleware:v2 .
+	@docker push opencrmitalia/myddleware:v2
 
 ## -------
 ## Develop
