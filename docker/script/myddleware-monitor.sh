@@ -13,5 +13,5 @@ chmod 777 ${LOG_FILE}
 ## Clean-up log file
 [ "$(wc -l < ${LOG_FILE})" -gt "5000" ] && sed -e '1,20d' -i ${LOG_FILE} || true
 
-## Run Monitoring Job
+## Execute monitoring job
 php -f /var/www/html/bin/console myddleware:monitoring --env=background
