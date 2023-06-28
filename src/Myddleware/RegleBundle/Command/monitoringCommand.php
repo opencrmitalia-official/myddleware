@@ -73,6 +73,8 @@ class monitoringCommand extends ContainerAwareCommand
         $this->problemNotification($instanceName, $notificationStatus);
 
         file_put_contents($notificationFile, json_encode($notificationStatus, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+        $this->monitoringCurlPolling($input, $output);
 	}
 
     /**
@@ -170,5 +172,65 @@ class monitoringCommand extends ContainerAwareCommand
         }
 
         $notification->sendNotification(true);
+    }
+
+    /**
+     *
+     */
+    protected function monitoringCurlPolling(InputInterface $input, OutputInterface $output)
+    {
+        $env = parse_ini_file('/var/www/html/.env', false, INI_SCANNER_RAW);
+
+        $monitoringKey = @$env['monitoring_key'];
+        if (empty($monitoringKey)) {
+            $monitoringKey = 'myddleware';
+        }
+
+        $monitoringUrl = @$env['monitoring_url'];
+        #file_put_contents('/var/www/html/var/logs/monitoring.log', "KEY: ".$monitoringUrl."\n", FILE_APPEND);
+        if (empty($monitoringUrl)) {
+            return 0;
+        }
+
+        $sqlRule = "SELECT * FROM Job WHERE Status='Start' ORDER BY begin ASC LIMIT 1";
+        $db = $this->getContainer()->get('database_connection');
+        $stmt = $db->prepare($sqlRule);
+        $stmt->execute();
+        $job = $stmt->fetchAssociative();
+
+        #$errors = $this->ruleRepository->errorByRule();
+        #var_dump($errors);
+
+        $output->writeln('Ping: '.$monitoringUrl);
+
+        $payload = [
+            'ts' => date('Y-m-d H:i:s'),
+            'key' => $monitoringKey,
+            'current_open_job_begin' => $job['begin'],
+            'current_open_job_param' => $job['param'],
+        ];
+
+        $output->writeln('Data: '.json_encode($payload));
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $monitoringUrl);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $response = curl_exec($ch);
+
+        curl_close($ch);
+
+        file_put_contents('/var/www/html/var/logs/monitoring.log', json_encode([
+                'payload' => $payload,
+                'response' => $response,
+                'ping' => $monitoringUrl,
+            ], JSON_UNESCAPED_SLASHES)."\n", FILE_APPEND);
+
+        $output->writeln('Info: '.$response);
+
+        return 0;
     }
 }
