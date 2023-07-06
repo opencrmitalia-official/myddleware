@@ -81,9 +81,6 @@ update-secret:
 generate-template:
 	@docker-compose -f docker-compose.yml exec myddleware bash dev/script/generate-template.sh
 
-docker-stop-all:
-	@docker stop $$(docker ps -qa | grep -v $${MAKEBAT_CONTAINER_ID:-null}) >/dev/null 2>/dev/null || true
-
 reset: clean
 	@bash docker/script/reset.sh
 
