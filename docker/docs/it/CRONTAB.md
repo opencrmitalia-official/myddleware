@@ -41,7 +41,7 @@ crontab -e
 Aggiungere la seguente riga e poi salvare
 
 ```
-0 0 * * * cd /home/ubuntu/myddleware && docker compose exec mysql sh -c "MYSQL_PWD=\$MYSQL_ROOT_PASSWORD mysql myddleware -e \"   UPDATE rule SET active = 1 WHERE rule.id = '64108cee04141'   \";"
+0 0 * * * cd /home/ubuntu/myddleware && docker compose exec mysql sh -c "MYSQL_PWD=\$MYSQL_ROOT_PASSWORD mysql myddleware -e \"   UPDATE rule SET active = 1 WHERE rule.id = '64108cee04141'   \";" >> var/log/cron.log 2>&1
 ```
 
 ## Spegnere una particolare regola a una certa ora
@@ -55,5 +55,5 @@ crontab -e
 Aggiungere la seguente riga e poi salvare
 
 ```
-0 1 * * * cd /home/ubuntu/myddleware && docker compose exec mysql sh -c "MYSQL_PWD=\$MYSQL_ROOT_PASSWORD mysql myddleware -e \"   UPDATE rule SET active = 0 WHERE rule.id = '64108cee04141'   \";"
+0 1 * * * cd /home/ubuntu/myddleware && docker compose exec mysql sh -c "MYSQL_PWD=\$MYSQL_ROOT_PASSWORD mysql myddleware -e \"   UPDATE rule SET active = 0 WHERE rule.id = '64108cee04141'   \";" >> var/log/cron.log 2>&1
 ```
