@@ -7,7 +7,7 @@ services:
     environment:
       - MYSQL_DATABASE=myddleware
       - MYSQL_ROOT_PASSWORD=secret
-      - VT_CLIENT_LOG_FILE=/var/www/html/var/logs/vtigercrm.log
+      - VT_CLIENT_LOG_FILE=/var/www/html/var/log/vtigercrm.log
     links:
       - mysql
       - phpmyadmin
