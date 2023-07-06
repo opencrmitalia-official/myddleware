@@ -76,6 +76,8 @@ Ecco come dovrebbe presentarti lo script
 
 ```shell
 #!/bin/bash
+set -e
+
 ## File: /etc/myddleware-scripts/mio-script.sh
 
 ## IMPORTANTE!!!
