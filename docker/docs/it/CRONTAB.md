@@ -13,7 +13,7 @@ crontab -e
 Aggiungere la seguente riga e poi salvare
 
 ```
-* * * * * cd /home/ubuntu/myddleware && docker compose exec myddleware php -d xdebug.mode=off bin/console myddleware:synchro 6492c01b61102 >> var/log/cron.log 2>&1
+* * * * * cd /home/ubuntu/myddleware && docker compose exec myddleware php bin/console myddleware:synchro 6492c01b61102 >> var/log/cron.log 2>&1
 ```
 
 ## Eseguire una query di pulizia ogni minuto
