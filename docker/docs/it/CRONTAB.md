@@ -72,6 +72,12 @@ Aggiungere la seguente riga che fara la synchro ALL dalle 10 della sera alle 5 d
 */5 22,23,0,1,2,3,4,5 * * * cd /home/ubuntu/myddleware && docker compose exec myddleware php bin/console myddleware:synchro ALL >> var/log/cron.log 2>&1
 ```
 
+Potrebbe essere utile il caso inverso, ovvero fare girare le regole di giorno tra le 5.00 fino alle 20.00, ecco come fare
+
+```
+*/5 5-20 * * * cd /home/ubuntu/myddleware && docker compose exec myddleware php bin/console myddleware:synchro ALL >> var/log/cron.log 2>&1
+```
+
 ## Creare script complessi che eseguiranno operazioni multiple
 
 Digitare il seguente comando
