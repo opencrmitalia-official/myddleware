@@ -397,6 +397,10 @@ class databasecore extends solution
         $values = '(';
         // We build the query with every fields
         foreach ($record as $key => $value) {
+            if (in_array($key, ['id_doc_myddleware', 'source_date_modified'])) {
+                continue;
+            }
+
             if ('target_id' == $key) {
                 continue;
             // If the target reference field is in data sent, we save it to update the document
@@ -442,6 +446,9 @@ class databasecore extends solution
         // We build the query with every fields
         // Boucle sur chaque champ du document
         foreach ($record as $key => $value) {
+            if (in_array($key, ['id_doc_myddleware', 'source_date_modified'])) {
+                continue;
+            }
             // Target_id is a Myddleware field (not send to the database)
             if ('target_id' == $key) {
                 continue;

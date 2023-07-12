@@ -53,9 +53,7 @@ VALUES
 CREATE TABLE B_Prodotti (
     ProdottoID INT IDENTITY PRIMARY KEY,
     Descrizione VARCHAR(255),
-    Prezzo MONEY,
-    id_doc_myddleware VARCHAR(255),
-    source_date_modified VARCHAR(255)
+    Prezzo MONEY
 )
 
 INSERT INTO B_Prodotti (ProdottoID, Descrizione, Prezzo) VALUES (1, 'Zucchero', 10.5), (2, 'Sale', 12.5)
