@@ -22,8 +22,10 @@
  along with Myddleware.  If not, see <http://www.gnu.org/licenses/>.
 *********************************************************************************/
 
-google.charts.load("visualization", "1", {packages:["corechart"]});
-google.charts.setOnLoadCallback(drawChart);
+if (typeof google != "undefined") {
+	google.charts.load("visualization", "1", {packages:["corechart"]});
+	google.charts.setOnLoadCallback(drawChart);
+}
 
 function drawChart() {
 	if ($('#pie_chart_error_doc').length) {
