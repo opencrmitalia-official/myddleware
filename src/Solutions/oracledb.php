@@ -119,7 +119,7 @@ class oracledbcore extends database
             $requestSQL .= ' AND'.$this->get_query_select_limit_offset($param, 'read'); // Add query limit
             $requestSQL .= ' ORDER BY '.$this->stringSeparatorOpen.$param['ruleParams']['fieldDateRef'].$this->stringSeparatorClose.' ASC'; // Tri par date utilisateur
             // Query validation
-            $requestSQL = $this->queryValidation($param, 'read', $requestSQL);
+            $requestSQL = $this->queryValidation($param, 'read', $requestSQL, null);
 
             // Appel de la requête
             $q = $this->pdo->prepare($requestSQL);
