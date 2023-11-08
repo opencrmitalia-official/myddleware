@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 php:8.1-apache-bullseye
+FROM --platform=linux/amd64 php:8.1-apache-bookworm
 LABEL maintainer="Francesco Bianco <francescobianco@opencrmitalia.com>"
 
 # Useful global ARGS
@@ -44,10 +44,10 @@ RUN pecl install -f xdebug && \
 
 ## Install MS Database
 ARG ACCEPT_EULA=Y
-RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
-     curl https://packages.microsoft.com/config/debian/11/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+RUN curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg && \
+     curl https://packages.microsoft.com/config/debian/12/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
     apt-get update && \
-    apt-get install --no-install-recommends -y msodbcsql17 odbcinst=2.3.7 odbcinst1debian2=2.3.7 unixodbc-dev=2.3.7 unixodbc=2.3.7 && \
+    apt-get install --no-install-recommends -y msodbcsql17 odbcinst odbcinst1debian2 unixodbc-dev unixodbc && \
     pecl install -f sqlsrv pdo_sqlsrv && \
     docker-php-ext-enable sqlsrv pdo_sqlsrv && \
     sed -i 's,^\(MinProtocol[ ]*=\).*,\1'TLSv1.0',g' /etc/ssl/openssl.cnf && \
@@ -82,8 +82,10 @@ RUN chmod 600 /etc/crontab
 
 ## Install DBLIB
 RUN apt-get update && \
-    apt-get install -y freetds-bin freetds-dev freetds-common libct4 libsybdb5 tdsodbc libfreetype6-dev libjpeg62-turbo-dev libmcrypt-dev zlib1g-dev libicu-dev g++ libc-client-dev libonig-dev && \
-    docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu && \
+    apt-get install -y libodbc2
+RUN apt-get update && \
+    apt-get install -y freetds-bin tdsodbc libsybdb5 libjpeg62-turbo-dev freetds-dev freetds-common libct4 libfreetype6-dev libmcrypt-dev zlib1g-dev libicu-dev g++ libc-client-dev libonig-dev
+RUN docker-php-ext-configure pdo_dblib --with-libdir=/lib/x86_64-linux-gnu && \
     docker-php-ext-configure intl && \
     docker-php-ext-install pdo_dblib && \
     docker-php-ext-install intl && \
