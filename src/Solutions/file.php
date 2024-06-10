@@ -236,6 +236,9 @@ class filecore extends solution
             // Remove the last coma
             $sql = substr($sql, 0, -1);
             $sql .= ')';
+	    if (empty($this->conn)) {
+                return;
+            }
             $stmt = $this->conn->prepare($sql);
             $result = $stmt->executeQuery();
             $fields = $result->fetchAllAssociative();
