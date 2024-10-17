@@ -71,6 +71,8 @@ restart: recreate
 
 fix:
 	@docker-compose run --rm myddleware bash docker/script/fix.sh || true
+	@docker compose exec myddleware bash -c 'cat /var/www/html/docker/etc/crontab > /etc/crontab'  || true
+	@docker compose exec myddleware bash -c 'echo "* * 1 2 * echo placeholder" | crontab -' || true
 
 bash:
 	@docker-compose -f docker-compose.yml exec myddleware bash
